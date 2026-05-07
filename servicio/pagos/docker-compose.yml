@@ -1,0 +1,51 @@
+name: pagos-prod
+
+services:
+  mysql-pagos:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${PAGOS_MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${PAGOS_MYSQL_DATABASE}
+    ports:
+      - "3422:3306" # Tu maquina (cliente externo) -> MySQL prod
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -p${PAGOS_MYSQL_ROOT_PASSWORD} || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    volumes:
+      - mysql_pagos_data:/var/lib/mysql
+    networks:
+      - pagos-int
+
+  pagos:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      mysql-pagos:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+      CONFIG_SERVER_URL: ${CONFIG_SERVER_URL}
+      PAGOS_DB_HOST: ${PAGOS_DB_HOST}
+      PAGOS_DB_PORT: ${PAGOS_DB_PORT}
+      PAGOS_DB_NAME: ${PAGOS_DB_NAME}
+      PAGOS_DB_USERNAME: ${PAGOS_DB_USERNAME}
+      PAGOS_DB_PASSWORD: ${PAGOS_DB_PASSWORD}
+    ports:
+      - "9122:9122"
+    networks:
+      - pagos-int
+      - ms-net
+
+volumes:
+  mysql_pagos_data:
+
+networks:
+  ms-net:
+    external: true
+    name: ms-net
+  pagos-int:
+    name: pagos-int

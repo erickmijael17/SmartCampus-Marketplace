@@ -1,0 +1,16 @@
+name: inventario-dev
+
+services:
+  mysql-inventario-dev:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: db_inventario
+    ports:
+      - "3431:3306" # Tu maquina (cliente externo) -> MySQL dev
+    volumes:
+      - mysql_inventario_dev_data:/var/lib/mysql
+
+volumes:
+  mysql_inventario_dev_data:

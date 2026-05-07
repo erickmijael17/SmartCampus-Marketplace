@@ -1,0 +1,51 @@
+name: carrito-prod
+
+services:
+  mysql-carrito:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${CARRITO_MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${CARRITO_MYSQL_DATABASE}
+    ports:
+      - "3402:3306" # Tu maquina (cliente externo) -> MySQL prod
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -p${CARRITO_MYSQL_ROOT_PASSWORD} || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    volumes:
+      - mysql_carrito_data:/var/lib/mysql
+    networks:
+      - carrito-int
+
+  carrito:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      mysql-carrito:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+      CONFIG_SERVER_URL: ${CONFIG_SERVER_URL}
+      CARRITO_DB_HOST: ${CARRITO_DB_HOST}
+      CARRITO_DB_PORT: ${CARRITO_DB_PORT}
+      CARRITO_DB_NAME: ${CARRITO_DB_NAME}
+      CARRITO_DB_USERNAME: ${CARRITO_DB_USERNAME}
+      CARRITO_DB_PASSWORD: ${CARRITO_DB_PASSWORD}
+    ports:
+      - "9102:9102"
+    networks:
+      - carrito-int
+      - ms-net
+
+volumes:
+  mysql_carrito_data:
+
+networks:
+  ms-net:
+    external: true
+    name: ms-net
+  carrito-int:
+    name: carrito-int
