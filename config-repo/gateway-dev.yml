@@ -29,7 +29,61 @@ spring:
           predicates:
             - Path=/producto/swagger-ui/**,/producto/v3/api-docs/**
         
-        #
+        # INVENTARIO
+        - id: inventario-route
+          uri: lb://inventario
+          predicates:
+            - Path=/api/v1/inventario/**
+        - id: inventario-instancia
+          uri: lb://inventario
+          predicates:
+            - Path=/api/v1/inventario/instancia
+        - id: inventario-swagger
+          uri: lb://inventario
+          predicates:
+            - Path=/inventario/swagger-ui/**,/inventario/v3/api-docs/**
+
+        # CARRITO
+        - id: carrito-route
+          uri: lb://carrito
+          predicates:
+            - Path=/api/v1/carrito/**
+        - id: carrito-instancia
+          uri: lb://carrito
+          predicates:
+            - Path=/api/v1/carrito/instancia
+        - id: carrito-swagger
+          uri: lb://carrito
+          predicates:
+            - Path=/carrito/swagger-ui/**,/carrito/v3/api-docs/**
+
+        # ORDENES
+        - id: ordenes-route
+          uri: lb://ordenes
+          predicates:
+            - Path=/api/v1/ordenes/**
+        - id: ordenes-instancia
+          uri: lb://ordenes
+          predicates:
+            - Path=/api/v1/ordenes/instancia
+        - id: ordenes-swagger
+          uri: lb://ordenes
+          predicates:
+            - Path=/ordenes/swagger-ui/**,/ordenes/v3/api-docs/**
+
+        # PAGOS
+        - id: pagos-route
+          uri: lb://pagos
+          predicates:
+            - Path=/api/v1/pagos/**
+        - id: pagos-instancia
+          uri: lb://pagos
+          predicates:
+            - Path=/api/v1/pagos/instancia
+        - id: pagos-swagger
+          uri: lb://pagos
+          predicates:
+            - Path=/pagos/swagger-ui/**,/pagos/v3/api-docs/**
 
 eureka:
   client:

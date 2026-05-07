@@ -200,8 +200,16 @@ Archivos actuales:
 config-repo/
   catalogo-dev.yml
   catalogo-prod.yml
+  carrito-dev.yml
+  carrito-prod.yml
   gateway-dev.yml
   gateway-prod.yml
+  inventario-dev.yml
+  inventario-prod.yml
+  ordenes-dev.yml
+  ordenes-prod.yml
+  pagos-dev.yml
+  pagos-prod.yml
   producto-dev.yml
   producto-prod.yml
   registry-server-dev.yml

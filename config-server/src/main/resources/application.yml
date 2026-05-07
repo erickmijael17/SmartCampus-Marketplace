@@ -11,5 +11,4 @@ spring:
         native: 
           #search-locations: file:///C:/ms1/ProyectosMS2026/infra/config-repo 
           #search-locations: file:/config-repo
-          search-locations: ${CONFIG_REPO_LOCATION:file:///C:/ms1/ProyectosMS2026/infra/config-repo}
-
+          search-locations: ${CONFIG_REPO_LOCATION:file:///E:/msi/ProyectoMS2026/infra/config-repo}
