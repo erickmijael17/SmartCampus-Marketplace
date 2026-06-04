@@ -1,0 +1,18 @@
+name: ecom-carrito-dev
+
+services:
+  postgres-carrito-dev:
+    image: postgres:16-alpine
+    container_name: ecom-postgres-carrito-dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ecom_carrito_db
+      POSTGRES_USER: ecom
+      POSTGRES_PASSWORD: ecom
+    ports:
+      - "15434:5432"
+    volumes:
+      - ecom_carrito_dev_data:/var/lib/postgresql/data
+
+volumes:
+  ecom_carrito_dev_data:

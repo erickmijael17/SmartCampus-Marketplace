@@ -1,0 +1,64 @@
+server:
+  port: 0
+
+spring:
+  kafka:
+    bootstrap-servers: localhost:41092
+  datasource:
+    url: jdbc:postgresql://localhost:15436/ecom_orden_db
+    username: ecom
+    password: ecom
+    driver-class-name: org.postgresql.Driver
+  flyway:
+    enabled: false
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  devtools:
+    restart:
+      enabled: true
+    livereload:
+      enabled: true
+
+eureka:
+  instance:
+    hostname: localhost
+    prefer-ip-address: false
+    instance-id: ${spring.application.name}:${local.server.port:${random.value}}
+    metadata-map:
+      instance-port: ${local.server.port:${server.port}}
+  client:
+    service-url:
+      defaultZone: http://localhost:18761/eureka
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+
+app:
+  kafka:
+    topic:
+      ordenes: ordenes-topic
+
+jwt:
+  secret: 1s3alJJATsWK91vf5zrODYlQa+LauM/9udaLZlQhHlpu46g/KzmSS5c3CGy6xF9kzAqBhvjmKBuZO/pSL7tfOg==
+  issuer: auth

@@ -1,0 +1,57 @@
+name: ecom-inventario-prod
+
+services:
+  postgres-inventario:
+    image: postgres:16-alpine
+    container_name: ecom-postgres-inventario
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    volumes:
+      - ecom_inventario_data:/var/lib/postgresql/data
+    ports:
+      - "25438:5432"
+    networks:
+      - ecom-inventario-int
+
+  inventario-ms:
+    build: .
+    container_name: ecom-inventario-ms
+    restart: unless-stopped
+    depends_on:
+      postgres-inventario:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+      CONFIG_SERVER_URL: ${CONFIG_SERVER_URL}
+      JWT_SECRET: ${JWT_SECRET}
+      DB_HOST: ecom-postgres-inventario
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+    ports:
+      - "8088:8080"
+    volumes:
+      - ./logs:/app/logs
+    networks:
+      - ecom-inventario-int
+      - ecom-prod-net
+
+volumes:
+  ecom_inventario_data:
+
+networks:
+  ecom-prod-net:
+    external: true
+    name: ecom-prod-net
+  ecom-inventario-int:
+    name: ecom-inventario-int

@@ -1,0 +1,13 @@
+server:
+  port: 18888
+spring:
+  application:
+    name: ecom-config
+  profiles: 
+    active: native 
+  cloud:
+    config:
+      server:
+        native: 
+          search-locations: ${CONFIG_REPO_LOCATION:file:./config-repo}
+
