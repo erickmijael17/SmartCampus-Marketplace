@@ -1,0 +1,5 @@
+D:\SmartCampus-Marketplace\infra\gateway\src\main\java\com\upeu\gateway\config\CorsGlobalConfig.java
+D:\SmartCampus-Marketplace\infra\gateway\src\main\java\com\upeu\gateway\config\JwtProperties.java
+D:\SmartCampus-Marketplace\infra\gateway\src\main\java\com\upeu\gateway\config\SecurityConfig.java
+D:\SmartCampus-Marketplace\infra\gateway\src\main\java\com\upeu\gateway\filter\TraceIdGlobalFilter.java
+D:\SmartCampus-Marketplace\infra\gateway\src\main\java\com\upeu\gateway\GatewayApplication.java

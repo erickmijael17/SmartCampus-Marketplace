@@ -1,0 +1,45 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: prometheus
+    static_configs:
+      - targets:
+          - localhost:9090
+
+  - job_name: gateway
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets:
+          - gateway:8080
+
+  - job_name: producto-ms
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets:
+          - producto-ms:8080
+
+  - job_name: catalogo-ms
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets:
+          - catalogo-ms:8080
+
+  - job_name: kafka-exporter
+    metrics_path: /metrics
+    static_configs:
+      - targets:
+          - ecom-kafka-exporter:9308
+
+  - job_name: orden-ms
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets:
+          - orden-ms:8080
+
+  - job_name: pago-ms
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets:
+          - pago-ms:8080

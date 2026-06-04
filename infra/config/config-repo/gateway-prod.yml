@@ -1,0 +1,70 @@
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: auth-route
+          uri: lb://auth-ms
+          predicates:
+            - Path=/auth/**
+
+        - id: catalogo-route
+          uri: lb://catalogo-ms
+          predicates:
+            - Path=/api/v1/categorias/**
+        - id: catalogo-instancia
+          uri: lb://catalogo-ms
+          predicates:
+            - Path=/api/v1/catalogo/instancia
+
+        # PRODUCTO
+        - id: producto-route
+          uri: lb://producto-ms
+          predicates:
+            - Path=/api/v1/productos/**
+        - id: producto-instancia
+          uri: lb://producto-ms
+          predicates:
+            - Path=/api/v1/producto/instancia
+
+        # ORDEN
+        - id: orden-route
+          uri: lb://orden-ms
+          predicates:
+            - Path=/api/v1/ordenes/**
+
+        # PAGO
+        - id: pago-route
+          uri: lb://pago-ms
+          predicates:
+            - Path=/api/v1/pagos/**
+
+        # CARRITO
+        - id: carrito-route
+          uri: lb://carrito-ms
+          predicates:
+            - Path=/api/v1/carritos/**
+
+        # INVENTARIO
+        - id: inventario-route
+          uri: lb://inventario-ms
+          predicates:
+            - Path=/api/v1/inventarios/**
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka:8761/eureka
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+
+jwt:
+  secret: ${JWT_SECRET:1s3alJJATsWK91vf5zrODYlQa+LauM/9udaLZlQhHlpu46g/KzmSS5c3CGy6xF9kzAqBhvjmKBuZO/pSL7tfOg==}
+  issuer: auth

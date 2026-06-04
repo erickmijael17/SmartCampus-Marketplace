@@ -1,0 +1,72 @@
+name: ecom-obs
+
+services:
+  prometheus:
+    image: prom/prometheus:v3.5.0
+    container_name: ecom-prometheus
+    restart: unless-stopped
+    ports:
+      - "29090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ecom_prometheus_data:/prometheus
+    networks:
+      - ecom-prod-net
+
+  loki:
+    image: grafana/loki:3.4.1
+    container_name: ecom-loki
+    restart: unless-stopped
+    ports:
+      - "23100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - ./loki/config.yml:/etc/loki/local-config.yaml:ro
+      - ecom_loki_data:/loki
+    networks:
+      - ecom-prod-net
+
+  promtail:
+    image: grafana/promtail:3.4.1
+    container_name: ecom-promtail
+    restart: unless-stopped
+    command: -config.file=/etc/promtail/config.yml
+    volumes:
+      - ./promtail/config.yml:/etc/promtail/config.yml:ro
+      - ../infra/gateway/logs:/var/log/ms/gateway:ro
+      - ../services/catalogo-ms/logs:/var/log/ms/catalogo-ms:ro
+      - ../services/producto-ms/logs:/var/log/ms/producto-ms:ro
+      - ../services/orden-ms/logs:/var/log/ms/orden-ms:ro
+      - ../services/pago-ms/logs:/var/log/ms/pago-ms:ro
+    depends_on:
+      - loki
+    networks:
+      - ecom-prod-net
+
+  grafana:
+    image: grafana/grafana:11.6.0
+    container_name: ecom-grafana
+    restart: unless-stopped
+    ports:
+      - "23000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ecom_grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+      - loki
+    networks:
+      - ecom-prod-net
+
+volumes:
+  ecom_prometheus_data:
+  ecom_loki_data:
+  ecom_grafana_data:
+
+networks:
+  ecom-prod-net:
+    external: true
+    name: ecom-prod-net

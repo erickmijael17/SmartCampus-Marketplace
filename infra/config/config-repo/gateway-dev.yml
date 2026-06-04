@@ -1,0 +1,103 @@
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: auth-route
+          uri: lb://auth-ms
+          predicates:
+            - Path=/auth/**
+
+        - id: catalogo-route
+          uri: lb://catalogo-ms
+          predicates:
+            - Path=/api/v1/categorias/**
+        - id: catalogo-instancia
+          uri: lb://catalogo-ms
+          predicates:
+            - Path=/api/v1/catalogo/instancia
+        - id: catalogo-swagger
+          uri: lb://catalogo-ms
+          predicates:
+            - Path=/catalogo-ms/swagger-ui/**,/catalogo-ms/v3/api-docs/**
+        
+        # PRODUCTO
+        - id: producto-route
+          uri: lb://producto-ms
+          predicates:
+            - Path=/api/v1/productos/**
+        - id: producto-instancia
+          uri: lb://producto-ms
+          predicates:
+            - Path=/api/v1/producto/instancia
+        - id: producto-swagger
+          uri: lb://producto-ms
+          predicates:
+            - Path=/producto-ms/swagger-ui/**,/producto-ms/v3/api-docs/**
+
+        # ORDEN
+        - id: orden-route
+          uri: lb://orden-ms
+          predicates:
+            - Path=/api/v1/ordenes/**
+        - id: orden-swagger
+          uri: lb://orden-ms
+          predicates:
+            - Path=/orden-ms/swagger-ui/**,/orden-ms/v3/api-docs/**
+
+        # PAGO
+        - id: pago-route
+          uri: lb://pago-ms
+          predicates:
+            - Path=/api/v1/pagos/**
+        - id: pago-swagger
+          uri: lb://pago-ms
+          predicates:
+            - Path=/pago-ms/swagger-ui/**,/pago-ms/v3/api-docs/**
+        
+        # CARRITO
+        - id: carrito-route
+          uri: lb://carrito-ms
+          predicates:
+            - Path=/api/v1/carritos/**
+        - id: carrito-swagger
+          uri: lb://carrito-ms
+          predicates:
+            - Path=/carrito-ms/swagger-ui/**,/carrito-ms/v3/api-docs/**
+
+        # INVENTARIO
+        - id: inventario-route
+          uri: lb://inventario-ms
+          predicates:
+            - Path=/api/v1/inventarios/**
+        - id: inventario-swagger
+          uri: lb://inventario-ms
+          predicates:
+            - Path=/inventario-ms/swagger-ui/**,/inventario-ms/v3/api-docs/**
+
+eureka:
+  instance:
+    hostname: localhost
+    prefer-ip-address: false
+    instance-id: ${spring.application.name}:${local.server.port:${server.port}}
+    metadata-map:
+      instance-port: ${local.server.port:${server.port}}
+  client:
+    service-url:
+      defaultZone: http://localhost:18761/eureka
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,circuitbreakers,circuitbreakerevents
+  endpoint:
+    health:
+      show-details: always
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+
+jwt:
+  secret: 1s3alJJATsWK91vf5zrODYlQa+LauM/9udaLZlQhHlpu46g/KzmSS5c3CGy6xF9kzAqBhvjmKBuZO/pSL7tfOg==
+  issuer: auth
