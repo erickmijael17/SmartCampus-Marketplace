@@ -1,0 +1,47 @@
+# =============================================================================
+# SERVICE: kafka (ClusterIP para acceso interno)
+# URL: kafka:9092 — coincide con KAFKA_ADVERTISED_LISTENERS del StatefulSet
+# =============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka
+  namespace: ecom
+  labels:
+    app: kafka
+    app.kubernetes.io/component: messaging
+spec:
+  type: ClusterIP
+  selector:
+    app: kafka
+  ports:
+    - name: internal
+      port: 9092
+      targetPort: 9092
+      protocol: TCP
+---
+# =============================================================================
+# SERVICE: kafka-headless
+# Headless service requerido por el StatefulSet para DNS estable.
+# Permite que el pod kafka-0 sea accesible como kafka-0.kafka-headless
+# =============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-headless
+  namespace: ecom
+  labels:
+    app: kafka
+    app.kubernetes.io/component: messaging
+spec:
+  type: ClusterIP
+  clusterIP: None
+  selector:
+    app: kafka
+  ports:
+    - name: internal
+      port: 9092
+      targetPort: 9092
+    - name: controller
+      port: 9093
+      targetPort: 9093

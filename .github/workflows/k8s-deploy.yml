@@ -1,0 +1,252 @@
+name: 🚀 CI/CD - Build & Deploy to Kubernetes
+
+on:
+  push:
+    branches: [ main, kubernetes ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  REGISTRY: docker.io
+  DOCKER_USERNAME: erickmijael17
+
+jobs:
+  # ==========================================================================
+  # Job 1: Detectar qué servicios cambiaron
+  # ==========================================================================
+  detect-changes:
+    name: Detectar cambios
+    runs-on: ubuntu-latest
+    outputs:
+      config-server:   ${{ steps.filter.outputs.config-server }}
+      eureka:          ${{ steps.filter.outputs.eureka }}
+      gateway:         ${{ steps.filter.outputs.gateway }}
+      auth-ms:         ${{ steps.filter.outputs.auth-ms }}
+      persona-ms:      ${{ steps.filter.outputs.persona-ms }}
+      publicacion-ms:  ${{ steps.filter.outputs.publicacion-ms }}
+      categoria-ms:    ${{ steps.filter.outputs.categoria-ms }}
+      inventario-ms:   ${{ steps.filter.outputs.inventario-ms }}
+      carrito-ms:      ${{ steps.filter.outputs.carrito-ms }}
+      orden-ms:        ${{ steps.filter.outputs.orden-ms }}
+      pago-ms:         ${{ steps.filter.outputs.pago-ms }}
+      calificacion-ms: ${{ steps.filter.outputs.calificacion-ms }}
+      chat-ms:         ${{ steps.filter.outputs.chat-ms }}
+      notification-ms: ${{ steps.filter.outputs.notification-ms }}
+      media-ms:        ${{ steps.filter.outputs.media-ms }}
+      favoritos-ms:    ${{ steps.filter.outputs.favoritos-ms }}
+      search-ms:       ${{ steps.filter.outputs.search-ms }}
+      catalogo-ms:     ${{ steps.filter.outputs.catalogo-ms }}
+      producto-ms:     ${{ steps.filter.outputs.producto-ms }}
+      k8s-changed:     ${{ steps.filter.outputs.k8s }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            config-server:
+              - 'infra/config/**'
+            eureka:
+              - 'infra/eureka/**'
+            gateway:
+              - 'infra/gateway/**'
+            auth-ms:
+              - 'servicio/auth-ms/**'
+            persona-ms:
+              - 'servicio/persona-ms/**'
+            publicacion-ms:
+              - 'servicio/publicacion-ms/**'
+            categoria-ms:
+              - 'servicio/categoria-ms/**'
+            inventario-ms:
+              - 'servicio/inventario-ms/**'
+            carrito-ms:
+              - 'servicio/carrito-ms/**'
+            orden-ms:
+              - 'servicio/orden-ms/**'
+            pago-ms:
+              - 'servicio/pago-ms/**'
+            calificacion-ms:
+              - 'servicio/calificacion-ms/**'
+            chat-ms:
+              - 'servicio/chat-ms/**'
+            notification-ms:
+              - 'servicio/notification-ms/**'
+            media-ms:
+              - 'servicio/media-ms/**'
+            favoritos-ms:
+              - 'servicio/favoritos-ms/**'
+            search-ms:
+              - 'servicio/search-ms/**'
+            catalogo-ms:
+              - 'servicio/catalogo-ms/**'
+            producto-ms:
+              - 'servicio/producto-ms/**'
+            k8s:
+              - 'k8s/**'
+
+  # ==========================================================================
+  # Job 2: Build & Push de imágenes modificadas
+  # ==========================================================================
+  build-and-push:
+    name: Build & Push — ${{ matrix.service }}
+    needs: detect-changes
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          # Infraestructura
+          - service: config-server
+            context: ./infra/config
+            changed: ${{ needs.detect-changes.outputs.config-server }}
+          - service: eureka
+            context: ./infra/eureka
+            changed: ${{ needs.detect-changes.outputs.eureka }}
+          - service: gateway
+            context: ./infra/gateway
+            changed: ${{ needs.detect-changes.outputs.gateway }}
+          # Microservicios existentes
+          - service: auth-ms
+            context: ./servicio/auth-ms
+            changed: ${{ needs.detect-changes.outputs.auth-ms }}
+          - service: carrito-ms
+            context: ./servicio/carrito-ms
+            changed: ${{ needs.detect-changes.outputs.carrito-ms }}
+          - service: catalogo-ms
+            context: ./servicio/catalogo-ms
+            changed: ${{ needs.detect-changes.outputs.catalogo-ms }}
+          - service: inventario-ms
+            context: ./servicio/inventario-ms
+            changed: ${{ needs.detect-changes.outputs.inventario-ms }}
+          - service: orden-ms
+            context: ./servicio/orden-ms
+            changed: ${{ needs.detect-changes.outputs.orden-ms }}
+          - service: pago-ms
+            context: ./servicio/pago-ms
+            changed: ${{ needs.detect-changes.outputs.pago-ms }}
+          - service: producto-ms
+            context: ./servicio/producto-ms
+            changed: ${{ needs.detect-changes.outputs.producto-ms }}
+          # Microservicios nuevos
+          - service: persona-ms
+            context: ./servicio/persona-ms
+            changed: ${{ needs.detect-changes.outputs.persona-ms }}
+          - service: publicacion-ms
+            context: ./servicio/publicacion-ms
+            changed: ${{ needs.detect-changes.outputs.publicacion-ms }}
+          - service: categoria-ms
+            context: ./servicio/categoria-ms
+            changed: ${{ needs.detect-changes.outputs.categoria-ms }}
+          - service: calificacion-ms
+            context: ./servicio/calificacion-ms
+            changed: ${{ needs.detect-changes.outputs.calificacion-ms }}
+          - service: chat-ms
+            context: ./servicio/chat-ms
+            changed: ${{ needs.detect-changes.outputs.chat-ms }}
+          - service: notification-ms
+            context: ./servicio/notification-ms
+            changed: ${{ needs.detect-changes.outputs.notification-ms }}
+          - service: media-ms
+            context: ./servicio/media-ms
+            changed: ${{ needs.detect-changes.outputs.media-ms }}
+          - service: favoritos-ms
+            context: ./servicio/favoritos-ms
+            changed: ${{ needs.detect-changes.outputs.favoritos-ms }}
+          - service: search-ms
+            context: ./servicio/search-ms
+            changed: ${{ needs.detect-changes.outputs.search-ms }}
+
+    if: ${{ matrix.changed == 'true' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configurar Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login a Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ env.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Extraer metadata (tags, labels)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.DOCKER_USERNAME }}/ecom-${{ matrix.service }}
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix=sha-
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+
+      - name: Build & Push ${{ matrix.service }}
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ matrix.context }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ==========================================================================
+  # Job 3: Deploy a Kubernetes (solo en push a main/kubernetes)
+  # ==========================================================================
+  deploy-to-k8s:
+    name: Deploy a Kubernetes
+    needs: [detect-changes, build-and-push]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/kubernetes'
+    environment: production
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configurar kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.29.0'
+
+      - name: Configurar kubeconfig
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBECONFIG }}" | base64 -d > ~/.kube/config
+
+      - name: Verificar conexión al clúster
+        run: kubectl cluster-info
+
+      - name: Aplicar ConfigMaps (config-repo)
+        if: needs.detect-changes.outputs.k8s-changed == 'true'
+        run: |
+          kubectl apply -f k8s/namespace.yaml
+          kubectl apply -f k8s/base/infra/config-server/configmap.yaml
+          kubectl rollout restart deployment/config-server -n ecom || true
+
+      - name: Deploy con Kustomize
+        run: |
+          kubectl apply -k k8s/base/
+
+      - name: Actualizar imagen de servicios modificados
+        run: |
+          SHA=$(echo $GITHUB_SHA | cut -c1-7)
+          # Actualizar solo los servicios que cambiaron
+          if [ "${{ needs.detect-changes.outputs.auth-ms }}" = "true" ]; then
+            kubectl set image deployment/auth-ms auth-ms=${{ env.DOCKER_USERNAME }}/ecom-auth-ms:sha-${SHA} -n ecom
+          fi
+          if [ "${{ needs.detect-changes.outputs.gateway }}" = "true" ]; then
+            kubectl set image deployment/gateway gateway=${{ env.DOCKER_USERNAME }}/ecom-gateway:sha-${SHA} -n ecom
+          fi
+          # ... (pattern se repite para cada servicio)
+
+      - name: Verificar estado del deploy
+        run: |
+          kubectl get pods -n ecom
+          kubectl rollout status deployment/gateway -n ecom --timeout=300s
+          kubectl rollout status deployment/auth-ms -n ecom --timeout=300s
+
+      - name: Notificar deploy exitoso
+        if: success()
+        run: |
+          echo "✅ Deploy exitoso - SHA: $GITHUB_SHA"
+          echo "   Gateway: http://api.smartcampus.local"
+          echo "   Grafana: http://grafana.smartcampus.local"

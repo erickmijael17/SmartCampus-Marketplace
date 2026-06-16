@@ -1,0 +1,157 @@
+# =============================================================================
+# skaffold.yaml - Desarrollo local con Kubernetes
+# Skaffold conecta el código fuente del proyecto con K8s:
+#   - Detecta cambios en el código y reconstruye automáticamente
+#   - Sincroniza archivos sin necesidad de reconstruir la imagen completa
+#   - Despliega los manifiestos K8s y muestra los logs
+#
+# Uso:
+#   skaffold dev          → Modo desarrollo (hot reload)
+#   skaffold run          → Despliegue único
+#   skaffold delete       → Eliminar recursos desplegados
+# =============================================================================
+apiVersion: skaffold/v4beta11
+kind: Config
+metadata:
+  name: smartcampus-marketplace
+
+build:
+  local:
+    push: false  # No push en desarrollo local (usa imágenes locales)
+    useBuildkit: true
+  artifacts:
+
+    # ─── Infraestructura ───────────────────────────────────────────────────
+    - image: erickmijael17/ecom-config-server
+      context: ./infra/config
+      docker:
+        dockerfile: Dockerfile
+
+    - image: erickmijael17/ecom-eureka
+      context: ./infra/eureka
+      docker:
+        dockerfile: Dockerfile
+
+    - image: erickmijael17/ecom-gateway
+      context: ./infra/gateway
+      docker:
+        dockerfile: Dockerfile
+
+    # ─── Microservicios Existentes ────────────────────────────────────────
+    - image: erickmijael17/ecom-auth-ms
+      context: ./servicio/auth-ms
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        # Hot reload: sincroniza recursos sin rebuild completo
+        manual:
+          - src: "src/main/resources/**"
+            dest: /app/resources
+
+    - image: erickmijael17/ecom-carrito-ms
+      context: ./servicio/carrito-ms
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: "src/main/resources/**"
+            dest: /app/resources
+
+    - image: erickmijael17/ecom-catalogo-ms
+      context: ./servicio/catalogo-ms
+      docker:
+        dockerfile: Dockerfile
+
+    - image: erickmijael17/ecom-inventario-ms
+      context: ./servicio/inventario-ms
+      docker:
+        dockerfile: Dockerfile
+
+    - image: erickmijael17/ecom-orden-ms
+      context: ./servicio/orden-ms
+      docker:
+        dockerfile: Dockerfile
+
+    - image: erickmijael17/ecom-pago-ms
+      context: ./servicio/pago-ms
+      docker:
+        dockerfile: Dockerfile
+
+    - image: erickmijael17/ecom-producto-ms
+      context: ./servicio/producto-ms
+      docker:
+        dockerfile: Dockerfile
+
+    # ─── Microservicios Nuevos ────────────────────────────────────────────
+    - image: erickmijael17/ecom-persona-ms
+      context: ./servicio/persona-ms
+      docker:
+        dockerfile: Dockerfile
+
+    - image: erickmijael17/ecom-publicacion-ms
+      context: ./servicio/publicacion-ms
+      docker:
+        dockerfile: Dockerfile
+
+    - image: erickmijael17/ecom-categoria-ms
+      context: ./servicio/categoria-ms
+      docker:
+        dockerfile: Dockerfile
+
+    - image: erickmijael17/ecom-calificacion-ms
+      context: ./servicio/calificacion-ms
+      docker:
+        dockerfile: Dockerfile
+
+    - image: erickmijael17/ecom-chat-ms
+      context: ./servicio/chat-ms
+      docker:
+        dockerfile: Dockerfile
+
+    - image: erickmijael17/ecom-notification-ms
+      context: ./servicio/notification-ms
+      docker:
+        dockerfile: Dockerfile
+
+    - image: erickmijael17/ecom-media-ms
+      context: ./servicio/media-ms
+      docker:
+        dockerfile: Dockerfile
+
+    - image: erickmijael17/ecom-favoritos-ms
+      context: ./servicio/favoritos-ms
+      docker:
+        dockerfile: Dockerfile
+
+    - image: erickmijael17/ecom-search-ms
+      context: ./servicio/search-ms
+      docker:
+        dockerfile: Dockerfile
+
+deploy:
+  kustomize:
+    paths:
+      - k8s/base
+
+
+portForward:
+  - resourceType: service
+    resourceName: gateway
+    namespace: ecom
+    port: 8080
+    localPort: 8080
+  - resourceType: service
+    resourceName: eureka
+    namespace: ecom
+    port: 8761
+    localPort: 8761
+  - resourceType: service
+    resourceName: grafana
+    namespace: ecom
+    port: 3000
+    localPort: 3000
+  - resourceType: service
+    resourceName: kafka-ui
+    namespace: ecom
+    port: 8080
+    localPort: 8085

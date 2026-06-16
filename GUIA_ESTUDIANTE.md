@@ -1,170 +1,178 @@
-# Guía del Estudiante: SmartCampus Marketplace
+# Guía del Estudiante: Despliegue de SmartCampus Marketplace en Kubernetes
 
-Esta guía está diseñada para que puedas inicializar, ejecutar y probar el proyecto SmartCampus Marketplace desde cero en cualquier computadora.
-
-## 1. Preparación del Entorno
-
-Antes de empezar, verifica que tienes instalado:
-- **Java JDK 17** (Configura la variable `JAVA_HOME`).
-- **Maven** (Verifica con `mvn -version`).
-- **Docker Desktop** (Asegúrate de que esté iniciado).
-- **Git**.
+Esta guía está diseñada para que puedas desplegar, configurar y probar el proyecto **SmartCampus Marketplace** en un entorno de **Kubernetes** desde cero en cualquier computadora.
 
 ---
 
-## 2. Inicialización en una Nueva Computadora
+## 1. Requisitos del Entorno
 
-### Paso 1: Clonar el repositorio
-```bash
-git clone <url-del-proyecto>
-cd SmartCampus-Marketplace
-```
-
-### Paso 2: Configurar Variables de Entorno
-Copia los archivos de ejemplo `.env.example` a `.env` en las siguientes rutas:
-- `infra/.env`
-- `servicio/auth-ms/.env`
-- `servicio/producto-ms/.env`
-- (Y en cada microservicio que tenga un `.env.example`)
-
-**Nota:** Asegúrate de que el `JWT_SECRET` sea el mismo en `infra/.env` y `servicio/auth-ms/.env`.
+Antes de iniciar, instala y verifica los siguientes componentes:
+- **Java JDK 17** (asegúrate de configurar `JAVA_HOME`).
+- **Maven** (verifica con `mvn -version`).
+- **Docker Desktop** (con Kubernetes local habilitado en la configuración).
+- **Skaffold** (herramienta de compilación y despliegue rápido).
+- **Kubectl** (CLI de Kubernetes).
+- **Helm** (para instalar complementos del clúster).
 
 ---
 
-## 3. Modo Desarrollo (DEV) - Paso a Paso
+## 2. Configuración de DNS Locales
 
-En modo desarrollo, ejecutaremos las bases de datos y Kafka en Docker, pero los microservicios de Spring Boot directamente desde la terminal o tu IDE.
+Dado que el clúster utiliza **Ingress** con nombres de dominio locales para enrutar el tráfico (y cert-manager para HTTPS), debemos mapear estos dominios a tu dirección IP local.
 
-### A. Iniciar Bases de Datos, Kafka y Observabilidad (Docker)
-Ejecuta estos comandos para preparar el entorno de soporte:
+Abre tu archivo de hosts (en Windows: `C:\Windows\System32\drivers\etc\hosts` con permisos de Administrador; en Linux/macOS: `/etc/hosts`) y agrega las siguientes líneas:
 
-```bash
-# 1. Iniciar Kafka (Mensajería)
-cd kafka && docker compose -f compose-dev.yml up -d
-
-# 2. Iniciar Observabilidad (Grafana, Prometheus, Loki)
-cd ../obs && docker compose -f compose-dev.yml up -d
-
-# 3. Iniciar Bases de Datos de los microservicios
-# Debes entrar a cada carpeta en 'servicio/' y ejecutar su compose-dev.yml
-cd ../servicio/auth-ms && docker compose -f compose-dev.yml up -d
-cd ../producto-ms && docker compose -f compose-dev.yml up -d
-cd ../catalogo-ms && docker compose -f compose-dev.yml up -d
-cd ../carrito-ms && docker compose -f compose-dev.yml up -d
-cd ../orden-ms && docker compose -f compose-dev.yml up -d
-cd ../pago-ms && docker compose -f compose-dev.yml up -d
-cd ../inventario-ms && docker compose -f compose-dev.yml up -d
+```text
+127.0.0.1   api.smartcampus.local
+127.0.0.1   keycloak.smartcampus.local
+127.0.0.1   grafana.smartcampus.local
 ```
 
-### B. Iniciar Servicios de Infraestructura (Spring Boot - Maven)
-Abre una terminal para cada uno y ejecuta en este orden:
+---
 
-1. **Config Server** (Puerto 18888):
-   ```bash
-   cd infra/config
-   ./mvnw spring-boot:run
+## 3. Guía de Despliegue Paso a Paso (Desde Cero)
+
+Sigue estos pasos en orden secuencial para aprovisionar tu clúster de Kubernetes:
+
+### Paso 1: Instalar Ingress-Nginx Controller
+El controlador Ingress se encarga de recibir el tráfico HTTP/HTTPS externo y enviarlo a los servicios correctos.
+Instálalo en tu clúster ejecutando:
+```bash
+helm upgrade --install ingress-nginx ingress-nginx \
+  --repo https://kubernetes.github.io/ingress-nginx \
+  --namespace ingress-nginx --create-namespace
+```
+*Espera a que los pods de Ingress estén corriendo (`kubectl get pods -n ingress-nginx`).*
+
+### Paso 2: Instalar Cert-Manager
+Cert-Manager gestiona de forma automatizada los certificados TLS/HTTPS dentro de tu clúster.
+Instálalo ejecutando:
+```bash
+helm upgrade --install cert-manager cert-manager \
+  --repo https://charts.jetstack.io \
+  --namespace cert-manager --create-namespace \
+  --set installCRDs=true
+```
+*Espera a que cert-manager esté completamente listo (`kubectl get pods -n cert-manager`).*
+
+### Paso 3: Inicializar la Base de Datos de Keycloak y Keycloak
+Keycloak se encarga de centralizar la identidad de tus usuarios y los roles (**`ADMIN`**, **`ESTUDIANTE`**, **`VENDEDOR`**, **`MODERADOR`**).
+
+Despliega el motor PostgreSQL y el servidor Keycloak aplicando la Kustomización:
+```bash
+kubectl apply -k infra/keycloak/k8s/
+```
+*Esto creará la base de datos persistente, importará el realm `smartcampus` y arrancará Keycloak.*
+
+### Paso 4: Desplegar el Config Server & Secreto Global
+Para propagar las propiedades OAuth2 a todos los microservicios, primero levantamos las propiedades comunes y los secretos compartidos:
+```bash
+# Crear secretos globales (Credenciales Grafana y JWT)
+kubectl apply -f k8s/base/ecom-global-secret.yaml
+
+# Crear el emisor de certificados cert-manager (SSL)
+kubectl apply -f k8s/base/cert-manager-issuer.yaml
+
+# Desplegar Config Server
+kubectl apply -k infra/config/k8s/
+```
+
+### Paso 5: Desplegar Eureka, Gateway y Kafka
+```bash
+# 1. Desplegar Eureka Server (Service Discovery)
+kubectl apply -f infra/eureka/k8s/
+
+# 2. Desplegar API Gateway con Ingress TLS
+kubectl apply -f infra/gateway/k8s/
+
+# 3. Desplegar Clúster Apache Kafka
+kubectl apply -f kafka/k8s/
+```
+
+### Paso 6: Desplegar Microservicios de Negocio
+Despliega todos los microservicios Java pre-configurados como Resource Servers:
+```bash
+kubectl apply -f servicio/auth-ms/k8s/
+kubectl apply -f servicio/calificacion-ms/k8s/
+kubectl apply -f servicio/carrito-ms/k8s/
+kubectl apply -f servicio/catalogo-ms/k8s/
+kubectl apply -f servicio/categoria-ms/k8s/
+kubectl apply -f servicio/chat-ms/k8s/
+kubectl apply -f servicio/favoritos-ms/k8s/
+kubectl apply -f servicio/inventario-ms/k8s/
+kubectl apply -f servicio/media-ms/k8s/
+kubectl apply -f servicio/notification-ms/k8s/
+kubectl apply -f servicio/orden-ms/k8s/
+kubectl apply -f servicio/pago-ms/k8s/
+kubectl apply -f servicio/persona-ms/k8s/
+kubectl apply -f servicio/producto-ms/k8s/
+kubectl apply -f servicio/publicacion-ms/k8s/
+kubectl apply -f servicio/search-ms/k8s/
+```
+
+### Paso 7: Desplegar el Stack de Observabilidad
+Instala el monitoreo centralizado (Loki, Promtail, Prometheus y Grafana con Ingress TLS):
+```bash
+kubectl apply -f obs/k8s/
+```
+
+---
+
+## 4. Despliegue Rápido en un Solo Comando (Skaffold)
+
+Si estás desarrollando activamente y quieres compilar imágenes de código local, sincronizar cambios en caliente y desplegar todo de una sola vez, utiliza **Skaffold** desde la raíz del proyecto:
+
+```bash
+skaffold dev --load-restrictor=LoadRestrictionsNone
+```
+*Skaffold se encargará de compilar los microservicios mediante Maven y cargarlos en Kubernetes por ti.*
+
+---
+
+## 5. Accesos y Credenciales
+
+Una vez completado el despliegue, puedes acceder a las plataformas web:
+
+| Plataforma | URL | Credenciales |
+| :--- | :--- | :--- |
+| **API Gateway** | `https://api.smartcampus.local` | Endpoint público unificado |
+| **Keycloak Admin** | `https://keycloak.smartcampus.local` | Usuario: `admin` / Clave: `admin_secure_pass_2026` |
+| **Grafana** | `https://grafana.smartcampus.local` | Usuario: `admin` / Clave: `grafana_secure_pass_2026` |
+| **Eureka Discovery** | `http://localhost:8761` (port-forward) | Panel de monitoreo de servicios Java |
+
+*Nota: Para habilitar el puerto de Eureka localmente, ejecuta:*
+```bash
+kubectl port-forward svc/eureka 8761:8761 -n ecom
+```
+
+---
+
+## 6. ¿Cómo Probar la Autenticación y Autorización?
+
+### Flujo de Autenticación de Retrocompatibilidad
+El microservicio `auth-ms` actúa como un proxy transparente de transición hacia Keycloak. Para obtener un Token JWT firmado por Keycloak:
+
+1. Realiza una petición `POST` a la ruta antigua:
+   ```http
+   POST https://api.smartcampus.local/auth/login
+   Content-Type: application/json
+
+   {
+     "username": "usuario_prueba",
+     "password": "clave_usuario"
+   }
    ```
-2. **Eureka Server** (Puerto 18761):
-   ```bash
-   cd ../eureka
-   ./mvnw spring-boot:run
-   ```
-3. **API Gateway** (Puerto 18080):
-   ```bash
-   cd ../gateway
-   ./mvnw spring-boot:run
-   ```
+2. La respuesta contendrá el Token JWT emitido por Keycloak, sus roles y datos de expiración.
 
-### C. Iniciar Microservicios de Negocio (Spring Boot - Maven)
-Para cada microservicio dentro de la carpeta `servicio/`, abre una terminal y ejecuta:
+### Consumir Recursos Protegidos por Rol
+Los microservicios validan dinámicamente la firma del JWT usando JWKS y extraen las autoridades del claim `realm_access.roles`.
 
-```bash
-# Ejemplo para Auth MS
-cd servicio/auth-ms
-./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
-
-# Ejemplo para Producto MS
-cd ../producto-ms
-./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
-
-# Repetir para: catalogo-ms, carrito-ms, orden-ms, pago-ms, inventario-ms
-```
+* **Prueba 1 (Acceso Concedido)**: Realiza un `POST` a `/api/v1/productos/` (que requiere rol `ADMIN`) incluyendo el header `Authorization: Bearer <TU_TOKEN_JWT_ADMIN>`. Obtendrás una respuesta exitosa (HTTP 201/200).
+* **Prueba 2 (Acceso Denegado)**: Realiza la misma petición con un token de rol normal (ej. `ESTUDIANTE`). Obtendrás un error HTTP 403 Forbidden.
 
 ---
 
-## 4. De Desarrollo (DEV) a Producción (PROD)
+## 7. Resolución de Problemas
 
-En el entorno de **PROD**, simplificamos todo el despliegue usando contenedores. No necesitas ejecutar Maven manualmente, ya que Docker se encarga de compilar y empaquetar los servicios.
-
-### Paso 1: Preparar el Entorno
-Asegúrate de haber cerrado todas las aplicaciones Java que iniciaste en el modo DEV y haber detenido los contenedores de desarrollo:
-```bash
-# Detener contenedores de desarrollo
-cd kafka && docker compose -f compose-dev.yml down
-cd ../obs && docker compose -f compose-dev.yml down
-# (Opcional) Detener BDs de servicios
-cd ../servicio/auth-ms && docker compose -f compose-dev.yml down
-```
-
-### Paso 2: Despliegue Total con Docker Compose
-Desde la raíz del proyecto, usaremos el archivo `compose.yml` de la carpeta `infra` que está configurado para orquestar todo el sistema (incluyendo Kafka, Observabilidad y Servicios).
-
-```bash
-cd infra
-# Levantar todo el ecosistema (compila imágenes y levanta contenedores)
-docker compose up -d --build
-```
-
-*Nota: Este proceso puede tardar varios minutos la primera vez mientras se descargan las imágenes base y se compilan los microservicios.*
-
-### Paso 3: Verificación del Despliegue
-Una vez que Docker termine, verifica que todos los contenedores estén corriendo:
-```bash
-docker compose ps
-```
-
-### Diferencia de Puertos y URLs en PROD:
-- **API Gateway (Entrada única)**: `http://localhost:28082`
-- **Eureka Dashboard**: `http://localhost:28761`
-- **Config Server**: `http://localhost:28888/catalogo-ms/prod`
-- **Grafana**: `http://localhost:23000`
-- **Kafka UI**: `http://localhost:28085`
-
-### Verificación en PROD:
-1. Accede al Eureka de PROD: `http://localhost:28761`. Deberías ver todos los microservicios registrados.
-2. Revisa el estado del Gateway: `http://localhost:28082/actuator/health`.
-3. Los logs centralizados estarán en Grafana PROD: `http://localhost:23000`.
-
----
-
-## 5. ¿Cómo Probar el Proyecto?
-
-### A. Flujo de Prueba Sugerido
-1. **Registro/Login**:
-   - Envía un `POST` a `http://localhost:18080/auth/register` para crear un usuario.
-   - Envía un `POST` a `http://localhost:18080/auth/login` para obtener tu **Token JWT**.
-2. **Uso del Token**:
-   - Para los demás servicios, debes incluir el encabezado: `Authorization: Bearer <TU_TOKEN_JWT>`.
-3. **Explorar Productos**:
-   - `GET http://localhost:18080/producto`
-4. **Comprar**:
-   - Agrega al carrito -> Crea una orden -> El servicio de pagos procesará la orden automáticamente vía Kafka.
-
-### B. Dashboards de Control y Documentación
-- **Eureka (Ver servicios activos)**: `http://localhost:18761` (DEV) o `http://localhost:28761` (PROD).
-- **Kafka UI (Ver mensajes)**: `http://localhost:41085` (DEV).
-- **Grafana (Métricas y Logs)**: `http://localhost:13000` (DEV) - Usuario: `admin` / Clave: `admin`.
-- **Swagger (Documentación de API)**:
-  Cada microservicio tiene su propia documentación Swagger accesible a través del Gateway en modo DEV:
-  - Auth: `http://localhost:18080/auth-ms/swagger-ui/index.html`
-  - Producto: `http://localhost:18080/producto-ms/swagger-ui/index.html`
-  - Carrito: `http://localhost:18080/carrito-ms/swagger-ui/index.html`
-  - (Y así sucesivamente para cada microservicio)
-
----
-
-## 6. Resolución de Problemas Comunes
-
-- **Error de conexión a Config Server**: Asegúrate de que `config-server` sea el primero en subir y que el puerto 18888 esté libre.
-- **Microservicio no aparece en Eureka**: Verifica que tenga el perfil `-Dspring-boot.run.profiles=dev` activo.
-- **Docker no inicia**: Verifica que tengas suficiente memoria RAM asignada a Docker Desktop (mínimo 4GB para este proyecto).
+- **El Ingress arroja error de certificado no seguro**: Esto ocurre porque estamos usando un emisor ACME local/Let's Encrypt sobre dominios `.local` que no son públicos. Para saltar la advertencia en tu navegador, haz clic en "Avanzado" -> "Continuar". Para pruebas programáticas o Curl, agrega el flag `-k` o `--insecure`.
+- **Los microservicios tardan en arrancar**: Todos los pods tienen contenedores de inicialización (`initContainers`) que esperan a que el Config Server, Eureka y la base de datos respectiva estén listos. Si un pod no inicia, revisa su estado con `kubectl describe pod <nombre_pod> -n ecom`.

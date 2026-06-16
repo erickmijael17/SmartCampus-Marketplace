@@ -1,12 +1,13 @@
 spring:
   cloud:
     gateway:
+      default-filters:
+        - TokenRelay
       routes:
-        - id: auth-route
-          uri: lb://auth-ms
+        - id: keycloak-route
+          uri: http://keycloak:8080
           predicates:
             - Path=/auth/**
-
         - id: catalogo-route
           uri: lb://catalogo-ms
           predicates:
@@ -15,8 +16,6 @@ spring:
           uri: lb://catalogo-ms
           predicates:
             - Path=/api/v1/catalogo/instancia
-
-        # PRODUCTO
         - id: producto-route
           uri: lb://producto-ms
           predicates:
@@ -25,30 +24,34 @@ spring:
           uri: lb://producto-ms
           predicates:
             - Path=/api/v1/producto/instancia
-
-        # ORDEN
         - id: orden-route
           uri: lb://orden-ms
           predicates:
             - Path=/api/v1/ordenes/**
-
-        # PAGO
         - id: pago-route
           uri: lb://pago-ms
           predicates:
             - Path=/api/v1/pagos/**
-
-        # CARRITO
         - id: carrito-route
           uri: lb://carrito-ms
           predicates:
             - Path=/api/v1/carritos/**
-
-        # INVENTARIO
         - id: inventario-route
           uri: lb://inventario-ms
           predicates:
             - Path=/api/v1/inventarios/**
+  security:
+    oauth2:
+      client:
+        registration:
+          keycloak:
+            client-id: marketplace-client
+            authorization-grant-type: authorization_code
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            scope: openid,profile,email
+        provider:
+          keycloak:
+            issuer-uri: http://keycloak.ecom.svc.cluster.local:8080/realms/smartcampus
 
 eureka:
   client:
@@ -64,7 +67,3 @@ management:
     metrics:
       export:
         enabled: true
-
-jwt:
-  secret: ${JWT_SECRET:1s3alJJATsWK91vf5zrODYlQa+LauM/9udaLZlQhHlpu46g/KzmSS5c3CGy6xF9kzAqBhvjmKBuZO/pSL7tfOg==}
-  issuer: auth

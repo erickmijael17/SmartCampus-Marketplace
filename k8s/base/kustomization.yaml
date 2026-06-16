@@ -1,0 +1,54 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: ecom
+
+resources:
+  - cert-manager-issuer.yaml
+  - ecom-global-secret.yaml
+
+  # Infra Keycloak (Directorio con kustomization.yaml)
+  - ../../infra/keycloak/k8s
+  
+  # Config Server (Directorio con kustomization.yaml)
+  - ../../infra/config/k8s
+  
+  # Eureka
+  - ../../infra/eureka/k8s/deployment.yaml
+  - ../../infra/eureka/k8s/service.yaml
+  
+  # Gateway
+  - ../../infra/gateway/k8s/deployment.yaml
+  - ../../infra/gateway/k8s/service.yaml
+  - ../../infra/gateway/k8s/ingress.yaml
+  
+  # Kafka
+  - ../../kafka/k8s/statefulset.yaml
+  - ../../kafka/k8s/service.yaml
+  - ../../kafka/k8s/kafka-ui.yaml
+  - ../../kafka/k8s/kafka-exporter.yaml
+  
+  # Observabilidad
+  - ../../obs/k8s/loki.yaml
+  - ../../obs/k8s/promtail.yaml
+  - ../../obs/k8s/prometheus-configmap.yaml
+  - ../../obs/k8s/prometheus.yaml
+  - ../../obs/k8s/grafana.yaml
+  
+  # Microservicios
+  - ../../servicio/auth-ms/k8s/auth-ms.yaml
+  - ../../servicio/calificacion-ms/k8s/calificacion-ms.yaml
+  - ../../servicio/carrito-ms/k8s/carrito-ms.yaml
+  - ../../servicio/catalogo-ms/k8s/catalogo-ms.yaml
+  - ../../servicio/categoria-ms/k8s/categoria-ms.yaml
+  - ../../servicio/chat-ms/k8s/chat-ms.yaml
+  - ../../servicio/favoritos-ms/k8s/favoritos-ms.yaml
+  - ../../servicio/inventario-ms/k8s/inventario-ms.yaml
+  - ../../servicio/media-ms/k8s/media-ms.yaml
+  - ../../servicio/notification-ms/k8s/notification-ms.yaml
+  - ../../servicio/orden-ms/k8s/orden-ms.yaml
+  - ../../servicio/pago-ms/k8s/pago-ms.yaml
+  - ../../servicio/persona-ms/k8s/persona-ms.yaml
+  - ../../servicio/producto-ms/k8s/producto-ms.yaml
+  - ../../servicio/publicacion-ms/k8s/publicacion-ms.yaml
+  - ../../servicio/search-ms/k8s/search-ms.yaml

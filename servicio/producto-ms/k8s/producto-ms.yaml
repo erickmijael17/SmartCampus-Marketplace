@@ -1,0 +1,259 @@
+# =============================================================================
+# PRODUCTO-MS: Secret + PostgreSQL + Microservicio + HPA
+# =============================================================================
+
+# --- Secret ---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: producto-ms-secret
+  namespace: ecom
+  labels:
+    app: producto-ms
+    app.kubernetes.io/component: microservice
+type: Opaque
+stringData:
+  db-name: "producto_db"
+  db-user: "producto_user"
+  db-pass: "producto_db_secure_2024"
+---
+# --- PVC para PostgreSQL ---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: producto-ms-postgres-pvc
+  namespace: ecom
+  labels:
+    app: postgres-producto
+    app.kubernetes.io/component: microservice
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+---
+# --- PostgreSQL Deployment ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-producto
+  namespace: ecom
+  labels:
+    app: postgres-producto
+    app.kubernetes.io/component: microservice
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres-producto
+  template:
+    metadata:
+      labels:
+        app: postgres-producto
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: producto-ms-secret
+                  key: db-name
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: producto-ms-secret
+                  key: db-user
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: producto-ms-secret
+                  key: db-pass
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/data
+          livenessProbe:
+            exec:
+              command: ["pg_isready", "-U", "producto_user", "-d", "producto_db"]
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+      volumes:
+        - name: postgres-data
+          persistentVolumeClaim:
+            claimName: producto-ms-postgres-pvc
+---
+# --- PostgreSQL Service ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-producto
+  namespace: ecom
+  labels:
+    app: postgres-producto
+spec:
+  type: ClusterIP
+  selector:
+    app: postgres-producto
+  ports:
+    - port: 5432
+      targetPort: 5432
+---
+# --- Microservicio Deployment ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: producto-ms
+  namespace: ecom
+  labels:
+    app: producto-ms
+    app.kubernetes.io/component: microservice
+    app.kubernetes.io/version: "latest"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: producto-ms
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: producto-ms
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/actuator/prometheus"
+        prometheus.io/port: "8080"
+    spec:
+      initContainers:
+        - name: wait-for-config-server
+          image: curlimages/curl:8.5.0
+          command: ["sh", "-c", "until curl -sf http://config-server:8888/actuator/health; do echo waiting; sleep 5; done"]
+        - name: wait-for-eureka
+          image: curlimages/curl:8.5.0
+          command: ["sh", "-c", "until curl -sf http://eureka:8761/actuator/health; do echo waiting; sleep 5; done"]
+        - name: wait-for-db
+          image: postgres:16-alpine
+          command:
+            - sh
+            - -c
+            - until pg_isready -h postgres-producto -p 5432 -U producto_user; do echo waiting for DB; sleep 3; done
+      containers:
+        - name: producto-ms
+          image: erickmijael17/ecom-producto-ms:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+              name: http
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "prod"
+            - name: CONFIG_SERVER_URL
+              value: "http://config-server:8888"
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: ecom-global-secret
+                  key: jwt-secret
+            - name: DB_HOST
+              value: "postgres-producto"
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: producto-ms-secret
+                  key: db-name
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: producto-ms-secret
+                  key: db-user
+            - name: DB_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: producto-ms-secret
+                  key: db-pass
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            initialDelaySeconds: 120
+            periodSeconds: 15
+            failureThreshold: 5
+            timeoutSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            initialDelaySeconds: 90
+            periodSeconds: 10
+            failureThreshold: 10
+            timeoutSeconds: 10
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"
+---
+# --- Service ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: producto-ms
+  namespace: ecom
+  labels:
+    app: producto-ms
+    app.kubernetes.io/component: microservice
+spec:
+  type: ClusterIP
+  selector:
+    app: producto-ms
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+---
+# --- HPA ---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: producto-ms-hpa
+  namespace: ecom
+  labels:
+    app: producto-ms
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: producto-ms
+  minReplicas: 1
+  maxReplicas: 3
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80

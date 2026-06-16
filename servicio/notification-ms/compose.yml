@@ -1,0 +1,57 @@
+﻿name: ecom-notification-ms-prod
+
+services:
+  postgres-notification-ms:
+    image: postgres:16-alpine
+    container_name: ecom-postgres-notification-ms
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    volumes:
+      - ecom_notification_data:/var/lib/postgresql/data
+    ports:
+      - '25438:5432'
+    networks:
+      - ecom-notification-ms-int
+
+  notification-ms:
+    build: .
+    container_name: ecom-notification-ms
+    restart: unless-stopped
+    depends_on:
+      postgres-notification-ms:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+      CONFIG_SERVER_URL: ${CONFIG_SERVER_URL}
+      JWT_SECRET: ${JWT_SECRET}
+      DB_HOST: ecom-postgres-notification-ms
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+    ports:
+      - '8048:8080'
+    volumes:
+      - ./logs:/app/logs
+    networks:
+      - ecom-notification-ms-int
+      - ecom-prod-net
+
+volumes:
+  ecom_notification_data:
+
+networks:
+  ecom-prod-net:
+    external: true
+    name: ecom-prod-net
+  ecom-notification-ms-int:
+    name: ecom-notification-ms-int

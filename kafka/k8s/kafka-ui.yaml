@@ -1,0 +1,74 @@
+# =============================================================================
+# DEPLOYMENT + SERVICE: kafka-ui
+# Interfaz web para gestión y monitoreo de Kafka.
+# Accesible via: kubectl port-forward svc/kafka-ui 8085:8080 -n ecom
+# =============================================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka-ui
+  namespace: ecom
+  labels:
+    app: kafka-ui
+    app.kubernetes.io/component: messaging
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kafka-ui
+  template:
+    metadata:
+      labels:
+        app: kafka-ui
+    spec:
+      initContainers:
+        - name: wait-for-kafka
+          image: curlimages/curl:8.5.0
+          command:
+            - sh
+            - -c
+            - |
+              until nc -zv kafka 9092 2>/dev/null; do
+                echo "Esperando Kafka..."; sleep 5
+              done
+      containers:
+        - name: kafka-ui
+          image: provectuslabs/kafka-ui:latest
+          ports:
+            - containerPort: 8080
+              name: http
+          env:
+            - name: KAFKA_CLUSTERS_0_NAME
+              value: "production"
+            - name: KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS
+              value: "kafka:9092"
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 15
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-ui
+  namespace: ecom
+  labels:
+    app: kafka-ui
+    app.kubernetes.io/component: messaging
+spec:
+  type: ClusterIP
+  selector:
+    app: kafka-ui
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080

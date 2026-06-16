@@ -1,0 +1,232 @@
+# =============================================================================
+# PUBLICACION-MS: Secret + PostgreSQL + Microservicio + HPA
+# Gestión de publicaciones del marketplace del campus
+# Incluye Circuit Breaker para llamadas a media-ms
+# =============================================================================
+apiVersion: v1
+kind: Secret
+metadata:
+  name: publicacion-ms-secret
+  namespace: ecom
+  labels:
+    app: publicacion-ms
+type: Opaque
+stringData:
+  db-name: "publicacion_db"
+  db-user: "publicacion_user"
+  db-pass: "publicacion_db_secure_2024"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: publicacion-ms-postgres-pvc
+  namespace: ecom
+  labels:
+    app: postgres-publicacion
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 3Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-publicacion
+  namespace: ecom
+  labels:
+    app: postgres-publicacion
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres-publicacion
+  template:
+    metadata:
+      labels:
+        app: postgres-publicacion
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: publicacion-ms-secret
+                  key: db-name
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: publicacion-ms-secret
+                  key: db-user
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: publicacion-ms-secret
+                  key: db-pass
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/data
+          livenessProbe:
+            exec:
+              command: ["pg_isready", "-U", "publicacion_user", "-d", "publicacion_db"]
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+      volumes:
+        - name: postgres-data
+          persistentVolumeClaim:
+            claimName: publicacion-ms-postgres-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-publicacion
+  namespace: ecom
+spec:
+  type: ClusterIP
+  selector:
+    app: postgres-publicacion
+  ports:
+    - port: 5432
+      targetPort: 5432
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: publicacion-ms
+  namespace: ecom
+  labels:
+    app: publicacion-ms
+    app.kubernetes.io/component: microservice
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: publicacion-ms
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: publicacion-ms
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/actuator/prometheus"
+        prometheus.io/port: "8080"
+    spec:
+      initContainers:
+        - name: wait-for-config-server
+          image: curlimages/curl:8.5.0
+          command: ["sh", "-c", "until curl -sf http://config-server:8888/actuator/health; do sleep 5; done"]
+        - name: wait-for-eureka
+          image: curlimages/curl:8.5.0
+          command: ["sh", "-c", "until curl -sf http://eureka:8761/actuator/health; do sleep 5; done"]
+        - name: wait-for-db
+          image: postgres:16-alpine
+          command: ["sh", "-c", "until pg_isready -h postgres-publicacion -p 5432 -U publicacion_user; do sleep 3; done"]
+      containers:
+        - name: publicacion-ms
+          image: erickmijael17/ecom-publicacion-ms:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "prod"
+            - name: CONFIG_SERVER_URL
+              value: "http://config-server:8888"
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: ecom-global-secret
+                  key: jwt-secret
+            - name: DB_HOST
+              value: "postgres-publicacion"
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: publicacion-ms-secret
+                  key: db-name
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: publicacion-ms-secret
+                  key: db-user
+            - name: DB_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: publicacion-ms-secret
+                  key: db-pass
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            initialDelaySeconds: 120
+            periodSeconds: 15
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            initialDelaySeconds: 90
+            periodSeconds: 10
+            failureThreshold: 10
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: publicacion-ms
+  namespace: ecom
+  labels:
+    app: publicacion-ms
+spec:
+  type: ClusterIP
+  selector:
+    app: publicacion-ms
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: publicacion-ms-hpa
+  namespace: ecom
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: publicacion-ms
+  minReplicas: 1
+  maxReplicas: 4
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70

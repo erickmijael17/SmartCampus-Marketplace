@@ -1,0 +1,54 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: ecom
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+configMapGenerator:
+  - name: config-repo
+    namespace: ecom
+    files:
+      - ../config-repo/application-dev.yml
+      - ../config-repo/application-prod.yml
+      - ../config-repo/auth-ms-dev.yml
+      - ../config-repo/auth-ms-prod.yml
+      - ../config-repo/carrito-ms-dev.yml
+      - ../config-repo/carrito-ms-prod.yml
+      - ../config-repo/catalogo-ms-dev.yml
+      - ../config-repo/catalogo-ms-prod.yml
+      - ../config-repo/eureka-dev.yml
+      - ../config-repo/eureka-prod.yml
+      - ../config-repo/gateway-dev.yml
+      - ../config-repo/gateway-prod.yml
+      - ../config-repo/inventario-ms-dev.yml
+      - ../config-repo/inventario-ms-prod.yml
+      - ../config-repo/orden-ms-dev.yml
+      - ../config-repo/orden-ms-prod.yml
+      - ../config-repo/pago-ms-dev.yml
+      - ../config-repo/pago-ms-prod.yml
+      - ../config-repo/producto-ms-dev.yml
+      - ../config-repo/producto-ms-prod.yml
+      - ../config-repo/persona-ms-dev.yml
+      - ../config-repo/persona-ms-prod.yml
+      - ../config-repo/publicacion-ms-dev.yml
+      - ../config-repo/publicacion-ms-prod.yml
+      - ../config-repo/categoria-ms-dev.yml
+      - ../config-repo/categoria-ms-prod.yml
+      - ../config-repo/calificacion-ms-dev.yml
+      - ../config-repo/calificacion-ms-prod.yml
+      - ../config-repo/chat-ms-dev.yml
+      - ../config-repo/chat-ms-prod.yml
+      - ../config-repo/notification-ms-dev.yml
+      - ../config-repo/notification-ms-prod.yml
+      - ../config-repo/media-ms-dev.yml
+      - ../config-repo/media-ms-prod.yml
+      - ../config-repo/favoritos-ms-dev.yml
+      - ../config-repo/favoritos-ms-prod.yml
+      - ../config-repo/search-ms-dev.yml
+      - ../config-repo/search-ms-prod.yml
+
+resources:
+  - deployment.yaml
+  - service.yaml

@@ -1,0 +1,150 @@
+# =============================================================================
+# CONFIGMAP: prometheus-config
+# Configuración de Prometheus con todos los microservicios como targets.
+# Usa kubernetes_sd_configs para descubrimiento automático via annotations.
+# =============================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  namespace: ecom
+  labels:
+    app: prometheus
+    app.kubernetes.io/component: observability
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 15s
+      evaluation_interval: 15s
+      external_labels:
+        cluster: 'smartcampus-k8s'
+        environment: 'production'
+
+    scrape_configs:
+      # -----------------------------------------------------------------------
+      # Prometheus self-monitoring
+      # -----------------------------------------------------------------------
+      - job_name: 'prometheus'
+        static_configs:
+          - targets: ['localhost:9090']
+
+      # -----------------------------------------------------------------------
+      # Descubrimiento automático de pods con annotations prometheus.io/scrape
+      # Todos los microservicios Spring Boot tienen estas annotations en su pod.
+      # -----------------------------------------------------------------------
+      - job_name: 'kubernetes-pods'
+        kubernetes_sd_configs:
+          - role: pod
+            namespaces:
+              names:
+                - ecom
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+            action: keep
+            regex: true
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+            action: replace
+            target_label: __metrics_path__
+            regex: (.+)
+          - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+            action: replace
+            regex: ([^:]+)(?::\d+)?;(\d+)
+            replacement: $1:$2
+            target_label: __address__
+          - source_labels: [__meta_kubernetes_pod_label_app]
+            target_label: service
+          - source_labels: [__meta_kubernetes_namespace]
+            target_label: namespace
+
+      # -----------------------------------------------------------------------
+      # Targets estáticos como respaldo (en caso de que las annotations fallen)
+      # -----------------------------------------------------------------------
+      - job_name: 'gateway'
+        metrics_path: /actuator/prometheus
+        static_configs:
+          - targets: ['gateway:8080']
+
+      - job_name: 'auth-ms'
+        metrics_path: /actuator/prometheus
+        static_configs:
+          - targets: ['auth-ms:8080']
+
+      - job_name: 'persona-ms'
+        metrics_path: /actuator/prometheus
+        static_configs:
+          - targets: ['persona-ms:8080']
+
+      - job_name: 'publicacion-ms'
+        metrics_path: /actuator/prometheus
+        static_configs:
+          - targets: ['publicacion-ms:8080']
+
+      - job_name: 'categoria-ms'
+        metrics_path: /actuator/prometheus
+        static_configs:
+          - targets: ['categoria-ms:8080']
+
+      - job_name: 'catalogo-ms'
+        metrics_path: /actuator/prometheus
+        static_configs:
+          - targets: ['catalogo-ms:8080']
+
+      - job_name: 'producto-ms'
+        metrics_path: /actuator/prometheus
+        static_configs:
+          - targets: ['producto-ms:8080']
+
+      - job_name: 'inventario-ms'
+        metrics_path: /actuator/prometheus
+        static_configs:
+          - targets: ['inventario-ms:8080']
+
+      - job_name: 'carrito-ms'
+        metrics_path: /actuator/prometheus
+        static_configs:
+          - targets: ['carrito-ms:8080']
+
+      - job_name: 'orden-ms'
+        metrics_path: /actuator/prometheus
+        static_configs:
+          - targets: ['orden-ms:8080']
+
+      - job_name: 'pago-ms'
+        metrics_path: /actuator/prometheus
+        static_configs:
+          - targets: ['pago-ms:8080']
+
+      - job_name: 'calificacion-ms'
+        metrics_path: /actuator/prometheus
+        static_configs:
+          - targets: ['calificacion-ms:8080']
+
+      - job_name: 'chat-ms'
+        metrics_path: /actuator/prometheus
+        static_configs:
+          - targets: ['chat-ms:8080']
+
+      - job_name: 'notification-ms'
+        metrics_path: /actuator/prometheus
+        static_configs:
+          - targets: ['notification-ms:8080']
+
+      - job_name: 'media-ms'
+        metrics_path: /actuator/prometheus
+        static_configs:
+          - targets: ['media-ms:8080']
+
+      - job_name: 'favoritos-ms'
+        metrics_path: /actuator/prometheus
+        static_configs:
+          - targets: ['favoritos-ms:8080']
+
+      - job_name: 'search-ms'
+        metrics_path: /actuator/prometheus
+        static_configs:
+          - targets: ['search-ms:8080']
+
+      - job_name: 'kafka-exporter'
+        metrics_path: /metrics
+        static_configs:
+          - targets: ['kafka-exporter:9308']

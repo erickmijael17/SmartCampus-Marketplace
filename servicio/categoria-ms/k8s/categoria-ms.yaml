@@ -1,0 +1,231 @@
+# =============================================================================
+# CATEGORIA-MS: Secret + PostgreSQL + Microservicio + HPA
+# Gestión del catálogo de categorías del marketplace
+# =============================================================================
+apiVersion: v1
+kind: Secret
+metadata:
+  name: categoria-ms-secret
+  namespace: ecom
+  labels:
+    app: categoria-ms
+type: Opaque
+stringData:
+  db-name: "categoria_db"
+  db-user: "categoria_user"
+  db-pass: "categoria_db_secure_2024"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: categoria-ms-postgres-pvc
+  namespace: ecom
+  labels:
+    app: postgres-categoria
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-categoria
+  namespace: ecom
+  labels:
+    app: postgres-categoria
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres-categoria
+  template:
+    metadata:
+      labels:
+        app: postgres-categoria
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: categoria-ms-secret
+                  key: db-name
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: categoria-ms-secret
+                  key: db-user
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: categoria-ms-secret
+                  key: db-pass
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/data
+          livenessProbe:
+            exec:
+              command: ["pg_isready", "-U", "categoria_user", "-d", "categoria_db"]
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "50m"
+            limits:
+              memory: "256Mi"
+              cpu: "300m"
+      volumes:
+        - name: postgres-data
+          persistentVolumeClaim:
+            claimName: categoria-ms-postgres-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-categoria
+  namespace: ecom
+spec:
+  type: ClusterIP
+  selector:
+    app: postgres-categoria
+  ports:
+    - port: 5432
+      targetPort: 5432
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: categoria-ms
+  namespace: ecom
+  labels:
+    app: categoria-ms
+    app.kubernetes.io/component: microservice
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: categoria-ms
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: categoria-ms
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/actuator/prometheus"
+        prometheus.io/port: "8080"
+    spec:
+      initContainers:
+        - name: wait-for-config-server
+          image: curlimages/curl:8.5.0
+          command: ["sh", "-c", "until curl -sf http://config-server:8888/actuator/health; do sleep 5; done"]
+        - name: wait-for-eureka
+          image: curlimages/curl:8.5.0
+          command: ["sh", "-c", "until curl -sf http://eureka:8761/actuator/health; do sleep 5; done"]
+        - name: wait-for-db
+          image: postgres:16-alpine
+          command: ["sh", "-c", "until pg_isready -h postgres-categoria -p 5432 -U categoria_user; do sleep 3; done"]
+      containers:
+        - name: categoria-ms
+          image: erickmijael17/ecom-categoria-ms:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "prod"
+            - name: CONFIG_SERVER_URL
+              value: "http://config-server:8888"
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: ecom-global-secret
+                  key: jwt-secret
+            - name: DB_HOST
+              value: "postgres-categoria"
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: categoria-ms-secret
+                  key: db-name
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: categoria-ms-secret
+                  key: db-user
+            - name: DB_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: categoria-ms-secret
+                  key: db-pass
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            initialDelaySeconds: 120
+            periodSeconds: 15
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            initialDelaySeconds: 90
+            periodSeconds: 10
+            failureThreshold: 10
+          resources:
+            requests:
+              memory: "384Mi"
+              cpu: "150m"
+            limits:
+              memory: "768Mi"
+              cpu: "750m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: categoria-ms
+  namespace: ecom
+  labels:
+    app: categoria-ms
+spec:
+  type: ClusterIP
+  selector:
+    app: categoria-ms
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: categoria-ms-hpa
+  namespace: ecom
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: categoria-ms
+  minReplicas: 1
+  maxReplicas: 2
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70

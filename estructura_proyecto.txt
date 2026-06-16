@@ -1,0 +1,852 @@
+SmartCampus-Marketplace/
+├── .github/
+│   ├── java-upgrade/
+│   │   └── hooks/
+│   │       └── scripts/
+│   │           ├── recordToolUse.ps1
+│   │           └── recordToolUse.sh
+│   ├── modernize/
+│   │   └── java-upgrade/
+│   │       └── hooks/
+│   │           └── scripts/
+│   │               ├── recordToolUse.ps1
+│   │               └── recordToolUse.sh
+│   └── workflows/
+│       └── k8s-deploy.yml
+├── GUIA_ESTUDIANTE.md
+├── Makefile
+├── README.md
+├── infra/
+│   ├── .env
+│   ├── .env.example
+│   ├── README.md
+│   ├── compose.yml
+│   ├── config/
+│   │   ├── Dockerfile
+│   │   ├── config-repo/
+│   │   │   ├── application-dev.yml
+│   │   │   ├── application-prod.yml
+│   │   │   ├── auth-ms-dev.yml
+│   │   │   ├── auth-ms-prod.yml
+│   │   │   ├── calificacion-ms-dev.yml
+│   │   │   ├── calificacion-ms-prod.yml
+│   │   │   ├── carrito-ms-dev.yml
+│   │   │   ├── carrito-ms-prod.yml
+│   │   │   ├── catalogo-ms-dev.yml
+│   │   │   ├── catalogo-ms-prod.yml
+│   │   │   ├── categoria-ms-dev.yml
+│   │   │   ├── categoria-ms-prod.yml
+│   │   │   ├── chat-ms-dev.yml
+│   │   │   ├── chat-ms-prod.yml
+│   │   │   ├── eureka-dev.yml
+│   │   │   ├── eureka-prod.yml
+│   │   │   ├── favoritos-ms-dev.yml
+│   │   │   ├── favoritos-ms-prod.yml
+│   │   │   ├── gateway-dev.yml
+│   │   │   ├── gateway-prod.yml
+│   │   │   ├── inventario-ms-dev.yml
+│   │   │   ├── inventario-ms-prod.yml
+│   │   │   ├── media-ms-dev.yml
+│   │   │   ├── media-ms-prod.yml
+│   │   │   ├── notification-ms-dev.yml
+│   │   │   ├── notification-ms-prod.yml
+│   │   │   ├── orden-ms-dev.yml
+│   │   │   ├── orden-ms-prod.yml
+│   │   │   ├── pago-ms-dev.yml
+│   │   │   ├── pago-ms-prod.yml
+│   │   │   ├── persona-ms-dev.yml
+│   │   │   ├── persona-ms-prod.yml
+│   │   │   ├── producto-ms-dev.yml
+│   │   │   ├── producto-ms-prod.yml
+│   │   │   ├── publicacion-ms-dev.yml
+│   │   │   ├── publicacion-ms-prod.yml
+│   │   │   ├── search-ms-dev.yml
+│   │   │   └── search-ms-prod.yml
+│   │   ├── k8s/
+│   │   │   ├── deployment.yaml
+│   │   │   ├── kustomization.yaml
+│   │   │   └── service.yaml
+│   │   ├── pom.xml
+│   │   └── src/
+│   │       ├── main/
+│   │       │   ├── java/
+│   │       │   │   └── com/
+│   │       │   │       └── upeu/
+│   │       │   │           └── configserver/
+│   │       │   │               └── ConfigServerApplication.java
+│   │       │   └── resources/
+│   │       │       └── application.yml
+│   │       └── test/
+│   │           └── java/
+│   │               └── com/
+│   │                   └── upeu/
+│   │                       └── configserver/
+│   │                           └── ConfigServerApplicationTests.java
+│   ├── eureka/
+│   │   ├── Dockerfile
+│   │   ├── k8s/
+│   │   │   ├── deployment.yaml
+│   │   │   └── service.yaml
+│   │   ├── pom.xml
+│   │   └── src/
+│   │       ├── main/
+│   │       │   ├── java/
+│   │       │   │   └── com/
+│   │       │   │       └── upeu/
+│   │       │   │           └── registryserver/
+│   │       │   │               └── RegistryServerApplication.java
+│   │       │   └── resources/
+│   │       │       └── application.yml
+│   │       └── test/
+│   │           └── java/
+│   │               └── com/
+│   │                   └── upeu/
+│   │                       └── registryserver/
+│   │                           └── RegistryServerApplicationTests.java
+│   ├── gateway/
+│   │   ├── Dockerfile
+│   │   ├── README.md
+│   │   ├── k8s/
+│   │   │   ├── deployment.yaml
+│   │   │   ├── ingress.yaml
+│   │   │   └── service.yaml
+│   │   ├── pom.xml
+│   │   └── src/
+│   │       ├── main/
+│   │       │   ├── java/
+│   │       │   │   └── com/
+│   │       │   │       └── upeu/
+│   │       │   │           └── gateway/
+│   │       │   │               ├── GatewayApplication.java
+│   │       │   │               ├── config/
+│   │       │   │               │   ├── CorsGlobalConfig.java
+│   │       │   │               │   └── SecurityConfig.java
+│   │       │   │               └── filter/
+│   │       │   │                   └── TraceIdGlobalFilter.java
+│   │       │   └── resources/
+│   │       │       ├── application.yml
+│   │       │       └── logback-spring.xml
+│   │       └── test/
+│   │           └── java/
+│   │               └── com/
+│   │                   └── upeu/
+│   │                       └── gateway/
+│   │                           └── GatewayApplicationTests.java
+│   └── keycloak/
+│       └── k8s/
+│           ├── keycloak-db.yaml
+│           ├── keycloak.yaml
+│           ├── kustomization.yaml
+│           └── realm-import.json
+├── k8s/
+│   └── base/
+│       ├── cert-manager-issuer.yaml
+│       ├── ecom-global-secret.yaml
+│       └── kustomization.yaml
+├── kafka/
+│   ├── README.md
+│   ├── compose-dev.yml
+│   ├── compose.yml
+│   └── k8s/
+│       ├── kafka-exporter.yaml
+│       ├── kafka-ui.yaml
+│       ├── service.yaml
+│       └── statefulset.yaml
+├── obs/
+│   ├── README.md
+│   ├── compose-dev.yml
+│   ├── compose.yml
+│   ├── grafana/
+│   │   └── provisioning/
+│   │       └── datasources/
+│   │           └── datasources.yml
+│   ├── k8s/
+│   │   ├── grafana.yaml
+│   │   ├── loki.yaml
+│   │   ├── prometheus-configmap.yaml
+│   │   ├── prometheus.yaml
+│   │   └── promtail.yaml
+│   ├── loki/
+│   │   └── config.yml
+│   ├── prometheus/
+│   │   ├── prometheus-dev.yml
+│   │   └── prometheus.yml
+│   └── promtail/
+│       └── config.yml
+├── servicio/
+│   ├── CampusMarket-Documentacion.md
+│   ├── auth-ms/
+│   │   ├── .env
+│   │   ├── .env.example
+│   │   ├── Dockerfile
+│   │   ├── README.md
+│   │   ├── compose-dev.yml
+│   │   ├── compose.yml
+│   │   ├── k8s/
+│   │   │   └── auth-ms.yaml
+│   │   ├── pom.xml
+│   │   └── src/
+│   │       ├── main/
+│   │       │   ├── java/
+│   │       │   │   └── com/
+│   │       │   │       └── upeu/
+│   │       │   │           └── auth/
+│   │       │   │               ├── AuthApplication.java
+│   │       │   │               ├── config/
+│   │       │   │               │   ├── DataInitializer.java
+│   │       │   │               │   └── SecurityConfig.java
+│   │       │   │               ├── controller/
+│   │       │   │               │   └── AuthController.java
+│   │       │   │               ├── dto/
+│   │       │   │               │   ├── AuthLoginRequest.java
+│   │       │   │               │   └── AuthLoginResponse.java
+│   │       │   │               ├── entity/
+│   │       │   │               │   ├── AuthUser.java
+│   │       │   │               │   └── Role.java
+│   │       │   │               ├── repository/
+│   │       │   │               │   ├── AuthUserRepository.java
+│   │       │   │               │   └── RoleRepository.java
+│   │       │   │               └── service/
+│   │       │   │                   └── AuthService.java
+│   │       │   └── resources/
+│   │       │       ├── application.yml
+│   │       │       ├── db/
+│   │       │       │   └── migration/
+│   │       │       │       └── V1__create_users_roles_tables.sql
+│   │       │       └── logback-spring.xml
+│   │       └── test/
+│   │           └── java/
+│   │               └── com/
+│   │                   └── upeu/
+│   │                       └── auth/
+│   │                           └── AuthApplicationTests.java
+│   ├── calificacion-ms/
+│   │   ├── .env.example
+│   │   ├── Dockerfile
+│   │   ├── compose.yml
+│   │   ├── k8s/
+│   │   │   └── calificacion-ms.yaml
+│   │   ├── pom.xml
+│   │   └── src/
+│   │       ├── main/
+│   │       │   ├── java/
+│   │       │   │   └── com/
+│   │       │   │       └── upeu/
+│   │       │   │           └── calificacion/
+│   │       │   │               ├── CalificacionApplication.java
+│   │       │   │               ├── config/
+│   │       │   │               │   └── SecurityConfig.java
+│   │       │   │               ├── controller/
+│   │       │   │               ├── dto/
+│   │       │   │               ├── entity/
+│   │       │   │               ├── repository/
+│   │       │   │               └── service/
+│   │       │   └── resources/
+│   │       │       ├── application.yml
+│   │       │       └── db/
+│   │       │           └── migration/
+│   │       │               └── V1__init.sql
+│   │       └── test/
+│   │           └── java/
+│   │               └── com/
+│   │                   └── upeu/
+│   │                       └── calificacion/
+│   ├── carrito-ms/
+│   │   ├── .env
+│   │   ├── .env.example
+│   │   ├── Dockerfile
+│   │   ├── README.md
+│   │   ├── compose-dev.yml
+│   │   ├── compose.yml
+│   │   ├── k8s/
+│   │   │   └── carrito-ms.yaml
+│   │   ├── pom.xml
+│   │   └── src/
+│   │       └── main/
+│   │           ├── java/
+│   │           │   └── com/
+│   │           │       └── upeu/
+│   │           │           └── carrito/
+│   │           │               ├── CarritoApplication.java
+│   │           │               ├── client/
+│   │           │               │   └── ProductoClient.java
+│   │           │               ├── config/
+│   │           │               │   ├── FeignTraceConfig.java
+│   │           │               │   ├── JwtProperties.java
+│   │           │               │   ├── OpenApiConfig.java
+│   │           │               │   └── SecurityConfig.java
+│   │           │               ├── controller/
+│   │           │               │   ├── CarritoController.java
+│   │           │               │   └── GatewayInstanciasController.java
+│   │           │               ├── dto/
+│   │           │               │   ├── CarritoRequest.java
+│   │           │               │   └── CarritoResponse.java
+│   │           │               ├── entity/
+│   │           │               │   └── Carrito.java
+│   │           │               ├── exception/
+│   │           │               │   ├── ApiErrorResponse.java
+│   │           │               │   ├── GlobalExceptionHandler.java
+│   │           │               │   └── ResourceNotFoundException.java
+│   │           │               ├── filter/
+│   │           │               │   └── CorrelationIdFilter.java
+│   │           │               ├── mapper/
+│   │           │               │   └── CarritoMapper.java
+│   │           │               ├── repository/
+│   │           │               │   └── CarritoRepository.java
+│   │           │               └── service/
+│   │           │                   ├── CarritoService.java
+│   │           │                   └── impl/
+│   │           │                       └── CarritoServiceImpl.java
+│   │           └── resources/
+│   │               ├── application.yml
+│   │               └── db/
+│   │                   └── migration/
+│   │                       ├── V1__create_carritos_table.sql
+│   │                       └── V2__insert_data.sql
+│   ├── catalogo-ms/
+│   │   ├── .env
+│   │   ├── .env.example
+│   │   ├── .github/
+│   │   │   └── pull_request_template.md
+│   │   ├── Dockerfile
+│   │   ├── README.md
+│   │   ├── compose-dev.yml
+│   │   ├── compose.yml
+│   │   ├── k8s/
+│   │   │   └── catalogo-ms.yaml
+│   │   ├── pom.xml
+│   │   └── src/
+│   │       ├── main/
+│   │       │   ├── java/
+│   │       │   │   └── com/
+│   │       │   │       └── upeu/
+│   │       │   │           └── catalogo/
+│   │       │   │               ├── CatalogoApplication.java
+│   │       │   │               ├── config/
+│   │       │   │               │   ├── OpenApiConfig.java
+│   │       │   │               │   └── SecurityConfig.java
+│   │       │   │               ├── controller/
+│   │       │   │               │   ├── CategoriaController.java
+│   │       │   │               │   └── GatewayInstanciasController.java
+│   │       │   │               ├── dto/
+│   │       │   │               │   ├── CategoriaRequest.java
+│   │       │   │               │   └── CategoriaResponse.java
+│   │       │   │               ├── entity/
+│   │       │   │               │   └── Categoria.java
+│   │       │   │               ├── exception/
+│   │       │   │               │   ├── ApiErrorResponse.java
+│   │       │   │               │   ├── GlobalExceptionHandler.java
+│   │       │   │               │   └── ResourceNotFoundException.java
+│   │       │   │               ├── filter/
+│   │       │   │               │   └── CorrelationIdFilter.java
+│   │       │   │               ├── mapper/
+│   │       │   │               │   └── CategoriaMapper.java
+│   │       │   │               ├── repository/
+│   │       │   │               │   └── CategoriaRepository.java
+│   │       │   │               └── service/
+│   │       │   │                   ├── CategoriaService.java
+│   │       │   │                   └── impl/
+│   │       │   │                       └── CategoriaServiceImpl.java
+│   │       │   └── resources/
+│   │       │       ├── application.yml
+│   │       │       ├── db/
+│   │       │       │   └── migration/
+│   │       │       │       ├── V1__create_categorias_table.sql
+│   │       │       │       └── V2__insert_data.sql
+│   │       │       └── logback-spring.xml
+│   │       └── test/
+│   │           └── java/
+│   │               └── com/
+│   │                   └── upeu/
+│   │                       └── catalogo/
+│   │                           ├── CatalogoApplicationTests.java
+│   │                           ├── controller/
+│   │                           │   └── CategoriaControllerTest.java
+│   │                           ├── mapper/
+│   │                           │   └── CategoriaMapperTest.java
+│   │                           └── service/
+│   │                               └── impl/
+│   │                                   └── CategoriaServiceImplTest.java
+│   ├── categoria-ms/
+│   │   ├── .env.example
+│   │   ├── Dockerfile
+│   │   ├── compose.yml
+│   │   ├── k8s/
+│   │   │   └── categoria-ms.yaml
+│   │   ├── pom.xml
+│   │   └── src/
+│   │       ├── main/
+│   │       │   ├── java/
+│   │       │   │   └── com/
+│   │       │   │       └── upeu/
+│   │       │   │           └── categoria/
+│   │       │   │               ├── CategoriaApplication.java
+│   │       │   │               ├── config/
+│   │       │   │               │   └── SecurityConfig.java
+│   │       │   │               ├── controller/
+│   │       │   │               ├── dto/
+│   │       │   │               ├── entity/
+│   │       │   │               ├── repository/
+│   │       │   │               └── service/
+│   │       │   └── resources/
+│   │       │       ├── application.yml
+│   │       │       └── db/
+│   │       │           └── migration/
+│   │       │               └── V1__init.sql
+│   │       └── test/
+│   │           └── java/
+│   │               └── com/
+│   │                   └── upeu/
+│   │                       └── categoria/
+│   ├── chat-ms/
+│   │   ├── .env.example
+│   │   ├── Dockerfile
+│   │   ├── compose.yml
+│   │   ├── k8s/
+│   │   │   └── chat-ms.yaml
+│   │   ├── pom.xml
+│   │   └── src/
+│   │       ├── main/
+│   │       │   ├── java/
+│   │       │   │   └── com/
+│   │       │   │       └── upeu/
+│   │       │   │           └── chat/
+│   │       │   │               ├── ChatApplication.java
+│   │       │   │               ├── config/
+│   │       │   │               │   └── SecurityConfig.java
+│   │       │   │               ├── controller/
+│   │       │   │               ├── dto/
+│   │       │   │               ├── entity/
+│   │       │   │               ├── repository/
+│   │       │   │               └── service/
+│   │       │   └── resources/
+│   │       │       ├── application.yml
+│   │       │       └── db/
+│   │       │           └── migration/
+│   │       │               └── V1__init.sql
+│   │       └── test/
+│   │           └── java/
+│   │               └── com/
+│   │                   └── upeu/
+│   │                       └── chat/
+│   ├── favoritos-ms/
+│   │   ├── .env.example
+│   │   ├── Dockerfile
+│   │   ├── compose.yml
+│   │   ├── k8s/
+│   │   │   └── favoritos-ms.yaml
+│   │   ├── pom.xml
+│   │   └── src/
+│   │       ├── main/
+│   │       │   ├── java/
+│   │       │   │   └── com/
+│   │       │   │       └── upeu/
+│   │       │   │           └── favoritos/
+│   │       │   │               ├── FavoritosApplication.java
+│   │       │   │               ├── config/
+│   │       │   │               │   └── SecurityConfig.java
+│   │       │   │               ├── controller/
+│   │       │   │               ├── dto/
+│   │       │   │               ├── entity/
+│   │       │   │               ├── repository/
+│   │       │   │               └── service/
+│   │       │   └── resources/
+│   │       │       ├── application.yml
+│   │       │       └── db/
+│   │       │           └── migration/
+│   │       │               └── V1__init.sql
+│   │       └── test/
+│   │           └── java/
+│   │               └── com/
+│   │                   └── upeu/
+│   │                       └── favoritos/
+│   ├── inventario-ms/
+│   │   ├── .env
+│   │   ├── .env.example
+│   │   ├── Dockerfile
+│   │   ├── README.md
+│   │   ├── compose-dev.yml
+│   │   ├── compose.yml
+│   │   ├── k8s/
+│   │   │   └── inventario-ms.yaml
+│   │   ├── pom.xml
+│   │   └── src/
+│   │       └── main/
+│   │           ├── java/
+│   │           │   └── com/
+│   │           │       └── upeu/
+│   │           │           └── inventario/
+│   │           │               ├── InventarioApplication.java
+│   │           │               ├── client/
+│   │           │               │   └── ProductoClient.java
+│   │           │               ├── config/
+│   │           │               │   ├── FeignTraceConfig.java
+│   │           │               │   ├── JwtProperties.java
+│   │           │               │   ├── OpenApiConfig.java
+│   │           │               │   └── SecurityConfig.java
+│   │           │               ├── controller/
+│   │           │               │   ├── GatewayInstanciasController.java
+│   │           │               │   └── InventarioController.java
+│   │           │               ├── dto/
+│   │           │               │   ├── InventarioRequest.java
+│   │           │               │   └── InventarioResponse.java
+│   │           │               ├── entity/
+│   │           │               │   └── Inventario.java
+│   │           │               ├── exception/
+│   │           │               │   ├── ApiErrorResponse.java
+│   │           │               │   ├── GlobalExceptionHandler.java
+│   │           │               │   └── ResourceNotFoundException.java
+│   │           │               ├── filter/
+│   │           │               │   └── CorrelationIdFilter.java
+│   │           │               ├── mapper/
+│   │           │               │   └── InventarioMapper.java
+│   │           │               ├── repository/
+│   │           │               │   └── InventarioRepository.java
+│   │           │               └── service/
+│   │           │                   ├── InventarioService.java
+│   │           │                   └── impl/
+│   │           │                       └── InventarioServiceImpl.java
+│   │           └── resources/
+│   │               ├── application.yml
+│   │               └── db/
+│   │                   └── migration/
+│   │                       ├── V1__create_inventarios_table.sql
+│   │                       └── V2__insert_data.sql
+│   ├── media-ms/
+│   │   ├── .env.example
+│   │   ├── Dockerfile
+│   │   ├── compose.yml
+│   │   ├── k8s/
+│   │   │   └── media-ms.yaml
+│   │   ├── pom.xml
+│   │   └── src/
+│   │       ├── main/
+│   │       │   ├── java/
+│   │       │   │   └── com/
+│   │       │   │       └── upeu/
+│   │       │   │           └── media/
+│   │       │   │               ├── MediaApplication.java
+│   │       │   │               ├── config/
+│   │       │   │               │   └── SecurityConfig.java
+│   │       │   │               ├── controller/
+│   │       │   │               ├── dto/
+│   │       │   │               ├── entity/
+│   │       │   │               ├── repository/
+│   │       │   │               └── service/
+│   │       │   └── resources/
+│   │       │       ├── application.yml
+│   │       │       └── db/
+│   │       │           └── migration/
+│   │       │               └── V1__init.sql
+│   │       └── test/
+│   │           └── java/
+│   │               └── com/
+│   │                   └── upeu/
+│   │                       └── media/
+│   ├── notification-ms/
+│   │   ├── .env.example
+│   │   ├── Dockerfile
+│   │   ├── compose.yml
+│   │   ├── k8s/
+│   │   │   └── notification-ms.yaml
+│   │   ├── pom.xml
+│   │   └── src/
+│   │       ├── main/
+│   │       │   ├── java/
+│   │       │   │   └── com/
+│   │       │   │       └── upeu/
+│   │       │   │           └── notification/
+│   │       │   │               ├── NotificationApplication.java
+│   │       │   │               ├── config/
+│   │       │   │               │   └── SecurityConfig.java
+│   │       │   │               ├── controller/
+│   │       │   │               ├── dto/
+│   │       │   │               ├── entity/
+│   │       │   │               ├── repository/
+│   │       │   │               └── service/
+│   │       │   └── resources/
+│   │       │       ├── application.yml
+│   │       │       └── db/
+│   │       │           └── migration/
+│   │       │               └── V1__init.sql
+│   │       └── test/
+│   │           └── java/
+│   │               └── com/
+│   │                   └── upeu/
+│   │                       └── notification/
+│   ├── orden-ms/
+│   │   ├── .env
+│   │   ├── .env.example
+│   │   ├── Dockerfile
+│   │   ├── README.md
+│   │   ├── compose-dev.yml
+│   │   ├── compose.yml
+│   │   ├── k8s/
+│   │   │   └── orden-ms.yaml
+│   │   ├── pom.xml
+│   │   └── src/
+│   │       └── main/
+│   │           ├── java/
+│   │           │   └── com/
+│   │           │       └── upeu/
+│   │           │           └── ordenes/
+│   │           │               ├── OrdenApplication.java
+│   │           │               ├── client/
+│   │           │               │   └── ProductoClient.java
+│   │           │               ├── config/
+│   │           │               │   ├── FeignTraceConfig.java
+│   │           │               │   ├── JwtProperties.java
+│   │           │               │   ├── KafkaConfiguracion.java
+│   │           │               │   ├── OpenApiConfig.java
+│   │           │               │   └── SecurityConfig.java
+│   │           │               ├── controller/
+│   │           │               │   ├── GatewayInstanciasController.java
+│   │           │               │   └── OrdenController.java
+│   │           │               ├── dto/
+│   │           │               │   ├── OrdenRequest.java
+│   │           │               │   └── OrdenResponse.java
+│   │           │               ├── entity/
+│   │           │               │   └── Orden.java
+│   │           │               ├── evento/
+│   │           │               │   └── EventoOrden.java
+│   │           │               ├── exception/
+│   │           │               │   ├── ApiErrorResponse.java
+│   │           │               │   ├── GlobalExceptionHandler.java
+│   │           │               │   └── ResourceNotFoundException.java
+│   │           │               ├── filter/
+│   │           │               │   └── CorrelationIdFilter.java
+│   │           │               ├── mapper/
+│   │           │               │   └── OrdenMapper.java
+│   │           │               ├── repository/
+│   │           │               │   └── OrdenRepository.java
+│   │           │               └── service/
+│   │           │                   ├── OrdenService.java
+│   │           │                   ├── ProductorOrden.java
+│   │           │                   └── impl/
+│   │           │                       └── OrdenServiceImpl.java
+│   │           └── resources/
+│   │               ├── application.yml
+│   │               └── db/
+│   │                   └── migration/
+│   │                       ├── V1__create_ordenes_table.sql
+│   │                       └── V2__insert_data.sql
+│   ├── pago-ms/
+│   │   ├── .env
+│   │   ├── .env.example
+│   │   ├── Dockerfile
+│   │   ├── README.md
+│   │   ├── compose-dev.yml
+│   │   ├── compose.yml
+│   │   ├── k8s/
+│   │   │   └── pago-ms.yaml
+│   │   ├── pom.xml
+│   │   └── src/
+│   │       └── main/
+│   │           ├── java/
+│   │           │   └── com/
+│   │           │       └── upeu/
+│   │           │           └── pagos/
+│   │           │               ├── PagoApplication.java
+│   │           │               ├── client/
+│   │           │               │   └── ProductoClient.java
+│   │           │               ├── config/
+│   │           │               │   ├── FeignTraceConfig.java
+│   │           │               │   ├── JwtProperties.java
+│   │           │               │   ├── KafkaConfiguracion.java
+│   │           │               │   ├── OpenApiConfig.java
+│   │           │               │   └── SecurityConfig.java
+│   │           │               ├── controller/
+│   │           │               │   ├── GatewayInstanciasController.java
+│   │           │               │   └── PagoController.java
+│   │           │               ├── dto/
+│   │           │               │   ├── PagoRequest.java
+│   │           │               │   └── PagoResponse.java
+│   │           │               ├── entity/
+│   │           │               │   └── Pago.java
+│   │           │               ├── evento/
+│   │           │               │   ├── EventoOrden.java
+│   │           │               │   └── EventoPago.java
+│   │           │               ├── exception/
+│   │           │               │   ├── ApiErrorResponse.java
+│   │           │               │   ├── GlobalExceptionHandler.java
+│   │           │               │   └── ResourceNotFoundException.java
+│   │           │               ├── filter/
+│   │           │               │   └── CorrelationIdFilter.java
+│   │           │               ├── mapper/
+│   │           │               │   └── PagoMapper.java
+│   │           │               ├── repository/
+│   │           │               │   └── PagoRepository.java
+│   │           │               └── service/
+│   │           │                   ├── ConsumidorPago.java
+│   │           │                   ├── PagoService.java
+│   │           │                   ├── ProductorPago.java
+│   │           │                   └── impl/
+│   │           │                       └── PagoServiceImpl.java
+│   │           └── resources/
+│   │               ├── application.yml
+│   │               └── db/
+│   │                   └── migration/
+│   │                       ├── V1__create_pagos_table.sql
+│   │                       └── V2__insert_data.sql
+│   ├── persona-ms/
+│   │   ├── Dockerfile
+│   │   ├── compose.yml
+│   │   ├── k8s/
+│   │   │   └── persona-ms.yaml
+│   │   ├── pom.xml
+│   │   └── src/
+│   │       └── main/
+│   │           ├── java/
+│   │           │   └── com/
+│   │           │       └── upeu/
+│   │           │           └── persona/
+│   │           │               ├── PersonaApplication.java
+│   │           │               ├── config/
+│   │           │               │   └── SecurityConfig.java
+│   │           │               ├── controller/
+│   │           │               │   └── PersonaController.java
+│   │           │               ├── dto/
+│   │           │               │   └── PersonaDto.java
+│   │           │               ├── entity/
+│   │           │               │   └── Persona.java
+│   │           │               ├── repository/
+│   │           │               │   └── PersonaRepository.java
+│   │           │               └── service/
+│   │           │                   └── PersonaService.java
+│   │           └── resources/
+│   │               ├── application.yml
+│   │               └── db/
+│   │                   └── migration/
+│   │                       └── V1__create_personas_table.sql
+│   ├── producto-ms/
+│   │   ├── .env
+│   │   ├── .env.example
+│   │   ├── Dockerfile
+│   │   ├── README.md
+│   │   ├── compose-dev.yml
+│   │   ├── compose.yml
+│   │   ├── k8s/
+│   │   │   └── producto-ms.yaml
+│   │   ├── pom.xml
+│   │   └── src/
+│   │       ├── main/
+│   │       │   ├── java/
+│   │       │   │   └── com/
+│   │       │   │       └── upeu/
+│   │       │   │           └── producto/
+│   │       │   │               ├── ProductoApplication.java
+│   │       │   │               ├── client/
+│   │       │   │               │   └── CatalogoClient.java
+│   │       │   │               ├── config/
+│   │       │   │               │   ├── FeignTraceConfig.java
+│   │       │   │               │   ├── JwtProperties.java
+│   │       │   │               │   ├── OpenApiConfig.java
+│   │       │   │               │   └── SecurityConfig.java
+│   │       │   │               ├── controller/
+│   │       │   │               │   ├── GatewayInstanciasController.java
+│   │       │   │               │   └── ProductoController.java
+│   │       │   │               ├── dto/
+│   │       │   │               │   ├── CategoriaDto.java
+│   │       │   │               │   ├── ProductoRequest.java
+│   │       │   │               │   └── ProductoResponse.java
+│   │       │   │               ├── entity/
+│   │       │   │               │   └── Producto.java
+│   │       │   │               ├── exception/
+│   │       │   │               │   ├── ApiErrorResponse.java
+│   │       │   │               │   ├── GlobalExceptionHandler.java
+│   │       │   │               │   └── ResourceNotFoundException.java
+│   │       │   │               ├── filter/
+│   │       │   │               │   └── CorrelationIdFilter.java
+│   │       │   │               ├── mapper/
+│   │       │   │               │   └── ProductoMapper.java
+│   │       │   │               ├── repository/
+│   │       │   │               │   └── ProductoRepository.java
+│   │       │   │               └── service/
+│   │       │   │                   ├── ProductoService.java
+│   │       │   │                   └── impl/
+│   │       │   │                       └── ProductoServiceImpl.java
+│   │       │   └── resources/
+│   │       │       ├── application.yml
+│   │       │       ├── db/
+│   │       │       │   └── migration/
+│   │       │       │       ├── V1__create_productos_table.sql
+│   │       │       │       └── V2__insert_data.sql
+│   │       │       └── logback-spring.xml
+│   │       └── test/
+│   │           ├── java/
+│   │           │   └── com/
+│   │           │       └── upeu/
+│   │           │           └── producto/
+│   │           │               ├── ProductoApplicationTests.java
+│   │           │               ├── controller/
+│   │           │               │   └── ProductoControllerTest.java
+│   │           │               ├── mapper/
+│   │           │               │   └── ProductoMapperTest.java
+│   │           │               └── service/
+│   │           │                   └── impl/
+│   │           │                       └── ProductoServiceImplTest.java
+│   │           └── resources/
+│   │               └── application-test.yml
+│   ├── publicacion-ms/
+│   │   ├── .env.example
+│   │   ├── Dockerfile
+│   │   ├── compose.yml
+│   │   ├── k8s/
+│   │   │   └── publicacion-ms.yaml
+│   │   ├── pom.xml
+│   │   └── src/
+│   │       ├── main/
+│   │       │   ├── java/
+│   │       │   │   └── com/
+│   │       │   │       └── upeu/
+│   │       │   │           └── publicacion/
+│   │       │   │               ├── PublicacionApplication.java
+│   │       │   │               ├── config/
+│   │       │   │               │   └── SecurityConfig.java
+│   │       │   │               ├── controller/
+│   │       │   │               ├── dto/
+│   │       │   │               ├── entity/
+│   │       │   │               ├── repository/
+│   │       │   │               └── service/
+│   │       │   └── resources/
+│   │       │       ├── application.yml
+│   │       │       └── db/
+│   │       │           └── migration/
+│   │       │               └── V1__init.sql
+│   │       └── test/
+│   │           └── java/
+│   │               └── com/
+│   │                   └── upeu/
+│   │                       └── publicacion/
+│   └── search-ms/
+│       ├── .env.example
+│       ├── Dockerfile
+│       ├── compose.yml
+│       ├── k8s/
+│       │   └── search-ms.yaml
+│       ├── pom.xml
+│       └── src/
+│           ├── main/
+│           │   ├── java/
+│           │   │   └── com/
+│           │   │       └── upeu/
+│           │   │           └── search/
+│           │   │               ├── SearchApplication.java
+│           │   │               ├── config/
+│           │   │               │   └── SecurityConfig.java
+│           │   │               ├── controller/
+│           │   │               ├── dto/
+│           │   │               ├── entity/
+│           │   │               ├── repository/
+│           │   │               └── service/
+│           │   └── resources/
+│           │       ├── application.yml
+│           │       └── db/
+│           │           └── migration/
+│           │               └── V1__init.sql
+│           └── test/
+│               └── java/
+│                   └── com/
+│                       └── upeu/
+│                           └── search/
+└── skaffold.yaml

@@ -1,0 +1,259 @@
+# =============================================================================
+# CATALOGO-MS: Secret + PostgreSQL + Microservicio + HPA
+# =============================================================================
+
+# --- Secret ---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: catalogo-ms-secret
+  namespace: ecom
+  labels:
+    app: catalogo-ms
+    app.kubernetes.io/component: microservice
+type: Opaque
+stringData:
+  db-name: "catalogo_db"
+  db-user: "catalogo_user"
+  db-pass: "catalogo_db_secure_2024"
+---
+# --- PVC para PostgreSQL ---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: catalogo-ms-postgres-pvc
+  namespace: ecom
+  labels:
+    app: postgres-catalogo
+    app.kubernetes.io/component: microservice
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+---
+# --- PostgreSQL Deployment ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-catalogo
+  namespace: ecom
+  labels:
+    app: postgres-catalogo
+    app.kubernetes.io/component: microservice
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres-catalogo
+  template:
+    metadata:
+      labels:
+        app: postgres-catalogo
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: catalogo-ms-secret
+                  key: db-name
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: catalogo-ms-secret
+                  key: db-user
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: catalogo-ms-secret
+                  key: db-pass
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/data
+          livenessProbe:
+            exec:
+              command: ["pg_isready", "-U", "catalogo_user", "-d", "catalogo_db"]
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+      volumes:
+        - name: postgres-data
+          persistentVolumeClaim:
+            claimName: catalogo-ms-postgres-pvc
+---
+# --- PostgreSQL Service ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-catalogo
+  namespace: ecom
+  labels:
+    app: postgres-catalogo
+spec:
+  type: ClusterIP
+  selector:
+    app: postgres-catalogo
+  ports:
+    - port: 5432
+      targetPort: 5432
+---
+# --- Microservicio Deployment ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: catalogo-ms
+  namespace: ecom
+  labels:
+    app: catalogo-ms
+    app.kubernetes.io/component: microservice
+    app.kubernetes.io/version: "latest"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: catalogo-ms
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: catalogo-ms
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/actuator/prometheus"
+        prometheus.io/port: "8080"
+    spec:
+      initContainers:
+        - name: wait-for-config-server
+          image: curlimages/curl:8.5.0
+          command: ["sh", "-c", "until curl -sf http://config-server:8888/actuator/health; do echo waiting; sleep 5; done"]
+        - name: wait-for-eureka
+          image: curlimages/curl:8.5.0
+          command: ["sh", "-c", "until curl -sf http://eureka:8761/actuator/health; do echo waiting; sleep 5; done"]
+        - name: wait-for-db
+          image: postgres:16-alpine
+          command:
+            - sh
+            - -c
+            - until pg_isready -h postgres-catalogo -p 5432 -U catalogo_user; do echo waiting for DB; sleep 3; done
+      containers:
+        - name: catalogo-ms
+          image: erickmijael17/ecom-catalogo-ms:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+              name: http
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "prod"
+            - name: CONFIG_SERVER_URL
+              value: "http://config-server:8888"
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: ecom-global-secret
+                  key: jwt-secret
+            - name: DB_HOST
+              value: "postgres-catalogo"
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: catalogo-ms-secret
+                  key: db-name
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: catalogo-ms-secret
+                  key: db-user
+            - name: DB_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: catalogo-ms-secret
+                  key: db-pass
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            initialDelaySeconds: 120
+            periodSeconds: 15
+            failureThreshold: 5
+            timeoutSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            initialDelaySeconds: 90
+            periodSeconds: 10
+            failureThreshold: 10
+            timeoutSeconds: 10
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"
+---
+# --- Service ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: catalogo-ms
+  namespace: ecom
+  labels:
+    app: catalogo-ms
+    app.kubernetes.io/component: microservice
+spec:
+  type: ClusterIP
+  selector:
+    app: catalogo-ms
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+---
+# --- HPA ---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: catalogo-ms-hpa
+  namespace: ecom
+  labels:
+    app: catalogo-ms
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: catalogo-ms
+  minReplicas: 1
+  maxReplicas: 3
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80

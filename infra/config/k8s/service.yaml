@@ -1,0 +1,22 @@
+# =============================================================================
+# SERVICE: config-server
+# ClusterIP interno. Los microservicios lo llaman via CONFIG_SERVER_URL.
+# URL interna: http://config-server:8888
+# =============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: config-server
+  namespace: ecom
+  labels:
+    app: config-server
+    app.kubernetes.io/component: infrastructure
+spec:
+  type: ClusterIP
+  selector:
+    app: config-server
+  ports:
+    - name: http
+      port: 8888
+      targetPort: 8888
+      protocol: TCP

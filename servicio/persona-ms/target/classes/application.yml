@@ -1,0 +1,29 @@
+spring:
+  application:
+    name: persona-ms
+  profiles:
+    active: dev
+
+  config:
+    import: "optional:configserver:${CONFIG_SERVER_URL:http://localhost:18888}"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true  # Habilita /actuator/health/liveness y /readiness para K8s
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
+
+logging:
+  level:
+    root: INFO
+    com.upeu.persona: DEBUG
