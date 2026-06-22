@@ -1,6 +1,6 @@
-# SmartCampus Marketplace - Microservicios & Kubernetes
+# SmartCampus Marketplace - Microservicios
 
-Este proyecto es una plataforma de mercado digital universitaria basada en una arquitectura de microservicios robusta y moderna, diseñada para correr sobre **Kubernetes** con seguridad centralizada mediante **Keycloak (OAuth2 / OIDC)** y observabilidad avanzada.
+Este proyecto es una plataforma de mercado digital universitaria basada en una arquitectura de microservicios robusta y moderna, diseñada para correr sobre Docker con seguridad centralizada mediante **Keycloak (OAuth2 / OIDC)** y observabilidad avanzada.
 
 ---
 
@@ -36,24 +36,13 @@ Para ejecutar la arquitectura completa, asegúrate de tener instalado:
 * **Java JDK 17 o superior**
 * **Maven 3.8+**
 * **Docker Desktop / Docker Engine** (mínimo 6GB de RAM asignada)
-* **Kubernetes (Minikube, Docker Desktop K8s, o similar)**
-* **Skaffold v4+**
-* **Helm y Kubectl**
 
 ---
 
-## 🏁 Despliegue Rápido en Kubernetes
-
-La plataforma está completamente orquestada usando **Kustomize** y **Skaffold** para desarrollo continuo.
-
-### 1. Iniciar en Desarrollo con Hot Reload (Skaffold)
-```bash
 # Compila, levanta las imágenes locales y sincroniza el código en tiempo real
 skaffold dev --load-restrictor=LoadRestrictionsNone
 ```
 
-### 2. Despliegue con Scripts Automatizados
-```bash
 # Ejecuta el despliegue secuencial por fases
 ./k8s/scripts/deploy.sh
 ```
@@ -62,5 +51,5 @@ skaffold dev --load-restrictor=LoadRestrictionsNone
 
 ## 📖 Documentación Relacionada
 
-* [Guía de Inicialización y Despliegue Paso a Paso](GUIA_ESTUDIANTE.md): Instrucciones completas para arrancar el sistema desde cero en Kubernetes y probar la seguridad.
+* [Guía de Inicialización y Despliegue Paso a Paso](GUIA_ESTUDIANTE.md): Instrucciones completas para arrancar el sistema desde cero y probar la seguridad.
 * [Walkthrough de la Migración a Keycloak](file:///C:/Users/USUARIO/.gemini/antigravity-ide/brain/7bd9ba1d-7195-4777-aedf-798d123f0e97/walkthrough.md): Resumen técnico de los cambios de seguridad, convertidores de roles y TLS.

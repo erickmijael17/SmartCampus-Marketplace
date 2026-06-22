@@ -5,7 +5,7 @@ spring:
         - TokenRelay
       routes:
         - id: keycloak-route
-          uri: http://keycloak:8080
+          uri: ${KEYCLOAK_URL:http://keycloak:8080}
           predicates:
             - Path=/auth/**
         - id: catalogo-route
@@ -51,7 +51,7 @@ spring:
             scope: openid,profile,email
         provider:
           keycloak:
-            issuer-uri: http://keycloak.ecom.svc.cluster.local:8080/realms/smartcampus
+            issuer-uri: ${KEYCLOAK_URL:http://keycloak:8080}/realms/smartcampus
 
 eureka:
   client:

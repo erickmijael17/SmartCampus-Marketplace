@@ -3,8 +3,8 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://keycloak.ecom.svc.cluster.local:8080/realms/smartcampus
-          jwk-set-uri: http://keycloak.ecom.svc.cluster.local:8080/realms/smartcampus/protocol/openid-connect/certs
+          issuer-uri: ${KEYCLOAK_URL:http://keycloak:8080}/realms/smartcampus
+          jwk-set-uri: ${KEYCLOAK_URL:http://keycloak:8080}/realms/smartcampus/protocol/openid-connect/certs
 
 keycloak:
-  token-url: http://keycloak.ecom.svc.cluster.local:8080/realms/smartcampus/protocol/openid-connect/token
+  token-url: ${KEYCLOAK_URL:http://keycloak:8080}/realms/smartcampus/protocol/openid-connect/token
