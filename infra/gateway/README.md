@@ -1,58 +1,47 @@
 # gateway
 
-API Gateway de la plataforma. Expone el punto de entrada HTTP, aplica seguridad JWT en el borde y enruta hacia los microservicios registrados en Eureka.
+API Gateway de SmartCampus Marketplace. Expone el punto unico de entrada HTTP, aplica seguridad JWT en el borde y enruta hacia microservicios registrados en Eureka.
 
 ## Puertos
 
 | Modo | URL |
 |---|---|
-| DEV Maven | http://localhost:18080 |
-| PROD Docker | http://localhost:28082 |
+| DEV Maven | `http://localhost:18080` |
+| PROD Docker | `http://localhost:28082` |
 
-## Requisitos de seguridad
+## Rutas
 
-Gateway valida los JWT emitidos por `auth-ms`. Para que login y rutas protegidas funcionen:
+Las rutas del Gateway se configuran en `infra/config/config-repo/gateway-dev.yml` y `infra/config/config-repo/gateway-prod.yml`.
 
-- `infra/.env` y `services/auth-ms/.env` deben tener el mismo `JWT_SECRET`.
-- `gateway-prod.yml` y `auth-ms-prod.yml` deben usar el mismo `jwt.issuer`.
-- Actualmente el issuer compartido es `auth`.
+Ejemplos:
 
-Ejemplo:
+- `/auth/**` -> `lb://auth-ms`
+- `/api/v1/productos/**` -> `lb://producto-ms`
+- `/api/v1/carritos/**` -> `lb://carrito-ms`
+- `/api/v1/inventarios/**` -> `lb://inventario-ms`
 
-```env
-JWT_SECRET=1s3alJJATsWK91vf5zrODYlQa+LauM/9udaLZlQhHlpu46g/KzmSS5c3CGy6xF9kzAqBhvjmKBuZO/pSL7tfOg==
+## Seguridad
+
+Gateway valida JWT emitidos por Keycloak usando JWKS. Los roles se leen desde el claim `realm_access.roles` y se transforman a autoridades `ROLE_*`.
+
+El login no lo procesa Gateway directamente. Gateway solo enruta hacia `auth-ms`:
+
+```http
+POST http://localhost:28082/auth/login
 ```
 
-Si el secreto no es Base64 válido, Gateway falla al arrancar con:
-
-```text
-Illegal base64 character
-```
+Para que funcione, `auth-ms` debe estar levantado y registrado en Eureka como `AUTH-MS`.
 
 ## PROD Docker
 
 ```bash
-cd infra
-docker compose up -d --build --force-recreate config eureka gateway
-docker compose logs -f gateway
+make compose-infra
 ```
 
 Verificar:
 
-```text
-http://localhost:28082/actuator/health
-http://localhost:28761
+```bash
+curl http://localhost:28082/actuator/health
 ```
 
 En Eureka debe aparecer `GATEWAY`.
-
-## Login y usuarios
-
-El alta de usuarios y login no los hace Gateway directamente. Gateway solo enruta:
-
-| Operacion | Endpoint por Gateway |
-|---|---|
-| Registrar usuario | `POST http://localhost:28082/auth/register` |
-| Login | `POST http://localhost:28082/auth/login` |
-
-Para que funcione, primero debe estar levantado `auth-ms` y registrado en Eureka como `AUTH-MS`.

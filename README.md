@@ -1,75 +1,96 @@
-# SmartCampus Marketplace - Microservicios
+# SmartCampus Marketplace
 
-Este proyecto es una plataforma de mercado digital diseñada para un entorno universitario, permitiendo a los estudiantes comprar y vender productos de manera eficiente. Está construido utilizando una arquitectura de microservicios robusta y moderna.
+Plataforma de mercado digital universitario basada en microservicios. El backend usa Spring Boot, Spring Cloud Config, Eureka, Spring Cloud Gateway, Keycloak, PostgreSQL, Flyway, Kafka y un stack de observabilidad con Prometheus, Loki, Promtail y Grafana.
 
-## 🚀 Arquitectura del Proyecto
+El despliegue documentado del proyecto se realiza con Docker Compose. El API Gateway es el punto unico de entrada HTTP para los microservicios.
 
-El sistema se divide en tres capas principales:
+## Arquitectura
 
-1.  **Infraestructura (`/infra`)**: Servicios de soporte que permiten el funcionamiento del ecosistema.
-    *   **Config Server**: Gestión centralizada de configuraciones.
-    *   **Eureka Server**: Registro y descubrimiento de servicios.
-    *   **API Gateway**: Punto de entrada único con seguridad JWT y enrutamiento.
-2.  **Servicios de Negocio (`/servicio`)**: La lógica principal del marketplace.
-    *   **Auth MS**: Autenticación, registro de usuarios y generación de JWT.
-    *   **Producto MS**: Gestión de catálogo de productos.
-    *   **Catálogo MS**: Clasificación y categorías.
-    *   **Carrito MS**: Gestión temporal de compras.
-    *   **Orden MS**: Procesamiento de pedidos (comunicación asíncrona vía Kafka).
-    *   **Pago MS**: Procesamiento de transacciones.
-    *   **Inventario MS**: Control de stock.
-3.  **Soporte y Observabilidad**:
-    *   **Kafka (`/kafka`)**: Mensajería asíncrona para comunicación entre servicios.
-    *   **Observabilidad (`/obs`)**: Stack completo con Prometheus, Grafana, Loki y Promtail.
+1. **Identidad y seguridad**
+   - Keycloak emite tokens JWT para el realm `smartcampus`.
+   - `auth-ms` conserva la ruta de login `/auth/login` y delega la autenticacion a Keycloak.
+   - Los microservicios validan JWT con `issuer-uri` y `jwk-set-uri`.
 
----
+2. **Infraestructura**
+   - `infra/config`: Config Server.
+   - `infra/eureka`: Service discovery.
+   - `infra/gateway`: Gateway HTTP unico, con rutas `lb://...` hacia Eureka.
+   - `keycloak`: compose e import del realm `smartcampus`.
 
-## 🛠️ Requisitos Previos
+3. **Microservicios**
+   - `auth-ms`, `producto-ms`, `catalogo-ms`, `categoria-ms`, `carrito-ms`, `orden-ms`, `pago-ms`, `inventario-ms`, `favoritos-ms`, `chat-ms`, `notification-ms`, `media-ms`, `calificacion-ms`, `persona-ms`, `publicacion-ms` y `search-ms`.
 
-Para ejecutar este proyecto en una nueva computadora, asegúrate de tener instalado:
+4. **Eventos y observabilidad**
+   - Kafka para mensajeria asincrona.
+   - Prometheus, Loki, Promtail y Grafana para metricas y logs.
 
-*   **Java 17 o superior**: Necesario para compilar y ejecutar los microservicios Spring Boot.
-*   **Maven 3.8+**: Para la gestión de dependencias y construcción de JARs.
-*   **Docker y Docker Compose**: Fundamental para levantar las bases de datos, Kafka y el stack de observabilidad.
-*   **Postman / Insomnia**: Para probar los endpoints de la API.
-*   **IDE (IntelliJ IDEA recomendado)**: Con plugins para Spring Boot y Lombok.
+## Requisitos
 
----
+- Java 17
+- Maven 3.8+
+- Docker Desktop o Docker Engine
+- Make opcional para usar los atajos del `Makefile`
 
-## 🏁 Guía Rápida de Inicio
+## Puertos principales
 
-Para una guía detallada paso a paso, consulta la [Guía para Estudiantes](GUIA_ESTUDIANTE.md).
+| Servicio | URL |
+|---|---|
+| Gateway | `http://localhost:28082` |
+| Config Server | `http://localhost:28888` |
+| Eureka | `http://localhost:28761` |
+| Keycloak | `http://localhost:8080` |
+| Kafka UI | `http://localhost:28085` |
+| Grafana | `http://localhost:23000` |
 
-### 1. Clonar y Configurar
+Los microservicios no deben publicarse directamente al host por HTTP. En Docker Compose quedan accesibles por red interna y se consumen a traves del Gateway.
+
+## Inicio rapido
+
 ```bash
-git clone <url-del-repositorio>
-cd SmartCampus-Marketplace
+make compose-infra
+make compose-keycloak
+make compose-kafka
+make compose-obs
 ```
 
-### 2. Levantar Infraestructura Base
-Es necesario iniciar Docker para las bases de datos y Kafka antes de correr los servicios Java:
+Tambien puedes levantar todo lo anterior con:
+
 ```bash
-# Iniciar bases de datos de servicios
-cd servicio/auth-ms && docker compose -f compose-dev.yml up -d
-# Repetir para los demás microservicios según sea necesario o usar el compose global en infra
+make compose-all
 ```
 
-### 3. Orden de Arranque (Muy Importante)
-Los servicios deben iniciarse en este orden para evitar errores de conexión:
-1.  **Config Server** (Puerto 18888)
-2.  **Eureka Server** (Puerto 18761)
-3.  **Kafka** (vía Docker)
-4.  **Microservicios de Negocio** (Auth, Producto, etc.)
-5.  **API Gateway** (Puerto 18080)
+Para levantar un microservicio especifico:
 
----
+```bash
+make compose-ms MS=auth-ms
+```
 
-## 📖 Documentación Adicional
+## Verificaciones utiles
 
-*   [Guía Detallada para Estudiantes](GUIA_ESTUDIANTE.md): Instrucciones paso a paso, flujo de Dev a Prod y pruebas.
-*   [Arquitectura Funcional](servicio/CampusMarket-Documentacion.md): Detalle de cada microservicio y sus responsabilidades.
+```bash
+curl http://localhost:28082/actuator/health
+curl http://localhost:28761
+curl http://127.0.0.1:8080/realms/smartcampus/.well-known/openid-configuration
+curl http://127.0.0.1:8080/realms/smartcampus/protocol/openid-connect/certs
+```
 
----
+## Login por Gateway
 
-## 👥 Contribuidores
-Proyecto desarrollado para fines académicos en la UPEU.
+`auth-ms` debe estar registrado en Eureka como `AUTH-MS`. El cliente externo usa siempre Gateway:
+
+```http
+POST http://localhost:28082/auth/login
+Content-Type: application/json
+
+{
+  "username": "usuario",
+  "password": "clave"
+}
+```
+
+## Documentacion relacionada
+
+- [Guia del estudiante](GUIA_ESTUDIANTE.md)
+- [Infraestructura](infra/README.md)
+- [Gateway](infra/gateway/README.md)
+- [Auth MS](servicio/auth-ms/README.md)

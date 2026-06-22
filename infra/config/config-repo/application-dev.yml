@@ -1,0 +1,10 @@
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_URL:http://localhost:8080}/realms/smartcampus
+          jwk-set-uri: ${KEYCLOAK_URL:http://localhost:8080}/realms/smartcampus/protocol/openid-connect/certs
+
+keycloak:
+  token-url: ${KEYCLOAK_URL:http://localhost:8080}/realms/smartcampus/protocol/openid-connect/token

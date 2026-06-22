@@ -1,0 +1,77 @@
+SmartCampus-Marketplace
+=======================
+
+Estructura resumida del proyecto actual.
+
+.
+|-- .agents/
+|   |-- test-auth-ms-report.md
+|   `-- fix-auth-ms-keycloak-gateway-report.md
+|-- .github/
+|   |-- workflows/
+|   |   `-- docker-build.yml
+|   |-- java-upgrade/
+|   `-- modernize/
+|-- frontend/
+|   |-- angular.json
+|   |-- package.json
+|   `-- src/
+|-- infra/
+|   |-- compose.yml
+|   |-- README.md
+|   |-- config/
+|   |   |-- Dockerfile
+|   |   |-- pom.xml
+|   |   |-- config-repo/
+|   |   `-- src/
+|   |-- eureka/
+|   |   |-- Dockerfile
+|   |   |-- pom.xml
+|   |   `-- src/
+|   `-- gateway/
+|       |-- Dockerfile
+|       |-- README.md
+|       |-- pom.xml
+|       `-- src/
+|-- keycloak/
+|   |-- compose.yml
+|   `-- realm-smartcampus.json
+|-- kafka/
+|   |-- compose.yml
+|   |-- compose-dev.yml
+|   `-- README.md
+|-- obs/
+|   |-- compose.yml
+|   |-- compose-dev.yml
+|   |-- README.md
+|   |-- grafana/
+|   |-- loki/
+|   |-- prometheus/
+|   `-- promtail/
+|-- servicio/
+|   |-- auth-ms/
+|   |-- calificacion-ms/
+|   |-- carrito-ms/
+|   |-- catalogo-ms/
+|   |-- categoria-ms/
+|   |-- chat-ms/
+|   |-- favoritos-ms/
+|   |-- inventario-ms/
+|   |-- media-ms/
+|   |-- notification-ms/
+|   |-- orden-ms/
+|   |-- pago-ms/
+|   |-- persona-ms/
+|   |-- producto-ms/
+|   |-- publicacion-ms/
+|   `-- search-ms/
+|-- AGENTS.md
+|-- GUIA_ESTUDIANTE.md
+|-- Makefile
+|-- README.md
+`-- estructura_proyecto.txt
+
+Notas:
+- El despliegue documentado se realiza con Docker Compose.
+- El Gateway es el punto unico de entrada HTTP para los microservicios.
+- Los microservicios internos se registran en Eureka y se consumen por rutas `lb://...`.

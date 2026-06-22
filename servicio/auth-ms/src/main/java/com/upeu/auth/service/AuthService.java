@@ -1,43 +1,74 @@
 package com.upeu.auth.service;
 
-import com.upeu.auth.config.JwtProperties;
 import com.upeu.auth.dto.AuthLoginRequest;
 import com.upeu.auth.dto.AuthLoginResponse;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
 
-import java.util.List;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
 public class AuthService {
 
-    private final AuthenticationManager authenticationManager;
-    private final JwtService jwtService;
-    private final JwtProperties jwtProperties;
+    @Value("${keycloak.token-url}")
+    private String tokenUrl;
 
+    private final RestTemplate restTemplate = new RestTemplate();
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
+    @SuppressWarnings("unchecked")
     public AuthLoginResponse login(AuthLoginRequest request) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
-        );
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        String token = jwtService.generateToken(userDetails);
-        List<String> roles = userDetails.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .toList();
+        MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
+        map.add("grant_type", "password");
+        map.add("client_id", "marketplace-client");
+        map.add("username", request.getUsername());
+        map.add("password", request.getPassword());
 
-        return AuthLoginResponse.builder()
-                .accessToken(token)
-                .tokenType("Bearer")
-                .expiresIn(jwtProperties.getExpiration())
-                .username(userDetails.getUsername())
-                .roles(roles)
-                .build();
+        HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(map, headers);
+
+        try {
+            ResponseEntity<Map> response = restTemplate.postForEntity(tokenUrl, entity, Map.class);
+            if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
+                Map<String, Object> body = response.getBody();
+                String accessToken = (String) body.get("access_token");
+                String tokenType = (String) body.get("token_type");
+                int expiresIn = (Integer) body.get("expires_in");
+
+                // Parse JWT to extract roles and username
+                String[] chunks = accessToken.split("\\.");
+                Base64.Decoder decoder = Base64.getUrlDecoder();
+                String payload = new String(decoder.decode(chunks[1]));
+                Map<String, Object> claims = objectMapper.readValue(payload, Map.class);
+
+                String username = (String) claims.get("preferred_username");
+                
+                List<String> roles = new ArrayList<>();
+                Map<String, Object> realmAccess = (Map<String, Object>) claims.get("realm_access");
+                if (realmAccess != null && realmAccess.containsKey("roles")) {
+                    roles = (List<String>) realmAccess.get("roles");
+                }
+
+                return AuthLoginResponse.builder()
+                        .accessToken(accessToken)
+                        .tokenType(tokenType)
+                        .expiresIn(expiresIn)
+                        .username(username != null ? username : request.getUsername())
+                        .roles(roles)
+                        .build();
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Autenticación fallida con Keycloak: " + e.getMessage(), e);
+        }
+        throw new RuntimeException("Autenticación fallida con Keycloak");
     }
 }
