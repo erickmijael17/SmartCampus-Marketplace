@@ -1,0 +1,28 @@
+<section class="auth-card">
+  <p class="eyebrow">Registro</p>
+  <h1>Crea tu cuenta para vender y comprar</h1>
+  <p class="description">
+    El formulario intenta usar el endpoint de Auth-MS por Gateway. Si el backend aun no expone
+    registro, la app mostrara un aviso sin romper la sesion actual.
+  </p>
+
+  <form class="auth-form" [formGroup]="form" (ngSubmit)="submit()">
+    <label>
+      Usuario
+      <input formControlName="username" type="text" autocomplete="username" />
+    </label>
+
+    <label>
+      Contrasena
+      <input formControlName="password" type="password" autocomplete="new-password" />
+    </label>
+
+    <p *ngIf="errorMessage" class="error">{{ errorMessage }}</p>
+
+    <button type="submit" [disabled]="submitting">Registrar y entrar</button>
+  </form>
+
+  <p class="helper">
+    Ya tienes cuenta? <a routerLink="/login">Ingresar</a>
+  </p>
+</section>

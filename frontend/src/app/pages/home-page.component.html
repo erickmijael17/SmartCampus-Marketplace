@@ -1,0 +1,48 @@
+<section class="hero">
+  <div>
+    <p class="badge">SmartCampus Marketplace</p>
+    <h1>Explora publicaciones sin cuenta y autenticate solo para comprar o vender</h1>
+    <p>
+      El catalogo se consulta desde el gateway y los productos salen del backend real. Para publicar,
+      comprar o chatear necesitas una sesion activa.
+    </p>
+    <div class="hero-actions">
+      <button class="primary-btn" type="button" (click)="goToPublish()">Publicar venta</button>
+      <a routerLink="/login" class="secondary-btn" *ngIf="!isAuthenticated()">Ingresar</a>
+      <button class="secondary-btn" type="button" *ngIf="isAuthenticated()" (click)="logout()">
+        Cerrar sesion
+      </button>
+    </div>
+    <p class="session-state" *ngIf="isAuthenticated(); else guestState">
+      Sesion activa: {{ username() || 'usuario autenticado' }}
+    </p>
+    <ng-template #guestState>
+      <p class="session-state">Sesion no iniciada</p>
+    </ng-template>
+  </div>
+</section>
+
+<section class="listings-section">
+  <ng-container *ngIf="listings$ | async as listings">
+    <div class="section-header">
+      <h2>Publicaciones activas</h2>
+      <p>{{ listings.length }} resultados</p>
+    </div>
+
+    <div class="listings-grid">
+      <article class="listing-card" *ngFor="let listing of listings">
+        <img [src]="listing.imageUrl" [alt]="listing.title" />
+        <div class="content">
+          <span class="meta">{{ listing.categoryLabel }} - {{ listing.status }}</span>
+          <h3>{{ listing.title }}</h3>
+          <p>{{ listing.description }}</p>
+          <div class="footer">
+            <strong>{{ listing.price | currency: listing.currency:'symbol':'1.0-0' }}</strong>
+            <a [routerLink]="['/listing', listing.id]">Ver detalle</a>
+          </div>
+          <small class="seller">{{ listing.sellerLabel }}</small>
+        </div>
+      </article>
+    </div>
+  </ng-container>
+</section>

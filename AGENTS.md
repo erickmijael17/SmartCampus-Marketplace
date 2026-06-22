@@ -127,7 +127,24 @@ Angular:
 - Mantener servicios compartidos en `frontend/src/app/core/services`.
 - Mantener modelos en `frontend/src/app/core/models`.
 - Mantener guards en `frontend/src/app/guards`.
-- Usar `API_BASE_URL` desde `frontend/src/app/core/config/api.config.ts`.
+- Usar `API_CONFIG` desde `frontend/src/app/core/config/api.config.ts`.
+
+## Frontend Angular Agent Guidelines
+
+Los agentes que trabajen en `frontend/` deben mantener la aplicacion Angular alineada con la arquitectura de microservicios del repositorio.
+
+- Trabajar principalmente dentro de `frontend/` y leer primero `frontend/package.json`, `frontend/src/app/app.routes.ts`, `frontend/src/app/core/config/api.config.ts`, servicios afectados y `infra/config/config-repo/gateway-dev.yml`.
+- Todo consumo HTTP del frontend debe pasar por Spring Cloud Gateway. No llamar directamente a puertos de microservicios internos como `8081`, `8082`, `8083` ni equivalentes.
+- La URL base del Gateway debe venir de `frontend/src/app/core/config/api.config.ts`. Para desarrollo local documentado se usa `http://localhost:28082`.
+- Antes de crear o cambiar endpoints en Angular, verificar las rutas reales en `infra/config/config-repo/gateway-dev.yml`; el Gateway enruta internamente con `lb://...`.
+- El flujo de autenticacion esperado es `Angular -> Gateway -> auth-ms -> Keycloak`. Angular no debe llamar directo a Keycloak ni a `auth-ms`.
+- Los tokens deben guardarse, leerse y limpiarse desde `SessionService`. No duplicar manejo de sesion en componentes.
+- Las peticiones autenticadas deben enviar `Authorization: Bearer <token>` mediante un interceptor HTTP, no armando headers manualmente en cada componente.
+- No hardcodear credenciales, passwords, tokens, secretos ni URLs sensibles. Los formularios pueden quedar vacios o usar placeholders no sensibles.
+- Proteger rutas privadas con guards, por ejemplo `/publish`; evitar que usuarios autenticados entren a `/login` o `/register` usando `guest.guard.ts`.
+- Convencion recomendada: `core/config`, `core/models`, `core/services`, `core/interceptors`, `guards`, `shared/components`, `shared/layout` y `pages`.
+- Comandos utiles desde `frontend/`: `npm install`, `npm run build`, `npm start` y `npm test`.
+- No versionar `node_modules/`, `dist/`, `.angular/cache/`, logs ni archivos temporales.
 
 Docker:
 

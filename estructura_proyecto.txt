@@ -5,6 +5,7 @@ Estructura resumida del proyecto actual.
 
 .
 |-- .agents/
+|   |-- frontend-gateway-auth-report.md
 |   |-- test-auth-ms-report.md
 |   `-- fix-auth-ms-keycloak-gateway-report.md
 |-- .github/
@@ -13,9 +14,73 @@ Estructura resumida del proyecto actual.
 |   |-- java-upgrade/
 |   `-- modernize/
 |-- frontend/
+|   |-- .editorconfig
+|   |-- .gitignore
 |   |-- angular.json
+|   |-- package-lock.json
 |   |-- package.json
+|   |-- README.md
+|   |-- tsconfig.app.json
+|   |-- tsconfig.json
+|   |-- tsconfig.spec.json
+|   |-- public/
+|   |   `-- favicon.ico
 |   `-- src/
+|       |-- index.html
+|       |-- main.ts
+|       |-- styles.css
+|       `-- app/
+|           |-- app.config.ts
+|           |-- app.css
+|           |-- app.html
+|           |-- app.routes.ts
+|           |-- app.spec.ts
+|           |-- app.ts
+|           |-- core/
+|           |   |-- config/
+|           |   |   `-- api.config.ts
+|           |   |-- interceptors/
+|           |   |   |-- README.md
+|           |   |   `-- auth-token.interceptor.ts
+|           |   |-- models/
+|           |   |   |-- auth.model.ts
+|           |   |   |-- listing.model.ts
+|           |   |   `-- product.model.ts
+|           |   `-- services/
+|           |       |-- auth-api.service.ts
+|           |       |-- chat.service.ts
+|           |       |-- marketplace.service.ts
+|           |       `-- session.service.ts
+|           |-- guards/
+|           |   |-- auth.guard.ts
+|           |   `-- guest.guard.ts
+|           |-- pages/
+|           |   |-- home-page.component.css
+|           |   |-- home-page.component.html
+|           |   |-- home-page.component.ts
+|           |   |-- listing-detail-page.component.css
+|           |   |-- listing-detail-page.component.html
+|           |   |-- listing-detail-page.component.ts
+|           |   |-- login-page.component.css
+|           |   |-- login-page.component.html
+|           |   |-- login-page.component.ts
+|           |   |-- publish-page.component.css
+|           |   |-- publish-page.component.html
+|           |   |-- publish-page.component.ts
+|           |   |-- register-page.component.css
+|           |   |-- register-page.component.html
+|           |   `-- register-page.component.ts
+|           `-- shared/
+|               |-- components/
+|               |   |-- empty-state/
+|               |   |   `-- README.md
+|               |   |-- loading/
+|               |   |   `-- README.md
+|               |   `-- navbar/
+|               |       `-- README.md
+|               `-- layout/
+|                   `-- main-layout/
+|                       `-- README.md
 |-- infra/
 |   |-- compose.yml
 |   |-- README.md

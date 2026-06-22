@@ -1,0 +1,42 @@
+<section class="publish-wrapper">
+  <p class="eyebrow">Publicacion protegida</p>
+  <h1>Publicar producto o servicio</h1>
+  <p>Completa este formulario para crear una venta real contra el backend.</p>
+
+  <div class="seller-chip" *ngIf="sellerId() as id">
+    Tu ID de vendedor: <strong>{{ id }}</strong>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="submit()" class="publish-form">
+    <label>
+      Titulo
+      <input formControlName="titulo" type="text" placeholder="Ej. Tutorias de Matematicas" />
+    </label>
+
+    <label>
+      Precio (S/)
+      <input formControlName="precio" type="number" min="1" />
+    </label>
+
+    <label>
+      Descripcion
+      <textarea
+        formControlName="descripcion"
+        rows="4"
+        placeholder="Describe que ofreces, estado, horarios o condiciones"
+      ></textarea>
+    </label>
+
+    <label>
+      Categoria
+      <select formControlName="categoriaId">
+        <option *ngFor="let category of categories" [ngValue]="category.id">{{ category.nombre }}</option>
+      </select>
+    </label>
+
+    <p *ngIf="invalid" class="error">Revisa los campos obligatorios y longitudes minimas.</p>
+    <p *ngIf="errorMessage" class="error">{{ errorMessage }}</p>
+
+    <button type="submit" [disabled]="submitting">Publicar venta</button>
+  </form>
+</section>

@@ -1,0 +1,72 @@
+<section *ngIf="loading" class="not-found">
+  <h2>Cargando publicacion...</h2>
+</section>
+
+<ng-container *ngIf="!loading">
+  <ng-container *ngIf="listing as item; else notFound">
+    <section class="detail-grid">
+      <img [src]="item.imageUrl" [alt]="item.title" />
+
+      <div class="info">
+        <a routerLink="/" class="back">Volver al marketplace</a>
+        <p class="meta">{{ item.categoryLabel }} - {{ item.status }}</p>
+        <h1>{{ item.title }}</h1>
+        <p>{{ item.description }}</p>
+
+        <div class="price-line">
+          <strong>{{ item.price | currency: item.currency:'symbol':'1.0-0' }}</strong>
+          <span>{{ item.sellerLabel }}</span>
+        </div>
+
+        <div class="buy-box">
+          <label>
+            Cantidad
+            <input type="number" [(ngModel)]="quantity" min="1" />
+          </label>
+
+          <label>
+            Metodo de pago
+            <select [(ngModel)]="paymentMethod">
+              <option value="TARJETA">Tarjeta</option>
+              <option value="YAPE">Yape</option>
+              <option value="PLIN">Plin</option>
+            </select>
+          </label>
+        </div>
+
+        <button (click)="buyNow()">{{ canBuy ? 'Comprar ahora' : 'Inicia sesion para comprar' }}</button>
+        <p class="status" *ngIf="statusMessage">{{ statusMessage }}</p>
+      </div>
+    </section>
+
+    <section class="chat-card">
+      <div class="chat-header">
+        <div>
+          <p class="meta">Chat privado</p>
+          <h2>Habla con el vendedor</h2>
+        </div>
+        <span class="chat-state">{{ canBuy ? 'Activo con sesion' : 'Inicia sesion para chatear' }}</span>
+      </div>
+
+      <div class="chat-history">
+        <article *ngFor="let message of messages" class="chat-message">
+          <strong>{{ message.author }}</strong>
+          <p>{{ message.text }}</p>
+          <small>{{ message.createdAt | date: 'short' }}</small>
+        </article>
+      </div>
+
+      <div class="chat-composer">
+        <textarea [(ngModel)]="chatMessage" rows="3" placeholder="Hola, sigue disponible?"></textarea>
+        <button type="button" (click)="sendMessage()">Enviar mensaje</button>
+      </div>
+    </section>
+  </ng-container>
+</ng-container>
+
+<ng-template #notFound>
+  <section class="not-found">
+    <h2>Publicacion no encontrada</h2>
+    <a routerLink="/">Regresar al inicio</a>
+  </section>
+</ng-template>

@@ -27,7 +27,9 @@ logs/
 Thumbs.db
 
 # Frontend generated dependencies and build cache
-frontend/
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/cache/
 node_modules/
 dist/
 build/

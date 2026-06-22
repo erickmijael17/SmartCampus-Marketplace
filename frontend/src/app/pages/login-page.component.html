@@ -1,0 +1,27 @@
+<section class="auth-card">
+  <p class="eyebrow">Acceso</p>
+  <h1>Inicia sesion para comprar, publicar y chatear</h1>
+  <p class="description">
+    Puedes explorar el marketplace sin cuenta, pero para comprar o vender necesitas una sesion activa.
+  </p>
+
+  <form class="auth-form" [formGroup]="form" (ngSubmit)="submit()">
+    <label>
+      Usuario
+      <input formControlName="username" type="text" autocomplete="username" />
+    </label>
+
+    <label>
+      Contrasena
+      <input formControlName="password" type="password" autocomplete="current-password" />
+    </label>
+
+    <p *ngIf="errorMessage" class="error">{{ errorMessage }}</p>
+
+    <button type="submit" [disabled]="submitting">Ingresar</button>
+  </form>
+
+  <p class="helper">
+    Aun no tienes cuenta? <a routerLink="/register">Crear cuenta</a>
+  </p>
+</section>

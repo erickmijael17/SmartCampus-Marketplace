@@ -1,0 +1,18 @@
+<header class="topbar">
+  <a routerLink="/" class="brand">{{ title }}</a>
+  <nav>
+    <a routerLink="/">Marketplace</a>
+    <a routerLink="/publish">Publicar</a>
+    @if (isAuthenticated()) {
+      <span class="user-chip">{{ username() }}</span>
+      <button type="button" class="ghost-btn" (click)="logout()">Salir</button>
+    } @else {
+      <a routerLink="/login">Ingresar</a>
+      <a routerLink="/register">Registro</a>
+    }
+  </nav>
+</header>
+
+<main class="shell">
+  <router-outlet></router-outlet>
+</main>
