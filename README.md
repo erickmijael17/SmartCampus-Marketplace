@@ -1,55 +1,96 @@
-# SmartCampus Marketplace - Microservicios
+# SmartCampus Marketplace
 
-Este proyecto es una plataforma de mercado digital universitaria basada en una arquitectura de microservicios robusta y moderna, diseñada para correr sobre Docker con seguridad centralizada mediante **Keycloak (OAuth2 / OIDC)** y observabilidad avanzada.
+Plataforma de mercado digital universitario basada en microservicios. El backend usa Spring Boot, Spring Cloud Config, Eureka, Spring Cloud Gateway, Keycloak, PostgreSQL, Flyway, Kafka y un stack de observabilidad con Prometheus, Loki, Promtail y Grafana.
 
----
+El despliegue documentado del proyecto se realiza con Docker Compose. El API Gateway es el punto unico de entrada HTTP para los microservicios.
 
-## 🚀 Arquitectura del Proyecto
+## Arquitectura
 
-El ecosistema se organiza de la siguiente manera:
+1. **Identidad y seguridad**
+   - Keycloak emite tokens JWT para el realm `smartcampus`.
+   - `auth-ms` conserva la ruta de login `/auth/login` y delega la autenticacion a Keycloak.
+   - Los microservicios validan JWT con `issuer-uri` y `jwk-set-uri`.
 
-1. **Seguridad e Identidad (IdP)**:
-   * **Keycloak**: Servidor de identidad y acceso que gestiona los usuarios, roles (**`ADMIN`**, **`ESTUDIANTE`**, **`VENDEDOR`**, **`MODERADOR`**) y emite tokens JWT firmados asimétricamente (RS256).
-   * **PostgreSQL (Keycloak)**: Almacenamiento persistente dedicado para Keycloak.
+2. **Infraestructura**
+   - `infra/config`: Config Server.
+   - `infra/eureka`: Service discovery.
+   - `infra/gateway`: Gateway HTTP unico, con rutas `lb://...` hacia Eureka.
+   - `keycloak`: compose e import del realm `smartcampus`.
 
-2. **Infraestructura**:
-   * **Config Server**: Servidor de configuración centralizado.
-   * **Eureka Server**: Descubrimiento y registro dinámico de microservicios.
-   * **API Gateway (Spring Cloud Gateway)**: Punto de entrada único que actúa como OAuth2 Client y Resource Server, propagando tokens de acceso a los microservicios mediante `TokenRelay`.
+3. **Microservicios**
+   - `auth-ms`, `producto-ms`, `catalogo-ms`, `categoria-ms`, `carrito-ms`, `orden-ms`, `pago-ms`, `inventario-ms`, `favoritos-ms`, `chat-ms`, `notification-ms`, `media-ms`, `calificacion-ms`, `persona-ms`, `publicacion-ms` y `search-ms`.
 
-3. **Microservicios (16 en total)**:
-   * **auth-ms**: Proxy de login que delega las credenciales a Keycloak para mantener retrocompatibilidad.
-   * **producto-ms**, **catalogo-ms**, **categoria-ms**, **carrito-ms**, **orden-ms**, **pago-ms**, **inventario-ms**, **favoritos-ms**, **chat-ms**, **notification-ms**, **media-ms**, **calificacion-ms**, **persona-ms**, **publicacion-ms**, **search-ms**.
-   * Todos los microservicios actúan como **OAuth2 Resource Servers** que validan la firma de los tokens dinámicamente usando las claves públicas de Keycloak (JWKS).
+4. **Eventos y observabilidad**
+   - Kafka para mensajeria asincrona.
+   - Prometheus, Loki, Promtail y Grafana para metricas y logs.
 
-4. **Mensajería y Eventos**:
-   * **Apache Kafka**: Broker de eventos asíncronos para la comunicación entre servicios (ej. Órdenes y Pagos).
+## Requisitos
 
-5. **Observabilidad y Monitoreo**:
-   * Stack integrado con **Prometheus**, **Loki**, **Promtail** y **Grafana** (con Ingress TLS).
+- Java 17
+- Maven 3.8+
+- Docker Desktop o Docker Engine
+- Make opcional para usar los atajos del `Makefile`
 
----
+## Puertos principales
 
-## 🛠️ Requisitos Previos
+| Servicio | URL |
+|---|---|
+| Gateway | `http://localhost:28082` |
+| Config Server | `http://localhost:28888` |
+| Eureka | `http://localhost:28761` |
+| Keycloak | `http://localhost:8080` |
+| Kafka UI | `http://localhost:28085` |
+| Grafana | `http://localhost:23000` |
 
-Para ejecutar la arquitectura completa, asegúrate de tener instalado:
-* **Java JDK 17 o superior**
-* **Maven 3.8+**
-* **Docker Desktop / Docker Engine** (mínimo 6GB de RAM asignada)
+Los microservicios no deben publicarse directamente al host por HTTP. En Docker Compose quedan accesibles por red interna y se consumen a traves del Gateway.
 
----
+## Inicio rapido
 
-# Compila, levanta las imágenes locales y sincroniza el código en tiempo real
-skaffold dev --load-restrictor=LoadRestrictionsNone
+```bash
+make compose-infra
+make compose-keycloak
+make compose-kafka
+make compose-obs
 ```
 
-# Ejecuta el despliegue secuencial por fases
-./k8s/scripts/deploy.sh
+Tambien puedes levantar todo lo anterior con:
+
+```bash
+make compose-all
 ```
 
----
+Para levantar un microservicio especifico:
 
-## 📖 Documentación Relacionada
+```bash
+make compose-ms MS=auth-ms
+```
 
-* [Guía de Inicialización y Despliegue Paso a Paso](GUIA_ESTUDIANTE.md): Instrucciones completas para arrancar el sistema desde cero y probar la seguridad.
-* [Walkthrough de la Migración a Keycloak](file:///C:/Users/USUARIO/.gemini/antigravity-ide/brain/7bd9ba1d-7195-4777-aedf-798d123f0e97/walkthrough.md): Resumen técnico de los cambios de seguridad, convertidores de roles y TLS.
+## Verificaciones utiles
+
+```bash
+curl http://localhost:28082/actuator/health
+curl http://localhost:28761
+curl http://127.0.0.1:8080/realms/smartcampus/.well-known/openid-configuration
+curl http://127.0.0.1:8080/realms/smartcampus/protocol/openid-connect/certs
+```
+
+## Login por Gateway
+
+`auth-ms` debe estar registrado en Eureka como `AUTH-MS`. El cliente externo usa siempre Gateway:
+
+```http
+POST http://localhost:28082/auth/login
+Content-Type: application/json
+
+{
+  "username": "usuario",
+  "password": "clave"
+}
+```
+
+## Documentacion relacionada
+
+- [Guia del estudiante](GUIA_ESTUDIANTE.md)
+- [Infraestructura](infra/README.md)
+- [Gateway](infra/gateway/README.md)
+- [Auth MS](servicio/auth-ms/README.md)

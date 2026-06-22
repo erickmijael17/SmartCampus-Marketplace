@@ -1,41 +1,94 @@
-# Guía del Estudiante: Despliegue de SmartCampus Marketplace en Docker Compose
+# Guia del Estudiante: SmartCampus Marketplace con Docker Compose
 
-Esta guía está diseñada para que puedas desplegar, configurar y probar el proyecto **SmartCampus Marketplace** en un entorno de Docker desde cero en cualquier computadora.
+Esta guia resume como levantar y probar el backend de SmartCampus Marketplace usando Docker Compose.
 
----
+## 1. Requisitos
 
-## 1. Requisitos del Entorno
+- Java JDK 17
+- Maven
+- Docker Desktop o Docker Engine
+- Make opcional
 
-Antes de iniciar, instala y verifica los siguientes componentes:
-- **Java JDK 17** (asegúrate de configurar `JAVA_HOME`).
-- **Maven** (verifica con `mvn -version`).
+## 2. Levantar servicios base
 
----
+Desde la raiz del repositorio:
 
+```bash
+make compose-infra
+make compose-keycloak
+make compose-kafka
+make compose-obs
+```
 
+O en un solo paso:
 
-## 2. ¿Cómo Probar la Autenticación y Autorización?
+```bash
+make compose-all
+```
 
+Servicios esperados:
 
-El microservicio `auth-ms` actúa como un proxy transparente de transición hacia Keycloak. Para obtener un Token JWT firmado por Keycloak:
+- Gateway: `http://localhost:28082`
+- Eureka: `http://localhost:28761`
+- Config Server: `http://localhost:28888`
+- Keycloak: `http://localhost:8080`
+- Kafka UI: `http://localhost:28085`
+- Grafana: `http://localhost:23000`
 
-1. Realiza una petición `POST` a la ruta antigua:
-   ```http
-   POST http://localhost:28082/auth/login
-   Content-Type: application/json
+## 3. Levantar microservicios
 
-   {
-     "username": "usuario_prueba",
-     "password": "clave_usuario"
-   }
-   ```
-2. La respuesta contendrá el Token JWT emitido por Keycloak, sus roles y datos de expiración.
+Cada microservicio se levanta con su compose propio:
 
-### Consumir Recursos Protegidos por Rol
-Los microservicios validan dinámicamente la firma del JWT usando JWKS y extraen las autoridades del claim `realm_access.roles`.
+```bash
+make compose-ms MS=auth-ms
+make compose-ms MS=producto-ms
+make compose-ms MS=catalogo-ms
+```
 
-* **Prueba 1 (Acceso Concedido)**: Realiza un `POST` a `/api/v1/productos/` (que requiere rol `ADMIN`) incluyendo el header `Authorization: Bearer <TU_TOKEN_JWT_ADMIN>`. Obtendrás una respuesta exitosa (HTTP 201/200).
-* **Prueba 2 (Acceso Denegado)**: Realiza la misma petición con un token de rol normal (ej. `ESTUDIANTE`). Obtendrás un error HTTP 403 Forbidden.
+Los microservicios no exponen su puerto HTTP al host. Deben consumirse a traves del Gateway.
 
----
+## 4. Probar Keycloak
 
+```bash
+curl http://127.0.0.1:8080/realms/smartcampus/.well-known/openid-configuration
+curl http://127.0.0.1:8080/realms/smartcampus/protocol/openid-connect/certs
+```
+
+El realm `smartcampus` y el cliente `marketplace-client` se importan desde `keycloak/realm-smartcampus.json`.
+
+## 5. Probar autenticacion
+
+`auth-ms` funciona como proxy de login hacia Keycloak. La peticion externa debe ir por Gateway:
+
+```http
+POST http://localhost:28082/auth/login
+Content-Type: application/json
+
+{
+  "username": "usuario_prueba",
+  "password": "clave_usuario"
+}
+```
+
+La respuesta incluye el JWT emitido por Keycloak, el tipo de token, expiracion, username y roles.
+
+## 6. Probar autorizacion
+
+Los microservicios validan la firma del JWT con JWKS y leen roles desde `realm_access.roles`.
+
+- Con rol `ADMIN`, probar una operacion protegida como `POST /api/v1/productos`.
+- Con un usuario sin el rol requerido, la respuesta esperada es `403 Forbidden`.
+
+Siempre llamar a los endpoints por Gateway:
+
+```text
+http://localhost:28082/api/v1/productos
+http://localhost:28082/api/v1/carritos
+http://localhost:28082/api/v1/inventarios
+```
+
+## 7. Apagar el entorno
+
+```bash
+make compose-down
+```

@@ -1,4 +1,4 @@
-﻿name: ecom-favoritos-ms-prod
+name: ecom-favoritos-ms-prod
 
 services:
   postgres-favoritos-ms:
@@ -38,8 +38,8 @@ services:
       DB_NAME: ${DB_NAME}
       DB_USER: ${DB_USER}
       DB_PASS: ${DB_PASS}
-    ports:
-      - '8050:8080'
+    expose:
+      - '8080'
     volumes:
       - ./logs:/app/logs
     networks:

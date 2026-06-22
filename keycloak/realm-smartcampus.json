@@ -1,0 +1,55 @@
+{
+  "realm": "smartcampus",
+  "enabled": true,
+  "displayName": "SmartCampus Marketplace",
+  "roles": {
+    "realm": [
+      {
+        "name": "ADMIN",
+        "description": "Administrador del marketplace"
+      },
+      {
+        "name": "USER",
+        "description": "Usuario autenticado del marketplace"
+      }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "marketplace-client",
+      "name": "SmartCampus Marketplace Client",
+      "enabled": true,
+      "publicClient": true,
+      "protocol": "openid-connect",
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": false,
+      "redirectUris": [
+        "http://localhost:4200/*",
+        "http://localhost:18080/*",
+        "http://localhost:28082/*"
+      ],
+      "webOrigins": [
+        "http://localhost:4200",
+        "http://localhost:18080",
+        "http://localhost:28082"
+      ],
+      "attributes": {
+        "pkce.code.challenge.method": "S256"
+      },
+      "defaultClientScopes": [
+        "web-origins",
+        "acr",
+        "profile",
+        "roles",
+        "email"
+      ],
+      "optionalClientScopes": [
+        "address",
+        "phone",
+        "offline_access",
+        "microprofile-jwt"
+      ]
+    }
+  ]
+}

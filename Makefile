@@ -131,6 +131,11 @@ compose-infra: ## Levantar infraestructura con Docker Compose
 compose-kafka: ## Levantar Kafka con Docker Compose
 	docker compose -f kafka/compose.yml up -d
 
+.PHONY: compose-keycloak
+compose-keycloak: ## Levantar Keycloak con Docker Compose
+	docker network create ecom-prod-net 2>/dev/null || true
+	docker compose -f keycloak/compose.yml up -d
+
 .PHONY: compose-obs
 compose-obs: ## Levantar observabilidad con Docker Compose
 	docker compose -f obs/compose.yml up -d
@@ -141,12 +146,13 @@ compose-ms: ## Levantar un microservicio específico (MS=auth-ms)
 	docker compose -f servicio/$(MS)/compose.yml up -d
 
 .PHONY: compose-all
-compose-all: compose-infra compose-kafka compose-obs ## Levantar toda la plataforma en Docker Compose
+compose-all: compose-infra compose-keycloak compose-kafka compose-obs ## Levantar toda la plataforma en Docker Compose
 	@echo -e "$(GREEN)[COMPOSE]$(NC) ✓ Plataforma completa levantada"
 
 .PHONY: compose-down
 compose-down: ## Detener todos los servicios Docker Compose
 	docker compose -f infra/compose.yml down 2>/dev/null || true
+	docker compose -f keycloak/compose.yml down 2>/dev/null || true
 	docker compose -f kafka/compose.yml down 2>/dev/null || true
 	docker compose -f obs/compose.yml down 2>/dev/null || true
 	@for svc in auth-ms carrito-ms catalogo-ms inventario-ms orden-ms pago-ms producto-ms $(NEW_SERVICES); do \

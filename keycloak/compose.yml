@@ -1,0 +1,31 @@
+name: ecom-keycloak
+
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:25.0.6
+    container_name: keycloak
+    restart: unless-stopped
+    command:
+      - start-dev
+      - --import-realm
+    environment:
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+      KC_HTTP_ENABLED: "true"
+      KC_HOSTNAME_STRICT: "false"
+      KC_PROXY_HEADERS: xforwarded
+    ports:
+      - "${KEYCLOAK_HTTP_PORT:-8080}:8080"
+    volumes:
+      - ./realm-smartcampus.json:/opt/keycloak/data/import/realm-smartcampus.json:ro
+      - ecom_keycloak_data:/opt/keycloak/data
+    networks:
+      - ecom-prod-net
+
+volumes:
+  ecom_keycloak_data:
+
+networks:
+  ecom-prod-net:
+    external: true
+    name: ecom-prod-net

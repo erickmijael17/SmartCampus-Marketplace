@@ -1,4 +1,4 @@
-﻿name: ecom-notification-ms-prod
+name: ecom-notification-ms-prod
 
 services:
   postgres-notification-ms:
@@ -38,8 +38,8 @@ services:
       DB_NAME: ${DB_NAME}
       DB_USER: ${DB_USER}
       DB_PASS: ${DB_PASS}
-    ports:
-      - '8048:8080'
+    expose:
+      - '8080'
     volumes:
       - ./logs:/app/logs
     networks:

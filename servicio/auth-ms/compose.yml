@@ -32,14 +32,15 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
       CONFIG_SERVER_URL: ${CONFIG_SERVER_URL}
+      KEYCLOAK_URL: ${KEYCLOAK_URL:-http://keycloak:8080}
       JWT_SECRET: ${JWT_SECRET}
       DB_HOST: ecom-postgres-auth
       DB_PORT: 5432
       DB_NAME: ${DB_NAME}
       DB_USER: ${DB_USER}
       DB_PASS: ${DB_PASS}
-    ports:
-      - "8042:8080"
+    expose:
+      - "8080"
     volumes:
       - ./logs:/app/logs
     networks:

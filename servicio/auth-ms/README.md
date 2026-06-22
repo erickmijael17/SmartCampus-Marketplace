@@ -1,54 +1,61 @@
 # auth-ms
 
-Microservicio de autenticación. Registra usuarios, realiza login y emite JWT.
+Microservicio de autenticacion. Mantiene la ruta de login del sistema y delega la autenticacion a Keycloak mediante password grant.
 
 ## Puertos
 
 | Recurso | DEV | PROD Docker |
 |---|---:|---:|
-| App | dinámico (`server.port: 0`) | 8042 -> 8080 |
+| App | dinamico (`server.port: 0`) | interno `8080` |
 | PostgreSQL | 15431 | 25431 -> 5432 |
 
-## DEV (Maven)
+`auth-ms` no publica su puerto HTTP al host en Docker Compose. El acceso externo debe hacerse por Gateway.
+
+## DEV con Maven
 
 ```bash
-cd services/auth-ms
+cd servicio/auth-ms
 docker compose -f compose-dev.yml up -d
 mvn spring-boot:run -Dspring-boot.run.profiles=dev
 ```
 
-Ver en Eureka DEV: http://localhost:18761
+Ver en Eureka DEV: `http://localhost:18761`
 
-## PROD (Docker)
+## PROD con Docker Compose
 
 ```bash
-cd services/auth-ms
-docker compose up -d --build
+make compose-ms MS=auth-ms
 ```
 
 Links:
-- Eureka PROD: http://localhost:28761
-- Gateway PROD: http://localhost:28080
-- Directo al servicio: http://localhost:8042/actuator/health
+
+- Eureka PROD: `http://localhost:28761`
+- Gateway PROD: `http://localhost:28082`
+- Login por Gateway: `POST http://localhost:28082/auth/login`
 - Base de datos: `localhost:25431`
 
-## Ver la BD desde un IDE
+## Variables relevantes
 
-| Campo | Valor |
-|---|---|
-| Motor | PostgreSQL |
-| Host | `localhost` |
-| Puerto | `25431` |
-| Database | `ecom_auth_db` |
-| User | `ecom` |
-| Password | `ecom` |
+- `CONFIG_SERVER_URL`
+- `KEYCLOAK_URL`
+- `JWT_SECRET`
+- `DB_HOST`
+- `DB_PORT`
+- `DB_NAME`
+- `DB_USER`
+- `DB_PASS`
 
 ## Endpoints
 
-- `POST /auth/register`
 - `POST /auth/login`
 - `GET /actuator/health`
 
-## JWT
+## Keycloak
 
-`JWT_SECRET` debe coincidir con `infra/.env` para que Gateway valide los tokens emitidos por Auth.
+`auth-ms` llama a:
+
+```text
+${KEYCLOAK_URL}/realms/smartcampus/protocol/openid-connect/token
+```
+
+La respuesta se parsea para devolver `preferred_username` y `realm_access.roles`.

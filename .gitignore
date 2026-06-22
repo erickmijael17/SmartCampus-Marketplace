@@ -1,0 +1,39 @@
+# Maven / Java build output
+target/
+**/target/
+*.class
+
+# Test and local reports
+surefire-reports/
+**/surefire-reports/
+*.dump
+*.dumpstream
+
+# Logs
+logs/
+**/logs/
+*.log
+*.log.gz
+
+# IDE / editor local files
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# OS temporary files
+.DS_Store
+Thumbs.db
+
+# Frontend generated dependencies and build cache
+frontend/
+node_modules/
+dist/
+build/
+.angular/cache/
+
+# Environment files with local secrets
+.env
+.env.*
+!.env.example

@@ -4,8 +4,8 @@ spring:
       default-filters:
         - TokenRelay
       routes:
-        - id: keycloak-route
-          uri: ${KEYCLOAK_URL:http://keycloak:8080}
+        - id: auth-route
+          uri: lb://auth-ms
           predicates:
             - Path=/auth/**
         - id: catalogo-route
