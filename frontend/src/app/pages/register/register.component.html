@@ -1,0 +1,34 @@
+<main class="auth-register">
+  <section class="panel register-card">
+    <a routerLink="/" class="brand"><span>SC</span> SmartCampus</a>
+    <h1>Crea tu cuenta</h1>
+    <p class="muted">Únete al marketplace de tu universidad.</p>
+
+    <form (ngSubmit)="submit()">
+      <label>Nombre completo <input class="field" name="fullName" [(ngModel)]="fullName" required></label>
+      <label>Correo institucional <input class="field" type="email" name="email" [(ngModel)]="email" required></label>
+      <label>Contraseña <input class="field" type="password" name="password" [(ngModel)]="password" required></label>
+      <div class="row">
+        <label>Tipo de usuario
+          <select class="field" name="userType" [(ngModel)]="userType">
+            <option>Estudiante</option>
+            <option>Docente</option>
+            <option>Administrativo</option>
+          </select>
+        </label>
+        <label>Ciclo
+          <select class="field" name="cycle" [(ngModel)]="cycle">
+            <option>1er ciclo</option>
+            <option>2do ciclo</option>
+            <option>3er ciclo</option>
+            <option>4to ciclo</option>
+            <option>5to ciclo</option>
+          </select>
+        </label>
+      </div>
+      <label>Carrera <input class="field" name="career" [(ngModel)]="career"></label>
+      <button class="btn btn-primary" type="submit">Crear cuenta</button>
+    </form>
+    <p class="login">¿Ya tienes cuenta? <a routerLink="/login">Iniciar sesión</a></p>
+  </section>
+</main>

@@ -132,7 +132,6 @@ Estructura resumida del proyecto actual.
 |   `-- search-ms/
 |-- AGENTS.md
 |-- GUIA_ESTUDIANTE.md
-|-- Makefile
 |-- README.md
 `-- estructura_proyecto.txt
 

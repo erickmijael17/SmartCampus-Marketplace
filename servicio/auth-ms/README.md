@@ -24,7 +24,7 @@ Ver en Eureka DEV: `http://localhost:18761`
 ## PROD con Docker Compose
 
 ```bash
-make compose-ms MS=auth-ms
+docker compose -f servicio/auth-ms/compose.yml up -d --build
 ```
 
 Links:

@@ -1,0 +1,18 @@
+<article class="card">
+  <a [routerLink]="['/listing', product.id]" class="image-wrap" [attr.aria-label]="product.title">
+    <img [src]="product.image" [alt]="product.title">
+    <span [class]="conditionClass()">{{ product.condition }}</span>
+  </a>
+  <div class="body">
+    <div class="meta">
+      <span>{{ product.category }}</span>
+      <span>★ {{ product.rating }}</span>
+    </div>
+    <h3><a [routerLink]="['/listing', product.id]">{{ product.title }}</a></h3>
+    <p>{{ product.description }}</p>
+    <div class="footer">
+      <strong>{{ product.price }}</strong>
+      <span>{{ product.location }}</span>
+    </div>
+  </div>
+</article>

@@ -1,0 +1,51 @@
+<main class="page profile-page">
+  <section class="cover"></section>
+  <div class="container profile">
+    @if (user) {
+      <header class="profile-head">
+        <div class="avatar">{{ user.initials }}</div>
+        <div>
+          <h1>{{ user.fullName }}</h1>
+          <p class="muted">{{ user.career }} · {{ user.cycle }} · UTP</p>
+          <span class="muted">★ {{ user.rating }} · {{ user.reviews }} reseñas</span>
+        </div>
+        <button class="btn btn-ghost" type="button">Editar perfil</button>
+      </header>
+
+      <section class="stats">
+        <article class="panel"><strong>{{ user.published }}</strong><span>Publicaciones</span></article>
+        <article class="panel"><strong>{{ user.sales }}</strong><span>Ventas</span></article>
+        <article class="panel"><strong>{{ user.favorites }}</strong><span>Favoritos</span></article>
+      </section>
+
+      <nav class="tabs">
+        <button [class.active]="activeTab === 'publicaciones'" (click)="activeTab = 'publicaciones'">Mis publicaciones</button>
+        <button [class.active]="activeTab === 'favoritos'" (click)="activeTab = 'favoritos'">Favoritos</button>
+        <button [class.active]="activeTab === 'resenas'" (click)="activeTab = 'resenas'">Reseñas</button>
+      </nav>
+
+      @if (activeTab === 'publicaciones') {
+        <div class="grid">
+          @for (product of products; track product.id) {
+            <app-listing-card [product]="product" />
+          }
+        </div>
+      } @else if (activeTab === 'favoritos') {
+        <section class="panel empty">Aún no tienes favoritos guardados.</section>
+      } @else {
+        <section class="reviews">
+          <article class="panel">
+            <b>María Quispe</b>
+            <span>★★★★★ · 15 Jun 2026</span>
+            <p>Excelente vendedor, muy responsable y puntual. El libro estaba en perfecto estado.</p>
+          </article>
+          <article class="panel">
+            <b>Carlos Pérez</b>
+            <span>★★★★☆ · 10 Jun 2026</span>
+            <p>Buena atención, respondió rápido a mis mensajes. Recomendado.</p>
+          </article>
+        </section>
+      }
+    }
+  </div>
+</main>

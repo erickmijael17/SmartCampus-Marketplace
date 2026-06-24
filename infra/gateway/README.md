@@ -15,10 +15,13 @@ Las rutas del Gateway se configuran en `infra/config/config-repo/gateway-dev.yml
 
 Ejemplos:
 
-- `/auth/**` -> `lb://auth-ms`
-- `/api/v1/productos/**` -> `lb://producto-ms`
-- `/api/v1/carritos/**` -> `lb://carrito-ms`
-- `/api/v1/inventarios/**` -> `lb://inventario-ms`
+- `/auth/**` -> `lb://AUTH-MS`
+- `/api/v1/productos/**` -> `lb://PRODUCTO-MS`
+- `/api/v1/carritos/**` -> `lb://CARRITO-MS`
+- `/api/v1/inventarios/**` -> `lb://INVENTARIO-MS`
+- `/api/v1/categorias/**` -> `lb://CATEGORIA-MS`
+- `/api/v1/publicaciones/**` -> `lb://PUBLICACION-MS`
+- `/api/v1/chat/**` -> `lb://CHAT-MS`
 
 ## Seguridad
 
@@ -35,7 +38,7 @@ Para que funcione, `auth-ms` debe estar levantado y registrado en Eureka como `A
 ## PROD Docker
 
 ```bash
-make compose-infra
+docker compose -f infra/compose.yml up -d --build
 ```
 
 Verificar:

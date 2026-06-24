@@ -1,0 +1,48 @@
+<main class="chat-page">
+  <div class="chat-shell">
+    <aside class="threads panel" [class.hidden-mobile]="!showList">
+      <header>
+        <h1>Mensajes</h1>
+        <input class="field" type="search" placeholder="Buscar conversación...">
+      </header>
+      @for (thread of threads; track thread.id) {
+        <button type="button" class="thread" [class.active]="activeThread?.id === thread.id" (click)="selectThread(thread)">
+          <span class="avatar">{{ thread.avatar }}</span>
+          <span class="thread-copy">
+            <b>{{ thread.name }}</b>
+            <small>sobre {{ thread.subject }}</small>
+            <span>{{ thread.lastMsg }}</span>
+          </span>
+          <time>{{ thread.time }}</time>
+        </button>
+      }
+    </aside>
+
+    <section class="conversation panel" [class.hidden-mobile]="showList">
+      @if (activeThread) {
+        <header class="conversation-head">
+          <button class="back" type="button" (click)="showList = true">←</button>
+          <span class="avatar">{{ activeThread.avatar }}</span>
+          <div>
+            <b>{{ activeThread.name }}</b>
+            <small>sobre {{ activeThread.subject }}</small>
+          </div>
+          <span class="online">En línea</span>
+        </header>
+
+        <div class="messages">
+          @for (msg of messages; track $index) {
+            <div class="bubble-row" [class.mine]="msg.from === 'me'">
+              <div class="bubble">{{ msg.text }}<small>{{ msg.time }}</small></div>
+            </div>
+          }
+        </div>
+
+        <form class="composer" (ngSubmit)="send()">
+          <input class="field" name="message" [(ngModel)]="message" placeholder="Escribe un mensaje...">
+          <button class="btn btn-primary" type="submit">Enviar</button>
+        </form>
+      }
+    </section>
+  </div>
+</main>

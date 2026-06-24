@@ -27,13 +27,13 @@ logs/
 Thumbs.db
 
 # Frontend generated dependencies and build cache
-frontend/node_modules/
-frontend/dist/
-frontend/.angular/cache/
 node_modules/
 dist/
 build/
 .angular/cache/
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/cache/
 
 # Environment files with local secrets
 .env

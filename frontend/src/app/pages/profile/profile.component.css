@@ -1,0 +1,121 @@
+.profile-page {
+  padding-top: 66px;
+}
+
+.cover {
+  height: 190px;
+  background: linear-gradient(120deg, var(--primary), #38bdf8);
+}
+
+.profile {
+  margin-top: -54px;
+}
+
+.profile-head {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 1rem;
+  align-items: end;
+}
+
+.avatar {
+  width: 108px;
+  height: 108px;
+  border: 6px solid #fff;
+  border-radius: 26px;
+  display: grid;
+  place-items: center;
+  background: var(--primary);
+  color: #fff;
+  font-size: 1.55rem;
+  font-weight: 900;
+  box-shadow: var(--shadow);
+}
+
+h1 {
+  margin: 0;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+.stats article {
+  padding: 1rem;
+}
+
+.stats strong {
+  display: block;
+  font-size: 1.75rem;
+  color: var(--primary);
+}
+
+.stats span {
+  color: var(--text-muted);
+}
+
+.tabs {
+  display: inline-flex;
+  gap: 0.35rem;
+  padding: 0.35rem;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: #fff;
+  margin-bottom: 1rem;
+}
+
+.tabs button {
+  border: 0;
+  border-radius: 10px;
+  padding: 0.7rem 1rem;
+  background: transparent;
+  color: var(--text-muted);
+  font-weight: 900;
+}
+
+.tabs button.active {
+  background: var(--primary);
+  color: #fff;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.empty {
+  padding: 3rem;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.reviews {
+  display: grid;
+  gap: 1rem;
+}
+
+.reviews article {
+  padding: 1rem;
+}
+
+.reviews span,
+.reviews p {
+  display: block;
+  color: var(--text-muted);
+}
+
+@media (max-width: 900px) {
+  .profile-head,
+  .stats,
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-head {
+    align-items: start;
+  }
+}

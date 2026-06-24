@@ -111,6 +111,51 @@ export class MarketplaceService {
       );
   }
 
+  getProducts(): Observable<MarketplaceListing[]> {
+    return this.getListings();
+  }
+
+  getProductById(id: number): Observable<MarketplaceListing> {
+    return this.getListingById(id);
+  }
+
+  getSimilarProducts(product: MarketplaceListing): Observable<MarketplaceListing[]> {
+    return this.getListings().pipe(map(items => items.filter(i => i.id !== product.id).slice(0, 4)));
+  }
+
+  getCurrentUser(): Observable<any> {
+    return new Observable(sub => {
+      sub.next({
+        id: this.sessionService.userId()?.toString() || '0',
+        fullName: this.sessionService.username() || 'Usuario Local',
+        initials: (this.sessionService.username() || 'U').substring(0, 2).toUpperCase(),
+        email: this.sessionService.username() + '@example.com',
+        career: 'Ingeniería de Sistemas',
+        cycle: '3er ciclo',
+        rating: 4.8,
+        reviews: 12,
+        published: 5,
+        sales: 3,
+        favorites: 8
+      });
+      sub.complete();
+    });
+  }
+
+  getUserProducts(): Observable<MarketplaceListing[]> {
+    const userId = this.sessionService.userId();
+    return this.getListings().pipe(map(items => items.filter(i => i.sellerId === userId)));
+  }
+
+  publishListing(model: any): Observable<MarketplaceListing> {
+    return this.createListing({
+      titulo: model.title,
+      descripcion: model.description,
+      precio: Number(model.price) || 0,
+      categoriaId: 1
+    });
+  }
+
   private requireUserId(): number {
     const userId = this.sessionService.userId();
     if (!userId) {

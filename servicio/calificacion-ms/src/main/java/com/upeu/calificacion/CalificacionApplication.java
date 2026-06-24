@@ -1,4 +1,4 @@
-﻿package com.upeu.calificacion;
+package com.upeu.calificacion;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

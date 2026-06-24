@@ -1,4 +1,4 @@
-﻿package com.upeu.media;
+package com.upeu.media;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

@@ -29,7 +29,6 @@ El despliegue documentado del proyecto se realiza con Docker Compose. El API Gat
 - Java 17
 - Maven 3.8+
 - Docker Desktop o Docker Engine
-- Make opcional para usar los atajos del `Makefile`
 
 ## Puertos principales
 
@@ -47,22 +46,16 @@ Los microservicios no deben publicarse directamente al host por HTTP. En Docker 
 ## Inicio rapido
 
 ```bash
-make compose-infra
-make compose-keycloak
-make compose-kafka
-make compose-obs
-```
-
-Tambien puedes levantar todo lo anterior con:
-
-```bash
-make compose-all
+docker compose -f infra/compose.yml up -d --build
+docker compose -f keycloak/compose.yml up -d
+docker compose -f kafka/compose.yml up -d
+docker compose -f obs/compose.yml up -d
 ```
 
 Para levantar un microservicio especifico:
 
 ```bash
-make compose-ms MS=auth-ms
+docker compose -f servicio/auth-ms/compose.yml up -d --build
 ```
 
 ## Verificaciones utiles

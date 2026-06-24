@@ -54,7 +54,6 @@ El despliegue documentado del repositorio se realiza con Docker Compose.
 - `kafka/`: Docker Compose para Kafka, Kafka UI y exporter.
 - `obs/`: Prometheus, Loki, Promtail y Grafana.
 - `servicio/`: microservicios de dominio y soporte.
-- `Makefile`: comandos para construir imagenes y levantar servicios.
 - `README.md` y `GUIA_ESTUDIANTE.md`: documentacion principal.
 
 ## 4. Arquitectura general
@@ -156,23 +155,6 @@ Docker:
 
 ## 8. Comandos utiles
 
-- `make help`
-- `make build-infra`
-- `make build-services`
-- `make build-all`
-- `make push-all`
-- `make release`
-- `make compose-infra`
-- `make compose-keycloak`
-- `make compose-kafka`
-- `make compose-obs`
-- `make compose-ms MS=auth-ms`
-- `make compose-all`
-- `make compose-down`
-- `make images-list`
-
-Docker Compose directos:
-
 - `docker compose -f infra/compose.yml up -d --build`
 - `docker compose -f keycloak/compose.yml up -d`
 - `docker compose -f kafka/compose.yml up -d`
@@ -225,7 +207,24 @@ Verificacion de estado:
 - caches o artefactos de herramientas
 - `.env` con secretos reales
 
-## 11. Formato de respuesta esperado
+## 11. Frontend Migration Guidelines
+
+- El frontend oficial del repositorio es Angular y vive en `frontend/`.
+- No mantener React como segundo frontend dentro del repositorio.
+- No copiar archivos `.tsx` o `.jsx` al frontend Angular.
+- No instalar React, React DOM, Vite, Radix, shadcn ni `lucide-react` dentro de `frontend/`.
+- Toda integracion HTTP del frontend debe pasar por Spring Cloud Gateway.
+- Usar `frontend/src/app/core/config/api.config.ts` para centralizar la URL base y endpoints del Gateway.
+- Usar `SessionService` para leer, persistir y limpiar la sesion del usuario.
+- Usar `auth.guard.ts`, `guest.guard.ts` y `auth-token.interceptor.ts` para rutas protegidas y envio de JWT.
+- No subir `node_modules/`, `dist/`, `.angular/cache/`, logs ni archivos temporales.
+- Para probar el frontend:
+  - `cd frontend`
+  - `npm install`
+  - `npm run build`
+  - `npm start`
+
+## 12. Formato de respuesta esperado
 
 Cuando se realice una tarea, responder con:
 

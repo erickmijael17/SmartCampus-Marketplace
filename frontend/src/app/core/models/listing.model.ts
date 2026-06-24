@@ -22,3 +22,14 @@ export interface NewListing {
   imageUrl: string;
   stock: number;
 }
+
+export interface PublishListingRequest {
+  type: string;
+  title: string;
+  category: string;
+  price: string | number;
+  description: string;
+  condition: string;
+  location: string;
+  imageUrl: string;
+}

@@ -31,12 +31,6 @@ Links:
 Desde la raiz del repositorio:
 
 ```bash
-make compose-infra
-```
-
-O directamente:
-
-```bash
 docker compose -f infra/compose.yml up -d --build
 ```
 

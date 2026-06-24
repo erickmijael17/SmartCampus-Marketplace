@@ -1,0 +1,35 @@
+<main class="auth">
+  <section class="form-side">
+    <div class="form-card">
+      <a routerLink="/" class="brand"><span>SC</span> SmartCampus</a>
+      <h1>Bienvenido de nuevo</h1>
+      <p class="muted">Ingresa para comprar, vender y publicar servicios dentro de tu campus.</p>
+
+      <form (ngSubmit)="submit()">
+        <label>
+          Usuario o correo
+          <input class="field" name="username" [(ngModel)]="usernameOrEmail" placeholder="ejemplo@utp.edu.pe" required>
+        </label>
+        <label>
+          Contraseña
+          <input class="field" name="password" [(ngModel)]="password" type="password" placeholder="••••••••" required>
+        </label>
+        <button class="btn btn-primary" type="submit" [disabled]="loading">
+          {{ loading ? 'Ingresando...' : 'Iniciar sesión' }}
+        </button>
+      </form>
+
+      <p class="register">¿No tienes cuenta? <a routerLink="/register">Crear cuenta</a></p>
+      <small class="secure">Acceso preparado para Gateway, auth-ms y Keycloak</small>
+    </div>
+  </section>
+
+  <section class="visual">
+    <img src="https://images.unsplash.com/photo-1562774053-701939374585?w=900&h=1100&fit=crop&auto=format" alt="">
+    <div>
+      <span class="badge">Plataforma universitaria</span>
+      <h2>Tu marketplace universitario en un solo lugar</h2>
+      <p>Compra y vende dentro del campus, publica servicios académicos y contacta estudiantes fácilmente.</p>
+    </div>
+  </section>
+</main>

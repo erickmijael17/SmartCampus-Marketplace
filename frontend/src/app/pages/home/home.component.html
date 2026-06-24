@@ -1,0 +1,44 @@
+<main class="page">
+  <section class="hero">
+    <div class="container hero-grid">
+      <div class="hero-copy">
+        <span class="badge">Marketplace universitario</span>
+        <h1>SmartCampus</h1>
+        <p>Compra, vende, publica servicios y contacta estudiantes dentro de tu campus con una experiencia moderna y segura.</p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" routerLink="/publish">Publicar ahora</a>
+          <a class="btn btn-ghost" routerLink="/chat">Ver mensajes</a>
+        </div>
+      </div>
+      <div class="hero-media" aria-hidden="true">
+        <img src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=900&h=650&fit=crop&auto=format" alt="">
+      </div>
+    </div>
+  </section>
+
+  <section class="container marketplace">
+    <div class="section-head">
+      <div>
+        <h2>Publicaciones recientes</h2>
+        <p class="muted">Productos, tutorías y servicios disponibles en el campus.</p>
+      </div>
+      <app-search-bar (queryChange)="query = $event" />
+    </div>
+
+    <div class="categories">
+      @for (category of categories; track category.label) {
+        <app-category-chip [category]="category" [active]="selectedCategory === category.label" (selected)="selectedCategory = $event" />
+      }
+    </div>
+
+    @if (filteredProducts.length) {
+      <div class="grid">
+        @for (product of filteredProducts; track product.id) {
+          <app-listing-card [product]="product" />
+        }
+      </div>
+    } @else {
+      <app-empty-state title="No encontramos publicaciones" description="Cambia la búsqueda o selecciona otra categoría." />
+    }
+  </section>
+</main>

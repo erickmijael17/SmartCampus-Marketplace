@@ -4,7 +4,12 @@ export interface CategoriaDto {
   nombre: string;
   descripcion?: string | null;
   activo?: boolean | null;
+  label?: string;
+  icon?: string;
 }
+
+export type Category = CategoriaDto;
+export type Product = MarketplaceListing;
 
 export interface ProductResponse {
   id: number;
@@ -52,6 +57,16 @@ export interface MarketplaceListing {
   sellerLabel: string;
   imageUrl: string;
   publishedAt?: string | null;
+  
+  // UI aliases
+  condition?: string;
+  sellerAvatar?: string;
+  seller?: string;
+  rating?: number;
+  location?: string;
+  date?: string;
+  image?: string;
+  category?: string;
 }
 
 export interface PurchaseSummary {

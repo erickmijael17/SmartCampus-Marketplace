@@ -17,7 +17,6 @@ Fecha: 2026-06-22
 
 ## Archivos modificados
 
-- `Makefile`
 - `infra/compose.yml`
 - `infra/config/pom.xml`
 - `infra/eureka/pom.xml`
@@ -55,7 +54,6 @@ Fecha: 2026-06-22
 - Tests de Gateway usan propiedades locales minimas de JWKS y no dependen de Config Server.
 - Compose de Keycloak agregado con imagen `quay.io/keycloak/keycloak:25.0.6`.
 - Realm `smartcampus` importable agregado con cliente publico `marketplace-client` y password grant habilitado.
-- `Makefile` incluye `compose-keycloak`, y `compose-all`/`compose-down` lo consideran.
 - Los microservicios en `servicio/*/compose.yml` usan `expose: 8080` en lugar de `ports` para su HTTP interno.
 
 ## Comandos ejecutados

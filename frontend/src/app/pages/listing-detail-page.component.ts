@@ -2,7 +2,8 @@ import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { ChatMessage, ChatService } from '../core/services/chat.service';
+import { ChatService } from '../core/services/chat.service';
+import { ChatMessage } from '../core/models/chat.model';
 import { MarketplaceService } from '../core/services/marketplace.service';
 import { SessionService } from '../core/services/session.service';
 import { MarketplaceListing } from '../core/models/product.model';
@@ -57,12 +58,23 @@ export class ListingDetailPageComponent implements OnInit {
       return;
     }
 
+    this.loading = true;
+    console.log('[ListingDetailPageComponent] Iniciando compra...', {
+      listingId: this.listing.id,
+      quantity: this.quantity,
+      paymentMethod: this.paymentMethod
+    });
+
     this.marketplaceService.checkout(this.listing, this.quantity, this.paymentMethod).subscribe({
       next: (summary) => {
+        console.log('[ListingDetailPageComponent] Compra exitosa:', summary);
         this.statusMessage = `Compra completada. Orden ${summary.orderId} y pago ${summary.paymentId} registrados.`;
+        this.loading = false;
       },
-      error: () => {
-        this.statusMessage = 'No se pudo completar la compra.';
+      error: (err) => {
+        console.error('[ListingDetailPageComponent] Error en compra:', err);
+        this.statusMessage = 'No se pudo completar la compra. Revisa la consola para más detalles.';
+        this.loading = false;
       }
     });
   }
@@ -84,10 +96,20 @@ export class ListingDetailPageComponent implements OnInit {
       return;
     }
 
-    this.chatService.sendMessage(this.listing.id, this.sessionService.username() || 'Comprador', text);
-    this.chatMessage = '';
-    this.messages = this.chatService.getMessages(this.listing.id);
-    this.statusMessage = 'Mensaje enviado al vendedor.';
+    console.log('[ListingDetailPageComponent] Enviando mensaje...', {
+      listingId: this.listing.id,
+      text: text
+    });
+
+    try {
+      this.chatService.sendMessage(this.listing.id, this.sessionService.username() || 'Comprador', text);
+      this.chatMessage = '';
+      this.messages = this.chatService.getMessages(this.listing.id);
+      this.statusMessage = 'Mensaje enviado al vendedor.';
+    } catch (err) {
+      console.error('[ListingDetailPageComponent] Error enviando mensaje:', err);
+      this.statusMessage = 'Error al enviar mensaje.';
+    }
   }
 
   get canBuy(): boolean {

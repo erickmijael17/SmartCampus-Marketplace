@@ -1,0 +1,82 @@
+.publish-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 1rem;
+}
+
+.form-panel,
+.tips .panel {
+  padding: 1.5rem;
+}
+
+h1 {
+  margin: 0.8rem 0 0.35rem;
+  font-size: clamp(1.8rem, 4vw, 2.5rem);
+}
+
+form {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+label {
+  display: grid;
+  gap: 0.45rem;
+  font-weight: 800;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  padding: 0.4rem;
+  border-radius: 14px;
+  background: #f1f5f9;
+}
+
+.toggle button {
+  border: 0;
+  border-radius: 11px;
+  padding: 0.75rem;
+  font-weight: 900;
+  background: transparent;
+  color: var(--text-muted);
+}
+
+.toggle button.active {
+  background: #fff;
+  color: var(--primary);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12);
+}
+
+.tips {
+  display: grid;
+  gap: 1rem;
+  align-content: start;
+}
+
+ol {
+  margin: 0;
+  padding-left: 1.2rem;
+  color: var(--text-muted);
+  line-height: 1.8;
+}
+
+.tips p {
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+@media (max-width: 900px) {
+  .publish-grid,
+  .row {
+    grid-template-columns: 1fr;
+  }
+}

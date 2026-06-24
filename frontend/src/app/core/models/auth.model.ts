@@ -4,8 +4,13 @@ export interface AuthLoginRequest {
 }
 
 export interface AuthRegisterRequest {
-  username: string;
-  password: string;
+  username?: string;
+  email?: string;
+  password?: string;
+  fullName?: string;
+  userType?: string;
+  career?: string;
+  cycle?: string;
 }
 
 export interface AuthSession {
