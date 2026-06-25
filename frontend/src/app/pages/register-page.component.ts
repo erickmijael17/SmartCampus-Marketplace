@@ -4,6 +4,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthApiService } from '../core/services/auth-api.service';
 import { SessionService } from '../core/services/session.service';
+import { describeHttpError } from '../core/utils/http-error.util';
 
 @Component({
   selector: 'app-register-page',
@@ -40,10 +41,9 @@ export class RegisterPageComponent {
         this.sessionService.setSession(session);
         void this.router.navigateByUrl('/');
       },
-      error: () => {
+      error: (error) => {
         this.submitting = false;
-        this.errorMessage =
-          'El registro aun no esta disponible en auth-ms o el usuario no pudo crearse.';
+        this.errorMessage = describeHttpError(error, 'el registro');
       }
     });
   }

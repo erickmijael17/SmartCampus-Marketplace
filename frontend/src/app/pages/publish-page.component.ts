@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { MarketplaceService } from '../core/services/marketplace.service';
 import { SessionService } from '../core/services/session.service';
 import { CategoriaDto } from '../core/models/product.model';
+import { describeHttpError } from '../core/utils/http-error.util';
 
 @Component({
   selector: 'app-publish-page',
@@ -40,8 +41,8 @@ export class PublishPageComponent implements OnInit {
           this.form.controls.categoriaId.setValue(categories[0].id);
         }
       },
-      error: () => {
-        this.errorMessage = 'No se pudieron cargar las categorias.';
+      error: (error) => {
+        this.errorMessage = describeHttpError(error, 'la carga de categorias');
       }
     });
   }
@@ -63,9 +64,9 @@ export class PublishPageComponent implements OnInit {
       next: (listing) => {
         void this.router.navigate(['/listing', listing.id]);
       },
-      error: () => {
+      error: (error) => {
         this.submitting = false;
-        this.errorMessage = 'No se pudo publicar el producto. Verifica que tu sesion siga activa.';
+        this.errorMessage = describeHttpError(error, 'la publicacion del producto');
       }
     });
   }

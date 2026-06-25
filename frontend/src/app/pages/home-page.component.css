@@ -69,6 +69,22 @@
   margin-bottom: 1rem;
 }
 
+.gateway-alert,
+.empty-state {
+  border: 1px solid #fecaca;
+  background: #fff1f2;
+  color: #9f1239;
+  border-radius: 8px;
+  padding: 0.9rem 1rem;
+  margin: 0 0 1rem;
+}
+
+.empty-state {
+  border-color: #e2e8f0;
+  background: #f8fafc;
+  color: #475569;
+}
+
 .listings-grid {
   display: grid;
   gap: 1rem;

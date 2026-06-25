@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { PublishListingRequest } from '../../core/models/listing.model';
 import { MarketplaceService } from '../../core/services/marketplace.service';
+import { describeHttpError } from '../../core/utils/http-error.util';
 
 @Component({
   selector: 'app-publish',
@@ -31,25 +32,24 @@ export class PublishComponent {
 
   submit(): void {
     if (!this.model.title || !this.model.price) {
-      this.errorMessage = 'El título y el precio son obligatorios';
+      this.errorMessage = 'El titulo y el precio son obligatorios';
       return;
     }
-    
+
     this.loading = true;
     this.errorMessage = '';
-    console.log('[PublishComponent] Enviando publicación:', this.model);
 
     this.marketplace.publishListing(this.model).subscribe({
       next: (product) => {
-        console.log('[PublishComponent] Publicación exitosa, producto id:', product?.id);
-        this.router.navigate(['/listing', product.id]);
+        void this.router.navigate(['/listing', product.id]);
       },
-      error: (err) => {
-        console.error('[PublishComponent] Error publicando:', err);
+      error: (error) => {
         this.loading = false;
-        this.errorMessage = 'No se pudo crear la publicación. Intenta nuevamente.';
+        this.errorMessage = describeHttpError(error, 'la publicacion del producto');
       },
-      complete: () => this.loading = false
+      complete: () => {
+        this.loading = false;
+      }
     });
   }
 }

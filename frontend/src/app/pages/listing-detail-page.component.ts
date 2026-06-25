@@ -2,11 +2,12 @@ import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { ChatService } from '../core/services/chat.service';
 import { ChatMessage } from '../core/models/chat.model';
+import { MarketplaceListing } from '../core/models/product.model';
+import { ChatService } from '../core/services/chat.service';
 import { MarketplaceService } from '../core/services/marketplace.service';
 import { SessionService } from '../core/services/session.service';
-import { MarketplaceListing } from '../core/models/product.model';
+import { describeHttpError } from '../core/utils/http-error.util';
 
 @Component({
   selector: 'app-listing-detail-page',
@@ -38,9 +39,9 @@ export class ListingDetailPageComponent implements OnInit {
         this.messages = this.chatService.getMessages(id);
         this.loading = false;
       },
-      error: () => {
+      error: (error) => {
         this.loading = false;
-        this.statusMessage = 'No se pudo cargar la publicacion.';
+        this.statusMessage = describeHttpError(error, 'la carga de la publicacion');
       }
     });
   }
@@ -59,21 +60,14 @@ export class ListingDetailPageComponent implements OnInit {
     }
 
     this.loading = true;
-    console.log('[ListingDetailPageComponent] Iniciando compra...', {
-      listingId: this.listing.id,
-      quantity: this.quantity,
-      paymentMethod: this.paymentMethod
-    });
 
     this.marketplaceService.checkout(this.listing, this.quantity, this.paymentMethod).subscribe({
       next: (summary) => {
-        console.log('[ListingDetailPageComponent] Compra exitosa:', summary);
         this.statusMessage = `Compra completada. Orden ${summary.orderId} y pago ${summary.paymentId} registrados.`;
         this.loading = false;
       },
-      error: (err) => {
-        console.error('[ListingDetailPageComponent] Error en compra:', err);
-        this.statusMessage = 'No se pudo completar la compra. Revisa la consola para más detalles.';
+      error: (error) => {
+        this.statusMessage = describeHttpError(error, 'la compra');
         this.loading = false;
       }
     });
@@ -96,18 +90,12 @@ export class ListingDetailPageComponent implements OnInit {
       return;
     }
 
-    console.log('[ListingDetailPageComponent] Enviando mensaje...', {
-      listingId: this.listing.id,
-      text: text
-    });
-
     try {
       this.chatService.sendMessage(this.listing.id, this.sessionService.username() || 'Comprador', text);
       this.chatMessage = '';
       this.messages = this.chatService.getMessages(this.listing.id);
       this.statusMessage = 'Mensaje enviado al vendedor.';
-    } catch (err) {
-      console.error('[ListingDetailPageComponent] Error enviando mensaje:', err);
+    } catch {
       this.statusMessage = 'Error al enviar mensaje.';
     }
   }

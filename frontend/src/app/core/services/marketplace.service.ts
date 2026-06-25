@@ -1,7 +1,8 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, map, switchMap } from 'rxjs';
-import { API_CONFIG, gatewayUrl } from '../config/api.config';
+import { API_CONFIG } from '../config/api.config';
+import { GatewayService } from './gateway.service';
 import { SessionService } from './session.service';
 import {
   CategoriaDto,
@@ -25,22 +26,23 @@ interface PagoResponse {
 @Injectable({ providedIn: 'root' })
 export class MarketplaceService {
   private readonly http = inject(HttpClient);
+  private readonly gateway = inject(GatewayService);
   private readonly sessionService = inject(SessionService);
 
   getListings(): Observable<MarketplaceListing[]> {
     return this.http
-      .get<ProductResponse[]>(gatewayUrl(API_CONFIG.endpoints.marketplace.products))
+      .get<ProductResponse[]>(this.url(API_CONFIG.endpoints.marketplace.products))
       .pipe(map((products) => products.map((product) => this.toListing(product))));
   }
 
   getListingById(id: number): Observable<MarketplaceListing> {
     return this.http
-      .get<ProductResponse>(gatewayUrl(API_CONFIG.endpoints.marketplace.productDetail(id)))
+      .get<ProductResponse>(this.url(API_CONFIG.endpoints.marketplace.productDetail(id)))
       .pipe(map((product) => this.toListing(product)));
   }
 
   getCategories(): Observable<CategoriaDto[]> {
-    return this.http.get<CategoriaDto[]>(gatewayUrl(API_CONFIG.endpoints.marketplace.categories));
+    return this.http.get<CategoriaDto[]>(this.url(API_CONFIG.endpoints.marketplace.categories));
   }
 
   createListing(payload: {
@@ -61,7 +63,7 @@ export class MarketplaceService {
     };
 
     return this.http
-      .post<ProductResponse>(gatewayUrl(API_CONFIG.endpoints.marketplace.products), request)
+      .post<ProductResponse>(this.url(API_CONFIG.endpoints.marketplace.products), request)
       .pipe(map((product) => this.toListing(product)));
   }
 
@@ -76,7 +78,7 @@ export class MarketplaceService {
     };
 
     return this.http
-      .post<OrdenResponse>(gatewayUrl(API_CONFIG.endpoints.marketplace.orders), orderRequest)
+      .post<OrdenResponse>(this.url(API_CONFIG.endpoints.marketplace.orders), orderRequest)
       .pipe(
         switchMap((order) => {
           const paymentRequest: CheckoutRequest = {
@@ -90,7 +92,7 @@ export class MarketplaceService {
 
           return this.http
             .post<PagoResponse>(
-              gatewayUrl(API_CONFIG.endpoints.marketplace.payments),
+              this.url(API_CONFIG.endpoints.marketplace.payments),
               {
                 idComprador: paymentRequest.idComprador,
                 idOrden: order.id,
@@ -203,5 +205,9 @@ export class MarketplaceService {
       hash |= 0;
     }
     return hash;
+  }
+
+  private url(path: string): string {
+    return this.gateway.baseUrl() + path;
   }
 }

@@ -1,8 +1,10 @@
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
+import { catchError, finalize, of } from 'rxjs';
 import { MarketplaceService } from '../core/services/marketplace.service';
 import { SessionService } from '../core/services/session.service';
+import { describeHttpError } from '../core/utils/http-error.util';
 
 @Component({
   selector: 'app-home-page',
@@ -18,7 +20,18 @@ export class HomePageComponent {
 
   protected readonly isAuthenticated = this.sessionService.isAuthenticated;
   protected readonly username = this.sessionService.username;
-  readonly listings$ = this.marketplaceService.getListings();
+  loadingListings = true;
+  listingsErrorMessage = '';
+
+  readonly listings$ = this.marketplaceService.getListings().pipe(
+    catchError((error) => {
+      this.listingsErrorMessage = describeHttpError(error, 'la carga de publicaciones');
+      return of([]);
+    }),
+    finalize(() => {
+      this.loadingListings = false;
+    })
+  );
 
   goToPublish(): void {
     if (this.sessionService.isAuthenticated()) {

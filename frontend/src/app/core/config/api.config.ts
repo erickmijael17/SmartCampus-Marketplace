@@ -1,5 +1,4 @@
 export const API_CONFIG = {
-  gatewayBaseUrl: 'http://localhost:28082',
   endpoints: {
     auth: {
       login: '/auth/login',
@@ -16,8 +15,3 @@ export const API_CONFIG = {
   }
 } as const;
 
-export const API_BASE_URL = API_CONFIG.gatewayBaseUrl;
-
-export function gatewayUrl(path: string): string {
-  return `${API_CONFIG.gatewayBaseUrl}${path}`;
-}

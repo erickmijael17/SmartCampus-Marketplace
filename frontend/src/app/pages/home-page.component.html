@@ -23,11 +23,21 @@
 </section>
 
 <section class="listings-section">
+  <div class="section-header">
+    <h2>Publicaciones activas</h2>
+    <p *ngIf="loadingListings">Cargando...</p>
+  </div>
+
+  <p class="gateway-alert" *ngIf="listingsErrorMessage">{{ listingsErrorMessage }}</p>
+
   <ng-container *ngIf="listings$ | async as listings">
     <div class="section-header">
-      <h2>Publicaciones activas</h2>
       <p>{{ listings.length }} resultados</p>
     </div>
+
+    <p class="empty-state" *ngIf="!loadingListings && !listingsErrorMessage && listings.length === 0">
+      No hay publicaciones disponibles por ahora.
+    </p>
 
     <div class="listings-grid">
       <article class="listing-card" *ngFor="let listing of listings">

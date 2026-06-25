@@ -1,8 +1,6 @@
 spring:
   cloud:
     gateway:
-      default-filters:
-        - TokenRelay
       routes:
         - id: auth-route
           uri: lb://AUTH-MS
