@@ -9,11 +9,20 @@ import lombok.Setter;
 @Setter
 public class AuthRegisterRequest {
 
-    @NotBlank
     @Size(max = 100)
     private String username;
 
     @NotBlank
     @Size(min = 6, max = 100)
     private String password;
+
+    private String email;
+
+    private String fullName;
+
+    private String userType;
+
+    private String career;
+
+    private String cycle;
 }

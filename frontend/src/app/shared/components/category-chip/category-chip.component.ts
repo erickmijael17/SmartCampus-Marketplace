@@ -5,8 +5,8 @@ import { Category } from '../../../core/models/product.model';
   selector: 'app-category-chip',
   standalone: true,
   template: `
-    <button type="button" class="chip" [class.active]="active" (click)="selected.emit(category.label)">
-      <span>{{ category.icon }}</span>{{ category.label }}
+    <button type="button" class="chip" [class.active]="active" (click)="selected.emit(category.nombre || category.label || '')">
+      <span>{{ category.icon }}</span>{{ category.nombre || category.label }}
     </button>
   `,
   styles: [`

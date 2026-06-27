@@ -14,6 +14,7 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import reactor.core.publisher.Mono;
+import org.springframework.web.cors.reactive.CorsConfigurationSource;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -25,16 +26,18 @@ import java.util.stream.Collectors;
 public class SecurityConfig {
 
     @Bean
-    SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
+    SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http,
+                                                     CorsConfigurationSource corsConfigurationSource) {
         http
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
+                .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
                 .authorizeExchange(exchange -> exchange
                         .pathMatchers("/actuator/health", "/actuator/info", "/actuator/prometheus").permitAll()
                         .pathMatchers("/auth/**").permitAll()
                         .pathMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .pathMatchers("/*/swagger-ui/**", "/*/v3/api-docs/**").permitAll()
-                        .pathMatchers("/api/v1/categorias/**", "/api/v1/ordenes/**", "/api/v1/pagos/**").permitAll()
+                        .pathMatchers(HttpMethod.GET, "/api/v1/categorias/**").permitAll()
                         .pathMatchers(HttpMethod.GET, "/api/v1/productos/**").permitAll()
                         .pathMatchers(HttpMethod.OPTIONS).permitAll()
                         .anyExchange().authenticated()

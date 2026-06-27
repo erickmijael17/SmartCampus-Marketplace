@@ -10,8 +10,9 @@ export const authTokenInterceptor: HttpInterceptorFn = (request, next) => {
   const sessionService = inject(SessionService);
   const gatewayService = inject(GatewayService);
   const authHeader = sessionService.authHeaderValue();
+  const shouldAttachAuth = authHeader && !isPublicReadEndpoint(request.method, request.url);
 
-  const authReq = authHeader
+  const authReq = shouldAttachAuth
     ? request.clone({
         setHeaders: {
           Authorization: authHeader
@@ -28,3 +29,23 @@ export const authTokenInterceptor: HttpInterceptorFn = (request, next) => {
   );
 };
 
+function isPublicReadEndpoint(method: string, url: string): boolean {
+  if (method.toUpperCase() !== 'GET') {
+    return false;
+  }
+
+  const path = extractPath(url);
+  return matchesPath(path, '/api/v1/productos') || matchesPath(path, '/api/v1/categorias');
+}
+
+function extractPath(url: string): string {
+  try {
+    return new URL(url).pathname;
+  } catch {
+    return url.split('?')[0] ?? url;
+  }
+}
+
+function matchesPath(path: string, basePath: string): boolean {
+  return path === basePath || path.startsWith(`${basePath}/`);
+}

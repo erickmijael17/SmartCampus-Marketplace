@@ -57,6 +57,11 @@ export class PublishPageComponent implements OnInit {
       return;
     }
 
+    if (!this.sessionService.isAuthenticated()) {
+      void this.router.navigate(['/login'], { queryParams: { returnUrl: '/publish' } });
+      return;
+    }
+
     this.submitting = true;
     this.errorMessage = '';
 

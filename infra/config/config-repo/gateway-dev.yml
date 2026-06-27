@@ -1,15 +1,13 @@
 spring:
   cloud:
     gateway:
+      forwarded:
+        enabled: false
       routes:
         - id: auth-route
           uri: lb://AUTH-MS
           predicates:
             - Path=/auth/**
-        - id: catalogo-route
-          uri: lb://CATALOGO-MS
-          predicates:
-            - Path=/api/v1/categorias/**
         - id: catalogo-instancia
           uri: lb://CATALOGO-MS
           predicates:

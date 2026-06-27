@@ -39,11 +39,14 @@ export class GatewayService {
       }
     }
 
-    this.baseUrlSignal.set('');
-    this.labelSignal.set('NONE');
+    // Fallback: usar el primer candidato aunque no responda,
+    // para evitar URLs relativas contra el servidor Angular.
+    const fallback = environment.gatewayCandidates[0];
+    this.baseUrlSignal.set(fallback?.url ?? '');
+    this.labelSignal.set((fallback?.label as GatewayLabel) ?? 'NONE');
     this.availableSignal.set(false);
     console.error(
-      '[GatewayService] No hay Gateway disponible. Se intentó PROD y DEV.'
+      `[GatewayService] No hay Gateway disponible. Se intentó PROD y DEV. Usando fallback: ${fallback?.url ?? 'ninguno'}`
     );
     this.initializedSubject.next(true);
   }
@@ -53,13 +56,22 @@ export class GatewayService {
     const timeoutId = setTimeout(() => controller.abort(), HEALTH_TIMEOUT_MS);
 
     try {
-      const response = await fetch(`${url}/actuator/info`, {
+      const response = await fetch(`${url}/actuator/health`, {
         method: 'GET',
         signal: controller.signal,
       });
       return response.ok;
     } catch {
-      return false;
+      // Fallback a /actuator/info si health no responde
+      try {
+        const infoResponse = await fetch(`${url}/actuator/info`, {
+          method: 'GET',
+          signal: controller.signal,
+        });
+        return infoResponse.ok;
+      } catch {
+        return false;
+      }
     } finally {
       clearTimeout(timeoutId);
     }

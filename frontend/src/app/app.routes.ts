@@ -2,8 +2,10 @@ import { Routes } from '@angular/router';
 import { HomePageComponent } from './pages/home-page.component';
 import { ListingDetailPageComponent } from './pages/listing-detail-page.component';
 import { LoginPageComponent } from './pages/login-page.component';
-import { RegisterPageComponent } from './pages/register-page.component';
+import { RegisterComponent } from './pages/register/register.component';
 import { PublishPageComponent } from './pages/publish-page.component';
+import { ProfileComponent } from './pages/profile/profile.component';
+import { ChatComponent } from './pages/chat/chat.component';
 import { authGuard } from './guards/auth.guard';
 import { guestGuard } from './guards/guest.guard';
 
@@ -29,7 +31,17 @@ export const routes: Routes = [
 	{
 		path: 'register',
 		canActivate: [guestGuard],
-		component: RegisterPageComponent
+		component: RegisterComponent
+	},
+	{
+		path: 'profile',
+		canActivate: [authGuard],
+		component: ProfileComponent
+	},
+	{
+		path: 'chat',
+		canActivate: [authGuard],
+		component: ChatComponent
 	},
 	{
 		path: 'publicar',
