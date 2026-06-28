@@ -46,6 +46,7 @@ export interface CheckoutRequest {
 
 export interface MarketplaceListing {
   id: number;
+  publicacionId?: number | null;
   title: string;
   description: string;
   price: number;

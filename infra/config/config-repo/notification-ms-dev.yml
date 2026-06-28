@@ -2,6 +2,8 @@ server:
   port: 0
 
 spring:
+  kafka:
+    bootstrap-servers: localhost:41092
   datasource:
     url: jdbc:postgresql://localhost:15445/ecom_notification_ms_db
     username: ecom
@@ -48,3 +50,11 @@ management:
 jwt:
   secret: 1s3alJJATsWK91vf5zrODYlQa+LauM/9udaLZlQhHlpu46g/KzmSS5c3CGy6xF9kzAqBhvjmKBuZO/pSL7tfOg==
   issuer: auth
+
+app:
+  kafka:
+    topic:
+      ordenes: ordenes-topic
+      pagos: pagos-topic
+    group-id:
+      notifications: notifications-group

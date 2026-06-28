@@ -3,6 +3,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ChatMessage } from '../core/models/chat.model';
+import { FavoritoResponse } from '../core/models/favorito.model';
 import { MarketplaceListing } from '../core/models/product.model';
 import { ChatService } from '../core/services/chat.service';
 import { MarketplaceService } from '../core/services/marketplace.service';
@@ -30,14 +31,22 @@ export class ListingDetailPageComponent implements OnInit {
   statusMessage = '';
   chatMessage = '';
   messages: ChatMessage[] = [];
+  conversationId: number | null = null;
+  isFavorite = false;
+  favoriteBusy = false;
+  favoriteRecord: FavoritoResponse | null = null;
+  reviewScore = 5;
+  reviewComment = '';
+  reviewBusy = false;
 
   ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get('id'));
     this.marketplaceService.getListingById(id).subscribe({
       next: (listing) => {
         this.listing = listing;
-        this.messages = this.chatService.getMessages(id);
         this.loading = false;
+        this.loadFavoriteState(listing);
+        this.prepareConversation(listing);
       },
       error: (error) => {
         this.loading = false;
@@ -73,8 +82,83 @@ export class ListingDetailPageComponent implements OnInit {
     });
   }
 
-  sendMessage(): void {
+  toggleFavorite(): void {
     if (!this.listing) {
+      return;
+    }
+
+    if (!this.sessionService.isAuthenticated()) {
+      void this.router.navigate(['/login'], {
+        queryParams: { returnUrl: `/listing/${this.listing.id}` }
+      });
+      return;
+    }
+
+    if (!this.listing.publicacionId) {
+      this.statusMessage = 'Esta publicacion aun no tiene idPublicacion asociado.';
+      return;
+    }
+
+    this.favoriteBusy = true;
+
+    if (this.isFavorite && this.favoriteRecord) {
+      this.marketplaceService.removeFavorite(this.favoriteRecord.id).subscribe({
+        next: () => {
+          this.isFavorite = false;
+          this.favoriteRecord = null;
+          this.favoriteBusy = false;
+          this.statusMessage = 'Publicacion eliminada de favoritos.';
+        },
+        error: (error) => {
+          this.favoriteBusy = false;
+          this.statusMessage = describeHttpError(error, 'eliminar favorito');
+        }
+      });
+      return;
+    }
+
+    this.marketplaceService.addFavorite(this.listing).subscribe({
+      next: (favorito) => {
+        this.isFavorite = true;
+        this.favoriteRecord = favorito;
+        this.favoriteBusy = false;
+        this.statusMessage = 'Publicacion agregada a favoritos.';
+      },
+      error: (error) => {
+        this.favoriteBusy = false;
+        this.statusMessage = describeHttpError(error, 'guardar favorito');
+      }
+    });
+  }
+
+  submitReview(): void {
+    if (!this.listing) {
+      return;
+    }
+
+    if (!this.sessionService.isAuthenticated()) {
+      void this.router.navigate(['/login'], {
+        queryParams: { returnUrl: `/listing/${this.listing.id}` }
+      });
+      return;
+    }
+
+    this.reviewBusy = true;
+    this.marketplaceService.submitCalificacion(this.listing, this.reviewScore, this.reviewComment).subscribe({
+      next: () => {
+        this.reviewBusy = false;
+        this.reviewComment = '';
+        this.statusMessage = 'Calificacion registrada correctamente.';
+      },
+      error: (error) => {
+        this.reviewBusy = false;
+        this.statusMessage = describeHttpError(error, 'registrar calificacion');
+      }
+    });
+  }
+
+  sendMessage(): void {
+    if (!this.listing || this.conversationId === null) {
       return;
     }
 
@@ -90,17 +174,55 @@ export class ListingDetailPageComponent implements OnInit {
       return;
     }
 
-    try {
-      this.chatService.sendMessage(this.listing.id, this.sessionService.username() || 'Comprador', text);
-      this.chatMessage = '';
-      this.messages = this.chatService.getMessages(this.listing.id);
-      this.statusMessage = 'Mensaje enviado al vendedor.';
-    } catch {
-      this.statusMessage = 'Error al enviar mensaje.';
-    }
+    this.chatService.sendMessage(this.conversationId, text).subscribe({
+      next: (message) => {
+        this.chatMessage = '';
+        this.messages = [...this.messages, message];
+        this.statusMessage = 'Mensaje enviado al vendedor.';
+      },
+      error: (error) => {
+        this.statusMessage = describeHttpError(error, 'el envio del mensaje');
+      }
+    });
   }
 
   get canBuy(): boolean {
     return this.sessionService.isAuthenticated();
+  }
+
+  get favoriteLabel(): string {
+    return this.isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos';
+  }
+
+  private loadFavoriteState(listing: MarketplaceListing): void {
+    if (!this.sessionService.isAuthenticated()) {
+      return;
+    }
+
+    this.marketplaceService.findFavoriteForListing(listing).subscribe((favorito) => {
+      this.favoriteRecord = favorito;
+      this.isFavorite = favorito !== null;
+    });
+  }
+
+  private prepareConversation(listing: MarketplaceListing): void {
+    if (!this.sessionService.isAuthenticated()) {
+      return;
+    }
+
+    const currentUserId = this.sessionService.userId();
+    if (!currentUserId || currentUserId === listing.sellerId) {
+      return;
+    }
+
+    this.chatService.getOrCreateConversation(listing.sellerId).subscribe({
+      next: (thread) => {
+        this.conversationId = thread.id;
+        this.messages = thread.messages;
+      },
+      error: (error) => {
+        this.statusMessage = describeHttpError(error, 'iniciar conversacion');
+      }
+    });
   }
 }

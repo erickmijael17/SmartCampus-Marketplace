@@ -4,14 +4,19 @@ spring:
       forwarded:
         enabled: false
       routes:
+        # --- MVP ACTIVO ---
         - id: auth-route
           uri: lb://AUTH-MS
           predicates:
             - Path=/auth/**
-        - id: catalogo-instancia
-          uri: lb://CATALOGO-MS
+        - id: persona-route
+          uri: lb://PERSONA-MS
           predicates:
-            - Path=/api/v1/catalogo/instancia
+            - Path=/api/v1/personas/**
+        - id: categoria-route
+          uri: lb://CATEGORIA-MS
+          predicates:
+            - Path=/api/v1/categorias/**
         - id: producto-route
           uri: lb://PRODUCTO-MS
           predicates:
@@ -20,6 +25,26 @@ spring:
           uri: lb://PRODUCTO-MS
           predicates:
             - Path=/api/v1/producto/instancia
+        - id: publicacion-route
+          uri: lb://PUBLICACION-MS
+          predicates:
+            - Path=/api/v1/publicaciones/**
+        - id: media-route
+          uri: lb://MEDIA-MS
+          predicates:
+            - Path=/api/v1/media/**
+        - id: favoritos-route
+          uri: lb://FAVORITOS-MS
+          predicates:
+            - Path=/api/v1/favoritos/**
+        - id: calificacion-route
+          uri: lb://CALIFICACION-MS
+          predicates:
+            - Path=/api/v1/calificaciones/**
+        - id: chat-route
+          uri: lb://CHAT-MS
+          predicates:
+            - Path=/api/v1/chats/**
         - id: orden-route
           uri: lb://ORDEN-MS
           predicates:
@@ -28,6 +53,14 @@ spring:
           uri: lb://PAGO-MS
           predicates:
             - Path=/api/v1/pagos/**
+
+        # --- DEPRECADO: catalogo-ms (usar categoria-ms) ---
+        - id: catalogo-instancia
+          uri: lb://CATALOGO-MS
+          predicates:
+            - Path=/api/v1/catalogo/instancia
+
+        # --- FASE_FUTURA: sin consumo Angular actual ---
         - id: carrito-route
           uri: lb://CARRITO-MS
           predicates:
@@ -36,38 +69,10 @@ spring:
           uri: lb://INVENTARIO-MS
           predicates:
             - Path=/api/v1/inventarios/**
-        - id: calificacion-route
-          uri: lb://CALIFICACION-MS
-          predicates:
-            - Path=/api/v1/calificaciones/**
-        - id: categoria-route
-          uri: lb://CATEGORIA-MS
-          predicates:
-            - Path=/api/v1/categorias/**
-        - id: chat-route
-          uri: lb://CHAT-MS
-          predicates:
-            - Path=/api/v1/chats/**
-        - id: favoritos-route
-          uri: lb://FAVORITOS-MS
-          predicates:
-            - Path=/api/v1/favoritos/**
-        - id: media-route
-          uri: lb://MEDIA-MS
-          predicates:
-            - Path=/api/v1/media/**
         - id: notification-route
           uri: lb://NOTIFICATION-MS
           predicates:
             - Path=/api/v1/notificaciones/**
-        - id: persona-route
-          uri: lb://PERSONA-MS
-          predicates:
-            - Path=/api/v1/personas/**
-        - id: publicacion-route
-          uri: lb://PUBLICACION-MS
-          predicates:
-            - Path=/api/v1/publicaciones/**
         - id: search-route
           uri: lb://SEARCH-MS
           predicates:

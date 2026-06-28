@@ -1,48 +1,68 @@
-<main class="chat-page">
-  <div class="chat-shell">
-    <aside class="threads panel" [class.hidden-mobile]="!showList">
-      <header>
-        <h1>Mensajes</h1>
-        <input class="field" type="search" placeholder="Buscar conversación...">
-      </header>
-      @for (thread of threads; track thread.id) {
-        <button type="button" class="thread" [class.active]="activeThread?.id === thread.id" (click)="selectThread(thread)">
-          <span class="avatar">{{ thread.avatar }}</span>
-          <span class="thread-copy">
-            <b>{{ thread.name }}</b>
-            <small>sobre {{ thread.subject }}</small>
-            <span>{{ thread.lastMsg }}</span>
-          </span>
-          <time>{{ thread.time }}</time>
-        </button>
-      }
-    </aside>
-
-    <section class="conversation panel" [class.hidden-mobile]="showList">
-      @if (activeThread) {
-        <header class="conversation-head">
-          <button class="back" type="button" (click)="showList = true">←</button>
-          <span class="avatar">{{ activeThread.avatar }}</span>
-          <div>
-            <b>{{ activeThread.name }}</b>
-            <small>sobre {{ activeThread.subject }}</small>
-          </div>
-          <span class="online">En línea</span>
+<main class="page chat-page">
+  @if (loading) {
+    <div class="container">
+      <app-loading label="Cargando conversaciones..." />
+    </div>
+  } @else if (errorMessage && !threads.length) {
+    <div class="container">
+      <app-empty-state icon="!" title="Chat no disponible" [description]="errorMessage" />
+    </div>
+  } @else {
+    <div class="chat-shell container">
+      <aside class="threads panel" [class.hidden-mobile]="!showList">
+        <header>
+          <h1>Mensajes</h1>
         </header>
-
-        <div class="messages">
-          @for (msg of messages; track $index) {
-            <div class="bubble-row" [class.mine]="msg.from === 'me'">
-              <div class="bubble">{{ msg.text }}<small>{{ msg.time }}</small></div>
-            </div>
+        @if (threads.length) {
+          @for (thread of threads; track thread.id) {
+            <button type="button" class="thread" [class.active]="activeThread?.id === thread.id" (click)="selectThread(thread)">
+              <span class="avatar">{{ thread.avatar }}</span>
+              <span class="thread-copy">
+                <b>{{ thread.name }}</b>
+                <small>{{ thread.subject }}</small>
+                <span>{{ thread.lastMsg }}</span>
+              </span>
+              <time>{{ thread.time | date: 'shortTime' }}</time>
+            </button>
           }
-        </div>
+        } @else {
+          <app-empty-state title="Sin conversaciones" description="Contacta a un vendedor desde el detalle de una publicacion." />
+        }
+      </aside>
 
-        <form class="composer" (ngSubmit)="send()">
-          <input class="field" name="message" [(ngModel)]="message" placeholder="Escribe un mensaje...">
-          <button class="btn btn-primary" type="submit">Enviar</button>
-        </form>
-      }
-    </section>
-  </div>
+      <section class="conversation panel" [class.hidden-mobile]="showList">
+        @if (activeThread) {
+          <header class="conversation-head">
+            <button class="back" type="button" (click)="showList = true">←</button>
+            <span class="avatar">{{ activeThread.avatar }}</span>
+            <div>
+              <b>{{ activeThread.name }}</b>
+              <small>{{ activeThread.subject }}</small>
+            </div>
+          </header>
+
+          @if (errorMessage) {
+            <p class="form-error inline-error">{{ errorMessage }}</p>
+          }
+
+          <div class="messages">
+            @for (msg of messages; track $index) {
+              <div class="bubble-row" [class.mine]="msg.from === 'me'">
+                <div class="bubble">{{ msg.text }}<small>{{ msg.createdAt | date: 'short' }}</small></div>
+              </div>
+            } @empty {
+              <app-empty-state title="Sin mensajes" description="Escribe el primer mensaje de esta conversacion." />
+            }
+          </div>
+
+          <form class="composer" (ngSubmit)="send()">
+            <input class="field" name="message" [(ngModel)]="message" placeholder="Escribe un mensaje...">
+            <button class="btn btn-primary" type="submit">Enviar</button>
+          </form>
+        } @else {
+          <app-empty-state title="Selecciona una conversacion" description="Elige un hilo en la lista para continuar." />
+        }
+      </section>
+    </div>
+  }
 </main>

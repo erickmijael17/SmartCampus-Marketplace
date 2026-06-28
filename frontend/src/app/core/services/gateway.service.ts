@@ -1,10 +1,9 @@
 import { Injectable, signal, computed } from '@angular/core';
 import { Observable, ReplaySubject } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { GatewayLabel } from '../../../environments/environment.model';
 
 const HEALTH_TIMEOUT_MS = 3_000;
-
-export type GatewayLabel = 'PROD' | 'DEV' | 'NONE';
 
 @Injectable({ providedIn: 'root' })
 export class GatewayService {
@@ -23,32 +22,44 @@ export class GatewayService {
   }
 
   /**
-   * Probes each gateway candidate in priority order (PROD first).
-   * Uses native fetch + AbortController to avoid HttpClient/interceptor conflicts.
+   * Resolves the active Gateway URL.
+   * Production uses a fixed public URL; development probes candidates in order.
    */
   async detectActiveGateway(): Promise<void> {
+    if (!environment.gatewayProbeEnabled) {
+      this.applyCandidate(environment.gatewayCandidates[0], true);
+      console.info(
+        `[GatewayService] Gateway fijo (${environment.production ? 'PROD' : 'config'}): ${this.baseUrl()}`
+      );
+      this.initializedSubject.next(true);
+      return;
+    }
+
     for (const candidate of environment.gatewayCandidates) {
       const isReachable = await this.probe(candidate.url);
       if (isReachable) {
-        this.baseUrlSignal.set(candidate.url);
-        this.labelSignal.set(candidate.label as GatewayLabel);
-        this.availableSignal.set(true);
+        this.applyCandidate(candidate, true);
         console.info(`[GatewayService] Gateway activo: ${candidate.label} (${candidate.url})`);
         this.initializedSubject.next(true);
         return;
       }
     }
 
-    // Fallback: usar el primer candidato aunque no responda,
-    // para evitar URLs relativas contra el servidor Angular.
     const fallback = environment.gatewayCandidates[0];
-    this.baseUrlSignal.set(fallback?.url ?? '');
-    this.labelSignal.set((fallback?.label as GatewayLabel) ?? 'NONE');
-    this.availableSignal.set(false);
+    this.applyCandidate(fallback, false);
     console.error(
-      `[GatewayService] No hay Gateway disponible. Se intentó PROD y DEV. Usando fallback: ${fallback?.url ?? 'ninguno'}`
+      `[GatewayService] No hay Gateway disponible. Se intentaron todos los candidatos. Fallback: ${fallback?.url ?? 'ninguno'}`
     );
     this.initializedSubject.next(true);
+  }
+
+  private applyCandidate(
+    candidate: (typeof environment.gatewayCandidates)[number] | undefined,
+    available: boolean
+  ): void {
+    this.baseUrlSignal.set(candidate?.url ?? environment.gatewayUrl ?? '');
+    this.labelSignal.set((candidate?.label as GatewayLabel) ?? 'NONE');
+    this.availableSignal.set(available);
   }
 
   private async probe(url: string): Promise<boolean> {
@@ -58,15 +69,14 @@ export class GatewayService {
     try {
       const response = await fetch(`${url}/actuator/health`, {
         method: 'GET',
-        signal: controller.signal,
+        signal: controller.signal
       });
       return response.ok;
     } catch {
-      // Fallback a /actuator/info si health no responde
       try {
         const infoResponse = await fetch(`${url}/actuator/info`, {
           method: 'GET',
-          signal: controller.signal,
+          signal: controller.signal
         });
         return infoResponse.ok;
       } catch {

@@ -1,192 +1,222 @@
-# AGENTS.md
+# AGENTS.md — Guia para agentes IA en SmartCampus Marketplace
 
-Guia principal para agentes de IA que trabajen en el repositorio `SmartCampus-Marketplace`.
-
-## 1. Descripcion del proyecto
+## 1. Identidad del proyecto
 
 SmartCampus Marketplace es una plataforma de mercado digital universitario basada en microservicios. Permite publicar, buscar, comprar y gestionar productos o servicios dentro de un entorno academico.
 
-El backend usa Java 17, Spring Boot, Spring Cloud Config Server, Eureka, Spring Cloud Gateway, Keycloak, PostgreSQL, Flyway, Kafka y observabilidad con Prometheus, Loki, Promtail y Grafana. El frontend Angular vive en `frontend/`.
+**Stack tecnologico:**
 
-El despliegue documentado del repositorio se realiza con Docker Compose.
+| Componente | Tecnologia |
+|------------|-----------|
+| Frontend | Angular 20 (standalone components, TypeScript, RxJS) |
+| Backend | Java 17, Spring Boot 3.2.x |
+| API Gateway | Spring Cloud Gateway (WebFlux) |
+| Service Discovery | Netflix Eureka |
+| Configuracion | Spring Cloud Config Server (native) |
+| Base de datos | PostgreSQL por microservicio |
+| Migraciones | Flyway |
+| Identidad | Keycloak 25.x (realm `smartcampus`) |
+| Mensajeria | Apache Kafka (KRaft mode) |
+| Observabilidad | Prometheus, Loki, Promtail, Grafana |
+| Contenedores | Docker Compose |
+| CI/CD | GitHub Actions (build de imagenes Docker) |
 
-## 2. Stack tecnologico
+## 2. Regla principal de arquitectura
 
-- Java 17
-- Spring Boot 3.2.x
-- Spring Cloud Config Server
-- Spring Cloud Netflix Eureka
-- Spring Cloud Gateway WebFlux
-- Spring Security
-- OAuth2 Resource Server
-- OAuth2 Client
-- JWT/JWKS
-- Keycloak
-- Maven
-- Spring Data JPA
-- PostgreSQL
-- Flyway
-- OpenFeign
-- Resilience4j
-- Springdoc OpenAPI / Swagger
-- Apache Kafka
-- Docker
-- Docker Compose
-- Angular 20
-- TypeScript
-- RxJS
-- Karma/Jasmine
-- Prometheus
-- Loki
-- Promtail
-- Grafana
-- GitHub Actions para build de imagenes Docker
+La arquitectura obligatoria del proyecto es:
 
-## 3. Estructura del repositorio
+```txt
+Angular -> GatewayService / ApiConfig -> Spring Cloud Gateway -> lb://MICROSERVICIO -> Controller -> Service -> Repository/DB
+```
 
-- `.agents/`: reportes y contexto auxiliar de agentes.
-- `.github/`: workflows y archivos auxiliares de GitHub.
-- `frontend/`: aplicacion Angular.
-- `infra/config/`: Config Server y `config-repo`.
-- `infra/eureka/`: servidor Eureka.
-- `infra/gateway/`: API Gateway.
-- `keycloak/`: Docker Compose e import del realm `smartcampus`.
-- `kafka/`: Docker Compose para Kafka, Kafka UI y exporter.
-- `obs/`: Prometheus, Loki, Promtail y Grafana.
-- `servicio/`: microservicios de dominio y soporte.
-- `README.md` y `GUIA_ESTUDIANTE.md`: documentacion principal.
+**Prohibido:**
 
-## 4. Arquitectura general
+```txt
+Angular -> microservicio directo
+Angular -> localhost:puerto-interno-ms
+Angular -> rutas relativas que terminen resolviendo contra localhost:4200
+```
 
-La infraestructura base esta en `infra/`:
+El Gateway es el **unico punto de entrada HTTP** a cualquier microservicio. Ningun microservicio interno debe ser llamado directamente desde el frontend.
 
-- `config`: entrega configuracion centralizada desde `infra/config/config-repo`.
-- `eureka`: registra servicios y permite descubrimiento dinamico.
-- `gateway`: punto unico de entrada HTTP. Usa rutas `lb://...` hacia servicios registrados en Eureka.
+### Flujo de autenticacion
 
-Los microservicios estan en `servicio/`. Cada servicio mantiene su propio `pom.xml`, `Dockerfile`, `compose.yml`, `application.yml`, migraciones Flyway cuando aplica y capas como `controller`, `service`, `repository`, `entity`, `dto`, `mapper`, `config` y `exception`.
+```txt
+Angular -> Gateway -> auth-ms -> Keycloak (password grant) -> JWT
+```
 
-La seguridad se basa en Keycloak:
+Angular no debe llamar directo a Keycloak ni a auth-ms fuera del Gateway.
 
-- `issuer-uri` apunta al realm `smartcampus`.
-- `jwk-set-uri` valida firmas JWT mediante JWKS.
-- Los roles se leen desde `realm_access.roles`.
-- `auth-ms` conserva `/auth/login` y delega la autenticacion a Keycloak.
+## 3. Reglas no negociables
 
-La comunicacion combina:
+1. El frontend **nunca** llama microservicios directamente.
+2. Toda URL de API en Angular debe construirse con `GatewayService`, `ApiConfig` o servicios API centralizados.
+3. El Gateway es la **unica API publica** del backend.
+4. Cada endpoint debe tener un **unico microservicio dueno**.
+5. No crear rutas duplicadas en Gateway.
+6. Las rutas `lb://SERVICE` deben estar en **mayusculas**.
+7. No mezclar responsabilidades entre microservicios.
+8. No usar mocks sin marcarlos como `// TEMPORAL_MOCK`.
+9. No agregar nuevas tecnologias sin justificar.
+10. No hacer cambios masivos sin plan previo.
+11. No hacer commits automaticos.
+12. No usar `git add .`, `git reset`, `git clean` ni cambiar de rama sin autorizacion.
+13. No modificar `.env` con secretos reales.
+14. Mantener documentacion actualizada si se cambia arquitectura, rutas o flujo frontend-backend.
+15. Siempre revisar `gateway-dev.yml` y `gateway-prod.yml` antes de crear o modificar rutas.
 
-- HTTP sincrono por Gateway y Eureka.
-- OpenFeign entre microservicios.
-- Kafka para eventos asincronos.
+## 4. Mapa de microservicios
 
-## 5. Reglas para agentes de IA
+| Servicio | Responsabilidad | Ruta Gateway esperada |
+|----------|----------------|----------------------|
+| `auth-ms` | Login, register, me, integracion Keycloak | `/auth/**` |
+| `producto-ms` | CRUD de productos del marketplace | `/api/v1/productos/**` |
+| `categoria-ms` | CRUD de categorias | `/api/v1/categorias/**` |
+| `catalogo-ms` | Catalogo extendido o endpoints de instancia | `/api/v1/catalogo/**` |
+| `carrito-ms` | Carrito de compras | `/api/v1/carritos/**` |
+| `orden-ms` | Ordenes de compra | `/api/v1/ordenes/**` |
+| `pago-ms` | Procesamiento de pagos | `/api/v1/pagos/**` |
+| `inventario-ms` | Control de stock e inventario | `/api/v1/inventarios/**` |
+| `persona-ms` | Perfil y datos personales | `/api/v1/personas/**` |
+| `chat-ms` | Mensajeria entre usuarios | `/api/v1/chats/**` |
+| `favoritos-ms` | Productos favoritos por usuario | `/api/v1/favoritos/**` |
+| `calificacion-ms` | Calificaciones y resenas | `/api/v1/calificaciones/**` |
+| `media-ms` | Imagenes y archivos multimedia | `/api/v1/media/**` |
+| `notification-ms` | Notificaciones (in-app / email) | `/api/v1/notificaciones/**` |
+| `publicacion-ms` | Publicaciones y visibilidad de productos | `/api/v1/publicaciones/**` |
+| `search-ms` | Busqueda y filtrado de productos | `/api/v1/search/**` |
 
-- Analizar contexto antes de modificar archivos.
-- Crear o modificar archivos solo cuando la tarea lo requiera.
-- No editar archivos generados, caches, logs ni artefactos de build.
-- No hardcodear credenciales, tokens, passwords, secretos ni URLs sensibles.
-- Mantener la arquitectura existente: Config Server, Eureka, Gateway, microservicios, Kafka, Keycloak y observabilidad.
-- Preferir cambios pequenos, seguros y faciles de revisar.
-- No crear dependencias nuevas sin justificacion tecnica clara.
-- Respetar el estilo y estructura de cada microservicio.
-- Revisar `application.yml`, `config-repo/`, `compose.yml`, `pom.xml` y pruebas antes de proponer cambios de comportamiento.
-- No tocar archivos `.env` reales salvo instruccion explicita; preferir `.env.example` para documentar variables.
-- No modificar configuraciones de seguridad sin explicar impacto y forma de prueba.
+## 5. Reglas para frontend Angular
 
-## 6. Seguridad
+- No usar `HttpClient` con URLs relativas para endpoints backend **sin pasar por `GatewayService`**.
+- Usar siempre `GatewayService.baseUrl()` o configuracion centralizada (`API_CONFIG`).
+- Revisar siempre estos archivos antes de modificar el frontend:
 
-- Mantener Keycloak como autoridad de identidad.
-- Validar JWT mediante `issuer-uri` y `jwk-set-uri`.
-- Preservar la extraccion de roles desde `realm_access.roles`.
-- No exponer endpoints sensibles sin autenticacion.
-- Revisar cuidadosamente cambios en `SecurityConfig.java`.
-- No registrar tokens JWT, passwords, Authorization headers, datos personales o payloads sensibles.
-- Usar variables de entorno para credenciales y configuracion sensible.
-- En Docker Compose, mantener secrets y passwords fuera del codigo cuando sea posible.
-- En Gateway, validar rutas publicas y privadas antes de abrir permisos con `permitAll`.
-- Mantener CORS restringido a origenes necesarios.
-- Proteger endpoints administrativos, escritura, borrado y pagos mediante roles adecuados.
-
-## 7. Convenciones
-
-Java/Spring Boot:
-
-- Mantener paquetes bajo `com.upeu.<servicio>`.
-- Separar capas: `controller`, `service`, `repository`, `entity`, `dto`, `mapper`, `config`, `exception`.
-- Usar DTOs para entradas y salidas.
-- Mantener validaciones con `spring-boot-starter-validation`.
-- Usar `GlobalExceptionHandler` cuando exista.
-- Mantener migraciones SQL en `src/main/resources/db/migration`.
-- Evitar logica de negocio en controladores.
-- Al tocar integraciones HTTP internas, revisar Feign y Resilience4j.
-
-Angular:
-
-- Mantener paginas en `frontend/src/app/pages`.
-- Mantener servicios compartidos en `frontend/src/app/core/services`.
-- Mantener modelos en `frontend/src/app/core/models`.
-- Mantener guards en `frontend/src/app/guards`.
-- Usar `API_CONFIG` desde `frontend/src/app/core/config/api.config.ts`.
-
-## Frontend Angular Agent Guidelines
-
-Los agentes que trabajen en `frontend/` deben mantener la aplicacion Angular alineada con la arquitectura de microservicios del repositorio.
-
-- Trabajar principalmente dentro de `frontend/` y leer primero `frontend/package.json`, `frontend/src/app/app.routes.ts`, `frontend/src/app/core/config/api.config.ts`, servicios afectados y `infra/config/config-repo/gateway-dev.yml`.
-- Todo consumo HTTP del frontend debe pasar por Spring Cloud Gateway. No llamar directamente a puertos de microservicios internos como `8081`, `8082`, `8083` ni equivalentes.
-- La URL base del Gateway debe venir de `frontend/src/app/core/config/api.config.ts`. Para desarrollo local documentado se usa `http://localhost:28082`.
-- Antes de crear o cambiar endpoints en Angular, verificar las rutas reales en `infra/config/config-repo/gateway-dev.yml`; el Gateway enruta internamente con `lb://...`.
-- El flujo de autenticacion esperado es `Angular -> Gateway -> auth-ms -> Keycloak`. Angular no debe llamar directo a Keycloak ni a `auth-ms`.
+  - `frontend/src/app/core/services/gateway.service.ts`
+  - `frontend/src/app/core/config/api.config.ts`
+  - `frontend/src/app/core/services/auth-api.service.ts`
+  - `frontend/src/app/core/services/marketplace.service.ts`
+  - `frontend/src/app/core/services/chat.service.ts`
+  - `frontend/src/app/core/services/session.service.ts`
+  - `frontend/src/app/core/interceptors/auth-token.interceptor.ts`
+  - `frontend/src/app/guards/auth.guard.ts`
+  - `frontend/src/app/guards/guest.guard.ts`
+  - `frontend/src/app/app.routes.ts`
+- Si una pantalla usa mock o localStorage, marcarlo como `// TEMPORAL_MOCK`.
+- No crear rutas Angular nuevas sin verificar endpoint Gateway y microservicio dueno.
+- Mantener DEV en `http://localhost:18080` y PROD en `http://localhost:28082`.
+- Los componentes de pagina deben usar la convencion de **subdirectorios** (`pages/<nombre>/`).
+- No crear nuevos componentes flat `*-page.component.*`; migrar los existentes cuando se toque cada pantalla.
 - Los tokens deben guardarse, leerse y limpiarse desde `SessionService`. No duplicar manejo de sesion en componentes.
-- Las peticiones autenticadas deben enviar `Authorization: Bearer <token>` mediante un interceptor HTTP, no armando headers manualmente en cada componente.
-- No hardcodear credenciales, passwords, tokens, secretos ni URLs sensibles. Los formularios pueden quedar vacios o usar placeholders no sensibles.
-- Proteger rutas privadas con guards, por ejemplo `/publish`; evitar que usuarios autenticados entren a `/login` o `/register` usando `guest.guard.ts`.
-- Convencion recomendada: `core/config`, `core/models`, `core/services`, `core/interceptors`, `guards`, `shared/components`, `shared/layout` y `pages`.
-- Comandos utiles desde `frontend/`: `npm install`, `npm run build`, `npm start` y `npm test`.
-- No versionar `node_modules/`, `dist/`, `.angular/cache/`, logs ni archivos temporales.
+- Las peticiones autenticadas deben enviar `Authorization: Bearer <token>` mediante el interceptor HTTP, no armando headers manualmente.
+- Proteger rutas privadas con `auth.guard`, rutas de invitados con `guest.guard`.
 
-Docker:
+## 6. Reglas para Gateway
 
-- Mantener Dockerfiles por servicio.
-- No duplicar configuracion sensible dentro de imagenes.
-- Usar variables de entorno para puertos, perfiles y credenciales.
-- Verificar redes Docker como `ecom-prod-net` antes de cambiar Compose.
-- No publicar puertos HTTP de microservicios internos al host; consumirlos por Gateway.
+- Gateway es la **unica API publica** del backend.
+- Usar `lb://SERVICE` en **mayusculas** (ej: `lb://PRODUCTO-MS`).
+- No duplicar paths entre rutas.
+- Mantener `gateway-dev.yml` y `gateway-prod.yml` alineados en rutas CRUD.
+- **Solo lectura publica** cuando corresponda:
 
-## 8. Comandos utiles
+  - `GET /api/v1/productos/**` puede ser publico
+  - `GET /api/v1/categorias/**` puede ser publico
+  - `POST`, `PUT`, `DELETE` sobre cualquier recurso deben requerir JWT salvo justificacion explicita
+- Ordenes, pagos, carrito, perfil, chat, favoritos y escritura de productos deben requerir JWT.
+- Las rutas Swagger/OpenAPI pueden estar publicas en DEV pero no en PROD.
+- Mantener CORS restringido a origenes necesarios (`localhost:4200`, `localhost:4300`).
+- No exponer endpoints sensibles sin autenticacion.
 
-- `docker compose -f infra/compose.yml up -d --build`
-- `docker compose -f keycloak/compose.yml up -d`
-- `docker compose -f kafka/compose.yml up -d`
-- `docker compose -f obs/compose.yml up -d`
-- `docker compose -f servicio/<nombre-ms>/compose.yml up -d`
+## 7. Reglas para microservicios
 
-Maven:
+- Cada microservicio debe tener una **sola responsabilidad** (principio de responsabilidad unica).
+- Cada microservicio debe tener su **propia base de datos** PostgreSQL.
+- Usar DTOs para entrada y salida de datos.
+- Mantener el patron de capas:
 
-- `mvn -f infra/config/pom.xml test`
-- `mvn -f infra/eureka/pom.xml test`
-- `mvn -f infra/gateway/pom.xml test`
-- `mvn -f servicio/<nombre-ms>/pom.xml test`
-- `mvn -f servicio/<nombre-ms>/pom.xml package`
+  ```txt
+  controller/ -> service/ (o service/impl/) -> repository/ -> entity/
+                                            -> dto/
+                                            -> mapper/ (cuando aplique)
+                                            -> config/
+                                            -> exception/ (cuando aplique)
+  ```
+- No exponer entidades JPA directamente en los controladores.
+- Agregar `GlobalExceptionHandler`, OpenAPI/Swagger, tests y correlation filter cuando se implemente funcionalidad real.
+- Comunicacion interna entre microservicios solo con **OpenFeign** (sincrono) o **Kafka** (asincrono), cuando este justificado.
+- Los metodos HTTP en los controladores deben seguir el estandar REST:
+  - `GET` para lectura
+  - `POST` para creacion
+  - `PUT` para actualizacion
+  - `DELETE` para eliminacion
+- Evitar logica de negocio en controladores.
 
-Verificacion de estado:
+## 8. Estados de funcionalidad
 
-- Config Server: `http://localhost:28888/actuator/health`
-- Eureka: `http://localhost:28761`
-- Gateway: `http://localhost:28082/actuator/health`
-- Keycloak: `http://localhost:8080`
-- Kafka UI: `http://localhost:28085`
-- Grafana: `http://localhost:23000`
+Todo agente debe clasificar cada funcionalidad antes de afirmar que esta terminada:
 
-## 9. Flujo recomendado
+| Estado | Significado |
+|--------|-------------|
+| `REAL` | Conectado a Gateway y microservicio, funcional end-to-end |
+| `PARCIAL` | Existe backend o frontend, pero falta integracion completa |
+| `MOCK` | Simulado con datos locales, localStorage o hardcodeados |
+| `NO_INTEGRADO` | Existe visualmente pero no llama backend |
+| `PENDIENTE` | Planificado pero no implementado |
 
-1. Leer estructura, configuracion, README, `pom.xml`, `compose.yml` y codigo relacionado.
-2. Ubicar servicio, capa, endpoint, configuracion o flujo afectado.
-3. Aplicar cambios pequenos y enfocados.
-4. Ejecutar pruebas Maven, Docker Compose o healthchecks segun corresponda.
-5. Documentar archivos modificados, impacto y forma de prueba.
+## 9. Prioridades actuales
 
-## 10. Archivos que no deben modificarse manualmente
+Orden de importancia para el desarrollo:
+
+1. Gateway activo y URLs absolutas desde Angular.
+2. Register real.
+3. Login real.
+4. `/auth/me` real.
+5. Productos y categorias reales.
+6. Publicar producto autenticado.
+7. Detalle de producto.
+8. Orden y pago con manejo de errores.
+9. Perfil real (persona-ms o auth-ms).
+10. Chat real (chat-ms).
+11. Media real (media-ms, subida de imagenes).
+12. Favoritos y calificaciones.
+13. Search real (search-ms).
+14. Limpieza de componentes duplicados (flat -> subdirectorios).
+15. Agregar tests a microservicios.
+
+## 10. Validaciones obligatorias
+
+Antes de finalizar cualquier tarea:
+
+```bash
+# Si se toco frontend
+cd frontend && npm run build
+
+# Si se toco Gateway
+mvn -f infra/gateway/pom.xml clean compile
+
+# Si se toco un microservicio
+mvn -f servicio/<nombre-ms>/pom.xml clean compile
+
+# Siempre revisar estado
+git status --short
+```
+
+No ejecutar build de frontend si solo se modifico documentacion o backend.
+
+## 11. Formato de reporte final
+
+Todo agente debe entregar al finalizar una tarea:
+
+1. **Que reviso** — Archivos leidos y contexto analizado.
+2. **Que modifico** — Cambios realizados y por que.
+3. **Archivos modificados** — Lista de rutas de archivos.
+4. **Comandos ejecutados** — Comandos y sus salidas relevantes.
+5. **Resultado de build/test** — Compilacion y pruebas.
+6. **Estado de `git status --short`** — Archivos nuevos, modificados, eliminados.
+7. **Riesgos pendientes** — Problemas conocidos no resueltos.
+8. **Proxima fase recomendada** — Siguiente paso en la prioridad.
+
+## 12. Archivos que no deben modificarse manualmente
 
 - `target/`
 - `build/`
@@ -207,29 +237,54 @@ Verificacion de estado:
 - caches o artefactos de herramientas
 - `.env` con secretos reales
 
-## 11. Frontend Migration Guidelines
+## 13. Comandos utiles
 
-- El frontend oficial del repositorio es Angular y vive en `frontend/`.
-- No mantener React como segundo frontend dentro del repositorio.
-- No copiar archivos `.tsx` o `.jsx` al frontend Angular.
-- No instalar React, React DOM, Vite, Radix, shadcn ni `lucide-react` dentro de `frontend/`.
-- Toda integracion HTTP del frontend debe pasar por Spring Cloud Gateway.
-- Usar `frontend/src/app/core/config/api.config.ts` para centralizar la URL base y endpoints del Gateway.
-- Usar `SessionService` para leer, persistir y limpiar la sesion del usuario.
-- Usar `auth.guard.ts`, `guest.guard.ts` y `auth-token.interceptor.ts` para rutas protegidas y envio de JWT.
-- No subir `node_modules/`, `dist/`, `.angular/cache/`, logs ni archivos temporales.
-- Para probar el frontend:
-  - `cd frontend`
-  - `npm install`
-  - `npm run build`
-  - `npm start`
+```bash
+# Docker
+docker network create ecom-prod-net
+docker compose -f infra/compose.yml up -d --build
+docker compose -f keycloak/compose.yml up -d
+docker compose -f kafka/compose.yml up -d
+docker compose -f obs/compose.yml up -d
 
-## 12. Formato de respuesta esperado
+# Maven
+mvn -f infra/config/pom.xml test
+mvn -f infra/eureka/pom.xml test
+mvn -f infra/gateway/pom.xml test
+mvn -f servicio/<nombre-ms>/pom.xml test
+mvn -f servicio/<nombre-ms>/pom.xml package
 
-Cuando se realice una tarea, responder con:
+# Frontend
+cd frontend && npm install && npm run build && npm start
 
-- Resumen del cambio.
-- Archivos modificados.
-- Riesgo o impacto.
-- Como probarlo.
-- Siguientes pasos recomendados.
+# Health checks
+curl http://localhost:18888/actuator/health   # Config Server (dev)
+curl http://localhost:18761/eureka/apps       # Eureka (dev)
+curl http://localhost:18080/actuator/health   # Gateway (dev)
+curl http://localhost:28082/actuator/health   # Gateway (prod)
+```
+
+## 14. Clasificacion MVP de microservicios
+
+Matriz completa: [`docs/MVP_MICROSERVICES.md`](docs/MVP_MICROSERVICES.md).
+
+| Tier | Servicios |
+|------|-----------|
+| **MVP activo (11)** | auth-ms, persona-ms, producto-ms, categoria-ms, orden-ms, pago-ms, publicacion-ms, media-ms, favoritos-ms, calificacion-ms, chat-ms |
+| **Pausado / futuro (5)** | carrito-ms, inventario-ms, notification-ms, search-ms, catalogo-ms (deprecado; usar categoria-ms) |
+
+Reglas para agentes:
+
+- No eliminar microservicios pausados sin validacion del equipo.
+- No anadir rutas Gateway duplicadas (ej. categorias en catalogo-ms y categoria-ms).
+- Las rutas Gateway marcadas `# FASE_FUTURA` pueden existir pero no tienen consumo Angular actual.
+- Priorizar integracion real sobre mocks (`TEMPORAL_MOCK`) en servicios MVP activos.
+
+## 15. Referencias
+
+- `docs/MVP_MICROSERVICES.md` — Matriz MVP activo vs pausado segun frontend Angular.
+- `frontend/docs/API_CONTRACT.md` — Contrato HTTP frontend-backend.
+- `estructura_proyecto.md` — Documentacion oficial de arquitectura y estructura del proyecto.
+- `infra/config/config-repo/gateway-dev.yml` — Rutas del Gateway en desarrollo (31 rutas).
+- `infra/config/config-repo/gateway-prod.yml` — Rutas del Gateway en produccion (15 rutas).
+- `frontend/src/app/core/config/api.config.ts` — Endpoints centralizados del frontend.

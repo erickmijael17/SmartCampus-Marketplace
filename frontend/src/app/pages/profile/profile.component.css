@@ -1,5 +1,5 @@
 .profile-page {
-  padding-top: 66px;
+  padding-bottom: 2rem;
 }
 
 .cover {
@@ -58,13 +58,16 @@ h1 {
 }
 
 .tabs {
-  display: inline-flex;
+  display: flex;
   gap: 0.35rem;
   padding: 0.35rem;
   border: 1px solid var(--border);
   border-radius: 14px;
   background: #fff;
   margin-bottom: 1rem;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  max-width: 100%;
 }
 
 .tabs button {
@@ -74,6 +77,8 @@ h1 {
   background: transparent;
   color: var(--text-muted);
   font-weight: 900;
+  white-space: nowrap;
+  cursor: pointer;
 }
 
 .tabs button.active {
@@ -85,12 +90,6 @@ h1 {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 1rem;
-}
-
-.empty {
-  padding: 3rem;
-  text-align: center;
-  color: var(--text-muted);
 }
 
 .reviews {
@@ -109,6 +108,22 @@ h1 {
 }
 
 @media (max-width: 900px) {
+  .profile-head {
+    grid-template-columns: auto 1fr;
+  }
+
+  .profile-head .btn {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+
+  .stats,
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 620px) {
   .profile-head,
   .stats,
   .grid {
@@ -117,5 +132,13 @@ h1 {
 
   .profile-head {
     align-items: start;
+  }
+
+  .tabs {
+    width: 100%;
+  }
+
+  .tabs button {
+    flex: 1 0 auto;
   }
 }

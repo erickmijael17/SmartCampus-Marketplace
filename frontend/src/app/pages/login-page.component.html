@@ -8,17 +8,37 @@
   <form class="auth-form" [formGroup]="form" (ngSubmit)="submit()">
     <label>
       Usuario
-      <input formControlName="username" type="text" autocomplete="username" />
+      <input
+        formControlName="username"
+        type="text"
+        autocomplete="username"
+        class="field"
+        [class.invalid]="fieldError('username')"
+      />
+      @if (fieldError('username'); as message) {
+        <p class="field-error">{{ message }}</p>
+      }
     </label>
 
     <label>
       Contrasena
-      <input formControlName="password" type="password" autocomplete="current-password" />
+      <input
+        formControlName="password"
+        type="password"
+        autocomplete="current-password"
+        class="field"
+        [class.invalid]="fieldError('password')"
+      />
+      @if (fieldError('password'); as message) {
+        <p class="field-error">{{ message }}</p>
+      }
     </label>
 
-    <p *ngIf="errorMessage" class="error">{{ errorMessage }}</p>
+    @if (errorMessage) {
+      <p class="form-error">{{ errorMessage }}</p>
+    }
 
-    <button type="submit" [disabled]="submitting">Ingresar</button>
+    <button type="submit" [disabled]="submitting">{{ submitting ? 'Ingresando...' : 'Ingresar' }}</button>
   </form>
 
   <p class="helper">

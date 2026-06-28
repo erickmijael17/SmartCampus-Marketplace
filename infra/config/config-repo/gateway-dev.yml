@@ -4,18 +4,29 @@ spring:
       forwarded:
         enabled: false
       routes:
+        # --- MVP ACTIVO: identidad y perfil ---
         - id: auth-route
           uri: lb://AUTH-MS
           predicates:
             - Path=/auth/**
-        - id: catalogo-instancia
-          uri: lb://CATALOGO-MS
+        - id: persona-route
+          uri: lb://PERSONA-MS
           predicates:
-            - Path=/api/v1/catalogo/instancia
-        - id: catalogo-swagger
-          uri: lb://CATALOGO-MS
+            - Path=/api/v1/personas/**
+        - id: persona-swagger
+          uri: lb://PERSONA-MS
           predicates:
-            - Path=/catalogo-ms/swagger-ui/**,/catalogo-ms/v3/api-docs/**
+            - Path=/persona-ms/swagger-ui/**,/persona-ms/v3/api-docs/**
+
+        # --- MVP ACTIVO: catalogo comercial ---
+        - id: categoria-route
+          uri: lb://CATEGORIA-MS
+          predicates:
+            - Path=/api/v1/categorias/**
+        - id: categoria-swagger
+          uri: lb://CATEGORIA-MS
+          predicates:
+            - Path=/categoria-ms/swagger-ui/**,/categoria-ms/v3/api-docs/**
         - id: producto-route
           uri: lb://PRODUCTO-MS
           predicates:
@@ -28,6 +39,50 @@ spring:
           uri: lb://PRODUCTO-MS
           predicates:
             - Path=/producto-ms/swagger-ui/**,/producto-ms/v3/api-docs/**
+
+        # --- MVP ACTIVO: capa social ---
+        - id: publicacion-route
+          uri: lb://PUBLICACION-MS
+          predicates:
+            - Path=/api/v1/publicaciones/**
+        - id: publicacion-swagger
+          uri: lb://PUBLICACION-MS
+          predicates:
+            - Path=/publicacion-ms/swagger-ui/**,/publicacion-ms/v3/api-docs/**
+        - id: media-route
+          uri: lb://MEDIA-MS
+          predicates:
+            - Path=/api/v1/media/**
+        - id: media-swagger
+          uri: lb://MEDIA-MS
+          predicates:
+            - Path=/media-ms/swagger-ui/**,/media-ms/v3/api-docs/**
+        - id: favoritos-route
+          uri: lb://FAVORITOS-MS
+          predicates:
+            - Path=/api/v1/favoritos/**
+        - id: favoritos-swagger
+          uri: lb://FAVORITOS-MS
+          predicates:
+            - Path=/favoritos-ms/swagger-ui/**,/favoritos-ms/v3/api-docs/**
+        - id: calificacion-route
+          uri: lb://CALIFICACION-MS
+          predicates:
+            - Path=/api/v1/calificaciones/**
+        - id: calificacion-swagger
+          uri: lb://CALIFICACION-MS
+          predicates:
+            - Path=/calificacion-ms/swagger-ui/**,/calificacion-ms/v3/api-docs/**
+        - id: chat-route
+          uri: lb://CHAT-MS
+          predicates:
+            - Path=/api/v1/chats/**
+        - id: chat-swagger
+          uri: lb://CHAT-MS
+          predicates:
+            - Path=/chat-ms/swagger-ui/**,/chat-ms/v3/api-docs/**
+
+        # --- MVP ACTIVO: checkout ---
         - id: orden-route
           uri: lb://ORDEN-MS
           predicates:
@@ -44,6 +99,18 @@ spring:
           uri: lb://PAGO-MS
           predicates:
             - Path=/pago-ms/swagger-ui/**,/pago-ms/v3/api-docs/**
+
+        # --- DEPRECADO: catalogo-ms (usar categoria-ms) ---
+        - id: catalogo-instancia
+          uri: lb://CATALOGO-MS
+          predicates:
+            - Path=/api/v1/catalogo/instancia
+        - id: catalogo-swagger
+          uri: lb://CATALOGO-MS
+          predicates:
+            - Path=/catalogo-ms/swagger-ui/**,/catalogo-ms/v3/api-docs/**
+
+        # --- FASE_FUTURA: sin consumo Angular actual ---
         - id: carrito-route
           uri: lb://CARRITO-MS
           predicates:
@@ -60,46 +127,6 @@ spring:
           uri: lb://INVENTARIO-MS
           predicates:
             - Path=/inventario-ms/swagger-ui/**,/inventario-ms/v3/api-docs/**
-        - id: calificacion-route
-          uri: lb://CALIFICACION-MS
-          predicates:
-            - Path=/api/v1/calificaciones/**
-        - id: calificacion-swagger
-          uri: lb://CALIFICACION-MS
-          predicates:
-            - Path=/calificacion-ms/swagger-ui/**,/calificacion-ms/v3/api-docs/**
-        - id: categoria-route
-          uri: lb://CATEGORIA-MS
-          predicates:
-            - Path=/api/v1/categorias/**
-        - id: categoria-swagger
-          uri: lb://CATEGORIA-MS
-          predicates:
-            - Path=/categoria-ms/swagger-ui/**,/categoria-ms/v3/api-docs/**
-        - id: chat-route
-          uri: lb://CHAT-MS
-          predicates:
-            - Path=/api/v1/chats/**
-        - id: chat-swagger
-          uri: lb://CHAT-MS
-          predicates:
-            - Path=/chat-ms/swagger-ui/**,/chat-ms/v3/api-docs/**
-        - id: favoritos-route
-          uri: lb://FAVORITOS-MS
-          predicates:
-            - Path=/api/v1/favoritos/**
-        - id: favoritos-swagger
-          uri: lb://FAVORITOS-MS
-          predicates:
-            - Path=/favoritos-ms/swagger-ui/**,/favoritos-ms/v3/api-docs/**
-        - id: media-route
-          uri: lb://MEDIA-MS
-          predicates:
-            - Path=/api/v1/media/**
-        - id: media-swagger
-          uri: lb://MEDIA-MS
-          predicates:
-            - Path=/media-ms/swagger-ui/**,/media-ms/v3/api-docs/**
         - id: notification-route
           uri: lb://NOTIFICATION-MS
           predicates:
@@ -108,22 +135,6 @@ spring:
           uri: lb://NOTIFICATION-MS
           predicates:
             - Path=/notification-ms/swagger-ui/**,/notification-ms/v3/api-docs/**
-        - id: persona-route
-          uri: lb://PERSONA-MS
-          predicates:
-            - Path=/api/v1/personas/**
-        - id: persona-swagger
-          uri: lb://PERSONA-MS
-          predicates:
-            - Path=/persona-ms/swagger-ui/**,/persona-ms/v3/api-docs/**
-        - id: publicacion-route
-          uri: lb://PUBLICACION-MS
-          predicates:
-            - Path=/api/v1/publicaciones/**
-        - id: publicacion-swagger
-          uri: lb://PUBLICACION-MS
-          predicates:
-            - Path=/publicacion-ms/swagger-ui/**,/publicacion-ms/v3/api-docs/**
         - id: search-route
           uri: lb://SEARCH-MS
           predicates:

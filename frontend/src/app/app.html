@@ -5,6 +5,8 @@
     <a routerLink="/publish">Publicar</a>
     @if (isAuthenticated()) {
       <span class="user-chip">{{ username() }}</span>
+      <a routerLink="/profile">Perfil</a>
+      <a routerLink="/chat">Chat</a>
       <button type="button" class="ghost-btn" (click)="logout()">Salir</button>
     } @else {
       <a routerLink="/login">Ingresar</a>

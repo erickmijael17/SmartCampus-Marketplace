@@ -2,7 +2,10 @@ package com.upeu.chat.controller;
 
 import com.upeu.chat.dto.ConversacionRequest;
 import com.upeu.chat.dto.ConversacionResponse;
+import com.upeu.chat.dto.MensajeRequest;
+import com.upeu.chat.dto.MensajeResponse;
 import com.upeu.chat.service.ChatService;
+import com.upeu.chat.service.MensajeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +18,7 @@ import java.util.List;
 public class ChatController {
 
     private final ChatService chatService;
+    private final MensajeService mensajeService;
 
     @GetMapping("/health")
     public ResponseEntity<String> health() {
@@ -45,5 +49,17 @@ public class ChatController {
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         chatService.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{id}/mensajes")
+    public ResponseEntity<List<MensajeResponse>> findMessages(@PathVariable Long id) {
+        return ResponseEntity.ok(mensajeService.findByConversacionId(id));
+    }
+
+    @PostMapping("/{id}/mensajes")
+    public ResponseEntity<MensajeResponse> createMessage(
+            @PathVariable Long id,
+            @RequestBody MensajeRequest request) {
+        return ResponseEntity.ok(mensajeService.create(id, request));
     }
 }

@@ -8,7 +8,15 @@ import { NavbarComponent } from '../../components/navbar/navbar.component';
   imports: [NavbarComponent, RouterOutlet],
   template: `
     <app-navbar />
-    <router-outlet />
-  `
+    <main class="app-main">
+      <router-outlet />
+    </main>
+  `,
+  styles: [`
+    .app-main {
+      padding-top: 66px;
+      min-height: 100vh;
+    }
+  `]
 })
 export class MainLayoutComponent {}

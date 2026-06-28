@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { HomePageComponent } from './pages/home-page.component';
+import { HomeComponent } from './pages/home/home.component';
 import { ListingDetailPageComponent } from './pages/listing-detail-page.component';
 import { LoginPageComponent } from './pages/login-page.component';
 import { RegisterComponent } from './pages/register/register.component';
@@ -12,7 +12,7 @@ import { guestGuard } from './guards/guest.guard';
 export const routes: Routes = [
 	{
 		path: '',
-		component: HomePageComponent
+		component: HomeComponent
 	},
 	{
 		path: 'publish',

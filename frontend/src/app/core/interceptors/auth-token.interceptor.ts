@@ -1,5 +1,6 @@
 import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
+import { Router } from '@angular/router';
 import { throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { SessionService } from '../services/session.service';
@@ -9,6 +10,7 @@ import { describeHttpError } from '../utils/http-error.util';
 export const authTokenInterceptor: HttpInterceptorFn = (request, next) => {
   const sessionService = inject(SessionService);
   const gatewayService = inject(GatewayService);
+  const router = inject(Router);
   const authHeader = sessionService.authHeaderValue();
   const shouldAttachAuth = authHeader && !isPublicReadEndpoint(request.method, request.url);
 
@@ -22,12 +24,32 @@ export const authTokenInterceptor: HttpInterceptorFn = (request, next) => {
 
   return next(authReq).pipe(
     catchError((error: HttpErrorResponse) => {
+      if (error.status === 401 && shouldAttachAuth && shouldHandleUnauthorized(request.url)) {
+        sessionService.clear();
+
+        const currentUrl = router.url;
+        if (!currentUrl.startsWith('/login') && !currentUrl.startsWith('/register')) {
+          void router.navigate(['/login'], {
+            queryParams: { returnUrl: currentUrl }
+          });
+        }
+      }
+
       const msg = describeHttpError(error, 'la solicitud', gatewayService.gatewayAvailable());
       console.warn(`[HTTP Error] ${request.method} ${request.url}: ${msg}`);
       return throwError(() => error);
     })
   );
 };
+
+function shouldHandleUnauthorized(url: string): boolean {
+  const path = extractPath(url);
+  return (
+    !matchesPath(path, '/auth/login') &&
+    !matchesPath(path, '/auth/register') &&
+    !matchesPath(path, '/auth/me')
+  );
+}
 
 function isPublicReadEndpoint(method: string, url: string): boolean {
   if (method.toUpperCase() !== 'GET') {

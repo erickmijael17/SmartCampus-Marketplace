@@ -45,6 +45,11 @@ Los microservicios no deben publicarse directamente al host por HTTP. En Docker 
 
 ## Inicio rapido
 
+> **Requisito previo:** crear la red Docker compartida (solo la primera vez):
+> ```bash
+> docker network create ecom-prod-net
+> ```
+
 ```bash
 docker compose -f infra/compose.yml up -d --build
 docker compose -f keycloak/compose.yml up -d
@@ -80,6 +85,13 @@ Content-Type: application/json
   "password": "clave"
 }
 ```
+
+## Microservicios y MVP
+
+El frontend Angular consume **11 de 16** microservicios via Gateway. Cinco estan pausados para el MVP (carrito, inventario, notification, search, catalogo deprecado).
+
+- [Matriz MVP activo vs futuro](docs/MVP_MICROSERVICES.md)
+- [Contrato API frontend](frontend/docs/API_CONTRACT.md)
 
 ## Documentacion relacionada
 

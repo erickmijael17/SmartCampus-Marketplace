@@ -6,8 +6,12 @@
         <h1>SmartCampus</h1>
         <p>Compra, vende, publica servicios y contacta estudiantes dentro de tu campus con una experiencia moderna y segura.</p>
         <div class="hero-actions">
-          <a class="btn btn-primary" routerLink="/publish">Publicar ahora</a>
-          <a class="btn btn-ghost" routerLink="/chat">Ver mensajes</a>
+          <button type="button" class="btn btn-primary" (click)="goToPublish()">Publicar ahora</button>
+          @if (isAuthenticated()) {
+            <a class="btn btn-ghost" routerLink="/chat">Ver mensajes</a>
+          } @else {
+            <a class="btn btn-ghost" routerLink="/login">Ingresar</a>
+          }
         </div>
       </div>
       <div class="hero-media" aria-hidden="true">
@@ -20,25 +24,40 @@
     <div class="section-head">
       <div>
         <h2>Publicaciones recientes</h2>
-        <p class="muted">Productos, tutorías y servicios disponibles en el campus.</p>
+        <p class="muted">Productos, tutorias y servicios disponibles en el campus.</p>
       </div>
       <app-search-bar (queryChange)="query = $event" />
     </div>
 
     <div class="categories">
-      @for (category of categories; track category.label) {
-        <app-category-chip [category]="category" [active]="selectedCategory === category.label" (selected)="selectedCategory = $event" />
+      <button type="button" class="chip" [class.active]="selectedCategory === 'Todos'" (click)="selectCategory('Todos')">
+        Todos
+      </button>
+      @for (category of categories; track category.id) {
+        <app-category-chip
+          [category]="category"
+          [active]="selectedCategory === (category.nombre || category.label)"
+          (selected)="selectCategory($event)"
+        />
       }
     </div>
 
-    @if (filteredProducts.length) {
+    @if (loading) {
+      <app-loading label="Cargando publicaciones..." />
+    } @else if (errorMessage && !products.length) {
+      <section class="panel status-error">{{ errorMessage }}</section>
+    } @else if (filteredProducts.length) {
       <div class="grid">
         @for (product of filteredProducts; track product.id) {
           <app-listing-card [product]="product" />
         }
       </div>
     } @else {
-      <app-empty-state title="No encontramos publicaciones" description="Cambia la búsqueda o selecciona otra categoría." />
+      <app-empty-state
+        icon="⌕"
+        title="No encontramos publicaciones"
+        description="Cambia la busqueda o selecciona otra categoria."
+      />
     }
   </section>
 </main>

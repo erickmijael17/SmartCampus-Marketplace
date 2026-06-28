@@ -1,6 +1,6 @@
 .hero {
-  margin-top: -92px;
-  padding: 110px 0 46px;
+  margin-top: -66px;
+  padding: 96px 0 46px;
   background: linear-gradient(180deg, #eff6ff 0%, var(--background) 100%);
 }
 
@@ -67,6 +67,25 @@ h2 {
   gap: 0.65rem;
   overflow-x: auto;
   padding: 1.4rem 0;
+  scrollbar-width: thin;
+}
+
+.chip {
+  border: 1px solid var(--border);
+  background: #fff;
+  color: var(--text-muted);
+  border-radius: 999px;
+  padding: 0.62rem 0.9rem;
+  font-weight: 800;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.chip.active,
+.chip:hover {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
 }
 
 .grid {
@@ -91,6 +110,10 @@ h2 {
 }
 
 @media (max-width: 620px) {
+  .hero {
+    padding-top: 88px;
+  }
+
   .grid {
     grid-template-columns: 1fr;
   }

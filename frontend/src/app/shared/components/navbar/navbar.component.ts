@@ -14,8 +14,13 @@ export class NavbarComponent {
   readonly session = inject(SessionService);
   menuOpen = false;
 
+  closeMenu(): void {
+    this.menuOpen = false;
+  }
+
   logout(): void {
     this.session.clear();
-    this.router.navigateByUrl('/login');
+    this.closeMenu();
+    void this.router.navigateByUrl('/login');
   }
 }

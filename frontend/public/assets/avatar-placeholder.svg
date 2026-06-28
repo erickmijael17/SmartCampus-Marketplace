@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="150" height="150" viewBox="0 0 150 150" role="img" aria-label="Avatar">
+  <circle cx="75" cy="75" r="75" fill="#dbeafe"/>
+  <circle cx="75" cy="58" r="26" fill="#93c5fd"/>
+  <ellipse cx="75" cy="118" rx="42" ry="28" fill="#93c5fd"/>
+</svg>

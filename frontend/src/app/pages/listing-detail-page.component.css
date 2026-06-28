@@ -71,6 +71,13 @@ button {
   cursor: pointer;
 }
 
+.secondary-action {
+  margin-top: 0.6rem;
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+
 button:disabled {
   opacity: 0.7;
   cursor: not-allowed;
@@ -155,4 +162,17 @@ button:disabled {
   .detail-grid img {
     height: 250px;
   }
+}
+
+.review-box {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.review-box h3 {
+  margin: 0;
+  font-size: 1rem;
 }

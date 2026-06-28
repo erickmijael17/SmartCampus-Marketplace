@@ -1,42 +1,69 @@
-<section class="publish-wrapper">
+<section class="publish-wrapper container">
   <p class="eyebrow">Publicacion protegida</p>
   <h1>Publicar producto o servicio</h1>
-  <p>Completa este formulario para crear una venta real contra el backend.</p>
+  <p class="muted">Completa este formulario para crear una venta real contra el backend.</p>
 
-  <div class="seller-chip" *ngIf="sellerId() as id">
-    Tu ID de vendedor: <strong>{{ id }}</strong>
-  </div>
+  @if (sellerId(); as id) {
+    <div class="seller-chip">Tu ID de vendedor: <strong>{{ id }}</strong></div>
+  }
 
-  <form [formGroup]="form" (ngSubmit)="submit()" class="publish-form">
-    <label>
-      Titulo
-      <input formControlName="titulo" type="text" placeholder="Ej. Tutorias de Matematicas" />
-    </label>
+  @if (loadingCategories) {
+    <app-loading label="Cargando categorias..." />
+  } @else {
+    <form [formGroup]="form" (ngSubmit)="submit()" class="publish-form">
+      <label>
+        Titulo
+        <input formControlName="titulo" type="text" class="field" placeholder="Ej. Tutorias de Matematicas" [class.invalid]="fieldError('titulo')" />
+        @if (fieldError('titulo'); as message) {
+          <p class="field-error">{{ message }}</p>
+        }
+      </label>
 
-    <label>
-      Precio (S/)
-      <input formControlName="precio" type="number" min="1" />
-    </label>
+      <label>
+        Precio (S/)
+        <input formControlName="precio" type="number" min="1" class="field" [class.invalid]="fieldError('precio')" />
+        @if (fieldError('precio'); as message) {
+          <p class="field-error">{{ message }}</p>
+        }
+      </label>
 
-    <label>
-      Descripcion
-      <textarea
-        formControlName="descripcion"
-        rows="4"
-        placeholder="Describe que ofreces, estado, horarios o condiciones"
-      ></textarea>
-    </label>
+      <label>
+        Descripcion
+        <textarea
+          formControlName="descripcion"
+          rows="4"
+          class="field"
+          placeholder="Describe que ofreces, estado, horarios o condiciones"
+          [class.invalid]="fieldError('descripcion')"
+        ></textarea>
+        @if (fieldError('descripcion'); as message) {
+          <p class="field-error">{{ message }}</p>
+        }
+      </label>
 
-    <label>
-      Categoria
-      <select formControlName="categoriaId">
-        <option *ngFor="let category of categories" [ngValue]="category.id">{{ category.nombre }}</option>
-      </select>
-    </label>
+      <label>
+        Categoria
+        <select formControlName="categoriaId" class="field">
+          <option *ngFor="let category of categories" [ngValue]="category.id">{{ category.nombre }}</option>
+        </select>
+      </label>
 
-    <p *ngIf="invalid" class="error">Revisa los campos obligatorios y longitudes minimas.</p>
-    <p *ngIf="errorMessage" class="error">{{ errorMessage }}</p>
+      <label>
+        URL de imagen (opcional)
+        <input formControlName="imageUrl" type="url" class="field" placeholder="https://ejemplo.com/imagen.jpg" [class.invalid]="fieldError('imageUrl')" />
+        <small class="muted">Se registra en media-ms como metadata vinculada a la publicacion.</small>
+        @if (fieldError('imageUrl'); as message) {
+          <p class="field-error">{{ message }}</p>
+        }
+      </label>
 
-    <button type="submit" [disabled]="submitting">Publicar venta</button>
-  </form>
+      @if (errorMessage) {
+        <p class="form-error">{{ errorMessage }}</p>
+      }
+
+      <button type="submit" class="btn btn-primary" [disabled]="submitting">
+        {{ submitting ? 'Publicando...' : 'Publicar venta' }}
+      </button>
+    </form>
+  }
 </section>

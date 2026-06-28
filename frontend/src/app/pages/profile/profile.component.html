@@ -1,7 +1,11 @@
 <main class="page profile-page">
   <section class="cover"></section>
   <div class="container profile">
-    @if (user) {
+    @if (loading) {
+      <app-loading label="Cargando perfil..." />
+    } @else if (errorMessage) {
+      <app-empty-state icon="!" title="No pudimos cargar tu perfil" [description]="errorMessage" />
+    } @else if (user) {
       <header class="profile-head">
         <div class="avatar">{{ user.initials }}</div>
         <div>
@@ -9,7 +13,7 @@
           <p class="muted">{{ user.career }} · {{ user.cycle }} · UTP</p>
           <span class="muted">★ {{ user.rating }} · {{ user.reviews }} reseñas</span>
         </div>
-        <button class="btn btn-ghost" type="button">Editar perfil</button>
+        <button class="btn btn-ghost" type="button" disabled>Editar perfil</button>
       </header>
 
       <section class="stats">
@@ -18,32 +22,39 @@
         <article class="panel"><strong>{{ user.favorites }}</strong><span>Favoritos</span></article>
       </section>
 
-      <nav class="tabs">
-        <button [class.active]="activeTab === 'publicaciones'" (click)="activeTab = 'publicaciones'">Mis publicaciones</button>
-        <button [class.active]="activeTab === 'favoritos'" (click)="activeTab = 'favoritos'">Favoritos</button>
-        <button [class.active]="activeTab === 'resenas'" (click)="activeTab = 'resenas'">Reseñas</button>
+      <nav class="tabs" aria-label="Secciones del perfil">
+        <button type="button" [class.active]="activeTab === 'publicaciones'" (click)="activeTab = 'publicaciones'">Mis publicaciones</button>
+        <button type="button" [class.active]="activeTab === 'favoritos'" (click)="activeTab = 'favoritos'">Favoritos</button>
+        <button type="button" [class.active]="activeTab === 'resenas'" (click)="activeTab = 'resenas'">Reseñas</button>
       </nav>
 
       @if (activeTab === 'publicaciones') {
         <div class="grid">
           @for (product of products; track product.id) {
             <app-listing-card [product]="product" />
+          } @empty {
+            <app-empty-state title="Sin publicaciones" description="Publica tu primer producto o servicio." />
           }
         </div>
       } @else if (activeTab === 'favoritos') {
-        <section class="panel empty">Aún no tienes favoritos guardados.</section>
+        <div class="grid">
+          @for (product of favoriteProducts; track product.id) {
+            <app-listing-card [product]="product" />
+          } @empty {
+            <app-empty-state title="Sin favoritos" description="Guarda publicaciones que te interesen desde el detalle." />
+          }
+        </div>
       } @else {
         <section class="reviews">
-          <article class="panel">
-            <b>María Quispe</b>
-            <span>★★★★★ · 15 Jun 2026</span>
-            <p>Excelente vendedor, muy responsable y puntual. El libro estaba en perfecto estado.</p>
-          </article>
-          <article class="panel">
-            <b>Carlos Pérez</b>
-            <span>★★★★☆ · 10 Jun 2026</span>
-            <p>Buena atención, respondió rápido a mis mensajes. Recomendado.</p>
-          </article>
+          @for (review of reviews; track review.id) {
+            <article class="panel">
+              <b>Publicacion #{{ review.idPublicacion }}</b>
+              <span>{{ '★'.repeat(review.puntuacion) }} · {{ review.creadoEn | date: 'mediumDate' }}</span>
+              <p>{{ review.comentario || 'Sin comentario' }}</p>
+            </article>
+          } @empty {
+            <app-empty-state title="Sin reseñas" description="Las reseñas de tus publicaciones apareceran aqui." />
+          }
         </section>
       }
     }

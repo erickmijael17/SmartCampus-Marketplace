@@ -1,24 +1,24 @@
 .auth-card {
   max-width: 520px;
-  margin: 0 auto;
+  margin: 2rem auto;
   background: #ffffff;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border);
   border-radius: 18px;
   padding: 1.6rem;
-  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+  box-shadow: var(--shadow);
 }
 
 .eyebrow {
   text-transform: uppercase;
   letter-spacing: 0.12em;
-  color: #2563eb;
+  color: var(--primary);
   font-weight: 700;
   font-size: 0.78rem;
 }
 
 .description,
 .helper {
-  color: #475569;
+  color: var(--text-muted);
 }
 
 .auth-form {
@@ -33,14 +33,7 @@ label {
   font-weight: 600;
 }
 
-input {
-  border: 1px solid #cbd5e1;
-  border-radius: 10px;
-  padding: 0.75rem 0.85rem;
-  font: inherit;
-}
-
-button {
+button[type='submit'] {
   border: none;
   border-radius: 12px;
   background: #0f172a;
@@ -55,24 +48,14 @@ button:disabled {
   cursor: not-allowed;
 }
 
-.error {
-  margin: 0;
-  color: #b91c1c;
-  font-weight: 600;
-}
-
 .helper a {
-  color: #2563eb;
+  color: var(--primary);
   text-decoration: none;
   font-weight: 700;
 }
 
-.demo-box {
-  display: grid;
-  gap: 0.35rem;
-  margin-top: 1rem;
-  background: #eff6ff;
-  border-radius: 12px;
-  padding: 0.9rem;
-  color: #1e3a8a;
+@media (max-width: 620px) {
+  .auth-card {
+    margin: 1rem auto;
+  }
 }

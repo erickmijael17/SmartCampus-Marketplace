@@ -1,6 +1,10 @@
 import { HttpErrorResponse } from '@angular/common/http';
 
 export function describeHttpError(error: unknown, context = 'la solicitud', gatewayDetected = false): string {
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
   if (!(error instanceof HttpErrorResponse)) {
     return `No se pudo completar ${context}.`;
   }

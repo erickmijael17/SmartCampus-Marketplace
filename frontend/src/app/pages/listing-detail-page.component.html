@@ -35,7 +35,31 @@
         </div>
 
         <button (click)="buyNow()">{{ canBuy ? 'Comprar ahora' : 'Inicia sesion para comprar' }}</button>
+        <button type="button" class="secondary-action" (click)="toggleFavorite()" [disabled]="favoriteBusy">
+          {{ favoriteLabel }}
+        </button>
         <p class="status" *ngIf="statusMessage">{{ statusMessage }}</p>
+
+        <section class="review-box" *ngIf="canBuy && listing.publicacionId">
+          <h3>Calificar publicacion</h3>
+          <label>
+            Puntuacion
+            <select [(ngModel)]="reviewScore">
+              <option [ngValue]="5">5 estrellas</option>
+              <option [ngValue]="4">4 estrellas</option>
+              <option [ngValue]="3">3 estrellas</option>
+              <option [ngValue]="2">2 estrellas</option>
+              <option [ngValue]="1">1 estrella</option>
+            </select>
+          </label>
+          <label>
+            Comentario
+            <textarea [(ngModel)]="reviewComment" rows="2" placeholder="Comparte tu experiencia"></textarea>
+          </label>
+          <button type="button" class="secondary-action" (click)="submitReview()" [disabled]="reviewBusy">
+            Enviar calificacion
+          </button>
+        </section>
       </div>
     </section>
 

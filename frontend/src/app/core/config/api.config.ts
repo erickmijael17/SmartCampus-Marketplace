@@ -11,7 +11,32 @@ export const API_CONFIG = {
       categories: '/api/v1/categorias',
       orders: '/api/v1/ordenes',
       payments: '/api/v1/pagos'
+    },
+    personas: {
+      base: '/api/v1/personas',
+      me: '/api/v1/personas/me',
+      detail: (id: number) => `/api/v1/personas/${id}`
+    },
+    chats: {
+      base: '/api/v1/chats',
+      detail: (id: number) => `/api/v1/chats/${id}`,
+      messages: (id: number) => `/api/v1/chats/${id}/mensajes`
+    },
+    media: {
+      base: '/api/v1/media',
+      detail: (id: number) => `/api/v1/media/${id}`
+    },
+    favoritos: {
+      base: '/api/v1/favoritos',
+      detail: (id: number) => `/api/v1/favoritos/${id}`
+    },
+    calificaciones: {
+      base: '/api/v1/calificaciones',
+      detail: (id: number) => `/api/v1/calificaciones/${id}`
+    },
+    publicaciones: {
+      base: '/api/v1/publicaciones',
+      detail: (id: number) => `/api/v1/publicaciones/${id}`
     }
   }
 } as const;
-
