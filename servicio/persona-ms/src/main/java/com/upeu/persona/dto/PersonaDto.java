@@ -42,7 +42,7 @@ public class PersonaDto {
     @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
     public static class Response {
         private Long id;
-        private Long userId;
+        private String userId;
         private String nombres;
         private String apellidos;
         private String email;

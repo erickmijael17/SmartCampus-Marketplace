@@ -17,8 +17,8 @@ El despliegue documentado del proyecto se realiza con Docker Compose. El API Gat
    - `infra/gateway`: Gateway HTTP unico, con rutas `lb://...` hacia Eureka.
    - `keycloak`: compose e import del realm `smartcampus`.
 
-3. **Microservicios**
-   - `auth-ms`, `producto-ms`, `catalogo-ms`, `categoria-ms`, `carrito-ms`, `orden-ms`, `pago-ms`, `inventario-ms`, `favoritos-ms`, `chat-ms`, `notification-ms`, `media-ms`, `calificacion-ms`, `persona-ms`, `publicacion-ms` y `search-ms`.
+3. **Microservicios MVP**
+   - `auth-ms`, `producto-ms`, `categoria-ms`, `orden-ms`, `pago-ms`, `favoritos-ms`, `chat-ms`, `media-ms`, `calificacion-ms`, `persona-ms` y `publicacion-ms`.
 
 4. **Eventos y observabilidad**
    - Kafka para mensajeria asincrona.
@@ -88,7 +88,7 @@ Content-Type: application/json
 
 ## Microservicios y MVP
 
-El frontend Angular consume **11 de 16** microservicios via Gateway. Cinco estan pausados para el MVP (carrito, inventario, notification, search, catalogo deprecado).
+El frontend Angular consume **11 microservicios** via Gateway. Los servicios fuera del MVP fueron eliminados del repo y del Config Repo para reducir complejidad operativa.
 
 - [Matriz MVP activo vs futuro](docs/MVP_MICROSERVICES.md)
 - [Contrato API frontend](frontend/docs/API_CONTRACT.md)

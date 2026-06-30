@@ -1,18 +1,18 @@
-name: ecom-persona-ms-dev
+name: persona-ms-dev
 
 services:
   postgres-persona-ms-dev:
     image: postgres:16-alpine
-    container_name: ecom-postgres-persona-ms-dev
+    container_name: postgres-persona-ms-dev
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ecom_persona_ms_db
+      POSTGRES_DB: persona_ms_db
       POSTGRES_USER: ecom
       POSTGRES_PASSWORD: ecom
     ports:
       - "15440:5432"
     volumes:
-      - ecom_persona_ms_dev_data:/var/lib/postgresql/data
+      - persona_ms_dev_data:/var/lib/postgresql/data
 
 volumes:
-  ecom_persona_ms_dev_data:
+  persona_ms_dev_data:

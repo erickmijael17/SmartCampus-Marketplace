@@ -11,7 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.upeu.producto.client.CatalogoClient;
+import com.upeu.producto.client.CategoriaClient;
 import com.upeu.producto.dto.CategoriaDto;
 
 import java.util.List;
@@ -23,7 +23,7 @@ public class ProductoServiceImpl implements ProductoService {
 
     private final ProductoRepository productoRepository;
     private final ProductoMapper productoMapper;
-    private final CatalogoClient catalogoClient;
+    private final CategoriaClient categoriaClient;
 
     @Override
     @Transactional
@@ -95,9 +95,9 @@ public class ProductoServiceImpl implements ProductoService {
         CategoriaDto categoria = null;
 
         try {
-            categoria = catalogoClient.findCategoriaById(producto.getIdCategoria());
+            categoria = categoriaClient.findCategoriaById(producto.getIdCategoria());
         } catch (Exception e) {
-            log.warn("No se pudo obtener la categoría desde catalogo. idCategoria={}", producto.getIdCategoria(), e);
+            log.warn("No se pudo obtener la categoria desde categoria-ms. idCategoria={}", producto.getIdCategoria(), e);
         }
 
         return ProductoResponse.builder()
@@ -123,7 +123,7 @@ public class ProductoServiceImpl implements ProductoService {
      * 
      * Producto producto = getProductoById(id);
      * 
-     * CategoriaDto categoria = catalogoClient.findCategoriaById(
+     * CategoriaDto categoria = categoriaClient.findCategoriaById(
      * producto.getIdCategoria().longValue());
      * 
      * return ProductoResponse.builder()

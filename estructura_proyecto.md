@@ -1,7 +1,7 @@
 ﻿# SmartCampus Marketplace — Estructura y Arquitectura Actual
 
-Fecha del análisis: 2026-06-26  
-Propósito: Documentar la estructura real del repositorio, la arquitectura, el flujo frontend-backend y los vacíos detectados.
+Fecha del análisis: 2026-06-29  
+Propósito: Documentar la estructura real del repositorio, la arquitectura, el flujo frontend-backend, el alcance MVP de microservicios y los vacíos detectados.
 
 ---
 
@@ -35,9 +35,10 @@ El archivo \estructura_proyecto.txt\ en la raíz del repositorio está **desactu
 |----------|--------------------------|--------------------------|--------|
 | \.agents/\ | 3 archivos listados | 4 archivos (falta \migrate-figma-react-to-angular-report.md\) | Desactualizado |
 | \rontend/app/\ | 30 archivos listados | 74 archivos, 14 directorios | **Significativamente desactualizado** |
-| \servicio/\ | 16 servicios listados | 16 servicios presentes | Coincide |
-| \infra/\ | Directorios básicos sin detalle | \compose.yml\, \.env\, \.env.example\, config-repo completo (38 archivos YAML) | Más detalle real |
-| \keycloak/\ | Solo mencionado | \compose.yml\ + \ealm-smartcampus.json\ | Coincide |
+| \servicio/\ | 16 servicios listados | 11 servicios presentes, alineados al MVP actual | Desactualizado en txt; repo refactorizado |
+| \infra/\ | Directorios básicos sin detalle | \compose.yml\, \.env\, \.env.example\, config-repo para los 11 servicios activos | Más detalle real |
+| \keycloak/\ | Solo mencionado | \compose.yml\ + \
+ealm-smartcampus.json\ | Coincide |
 | \kafka/\ | Solo mencionado | \compose.yml\ + \compose-dev.yml\ + \README.md\ | Coincide parcialmente |
 | \obs/\ | Solo mencionado | \compose.yml\ + \compose-dev.yml\ + configs de Grafana/Loki/Prometheus/Promtail | Coincide parcialmente |
 
@@ -89,7 +90,7 @@ SmartCampus-Marketplace/
 │   ├── config/                       # Spring Cloud Config Server
 │   │   ├── Dockerfile
 │   │   ├── pom.xml
-│   │   ├── config-repo/             # 38 archivos YAML de configuración centralizada
+│   │   ├── config-repo/             # Configuración centralizada para los 11 microservicios activos
 │   │   └── src/
 │   ├── eureka/                       # Netflix Eureka Server
 │   │   ├── Dockerfile
@@ -119,23 +120,18 @@ SmartCampus-Marketplace/
 │   ├── loki/config.yml
 │   ├── prometheus/prometheus.yml
 │   └── promtail/config.yml
-├── servicio/                         # Microservicios de dominio (16)
+├── servicio/                         # Microservicios de dominio MVP (11)
 │   ├── auth-ms/
 │   ├── calificacion-ms/
-│   ├── carrito-ms/
-│   ├── catalogo-ms/
 │   ├── categoria-ms/
 │   ├── chat-ms/
 │   ├── favoritos-ms/
-│   ├── inventario-ms/
 │   ├── media-ms/
-│   ├── notification-ms/
 │   ├── orden-ms/
 │   ├── pago-ms/
 │   ├── persona-ms/
 │   ├── producto-ms/
-│   ├── publicacion-ms/
-│   └── search-ms/
+│   └── publicacion-ms/
 ├── AGENTS.md                         # Guía principal para agentes de IA
 ├── GUIA_ESTUDIANTE.md                # Guía para estudiantes
 ├── README.md                         # Documentación principal del repositorio
@@ -149,7 +145,7 @@ SmartCampus-Marketplace/
 | \.agents/\ | Reportes de diagnóstico generados por agentes de IA durante sesiones anteriores |
 | \rontend/\ | Aplicación Angular 20 standalone. Consume el backend exclusivamente a través del Gateway |
 | \infra/\ | Infraestructura base: Config Server, Eureka, Gateway, compose principal y configuración centralizada |
-| \servicio/\ | Microservicios Spring Boot. Cada uno tiene su propio \pom.xml\, \Dockerfile\, \compose.yml\ y migraciones Flyway |
+| \servicio/\ | 11 microservicios Spring Boot activos. Cada uno tiene su propio \pom.xml\, \Dockerfile\, \compose.yml\ y migraciones Flyway |
 | \keycloak/\ | Proveedor OAuth2. Realm \smartcampus\ con cliente público \marketplace-client\ |
 | \kafka/\ | Kafka en modo KRaft (sin ZooKeeper) + Kafka UI + Kafka Exporter |
 | \obs/\ | Stack de observabilidad: Prometheus (métricas), Loki + Promtail (logs), Grafana (dashboards) |
@@ -163,7 +159,7 @@ El sistema sigue una arquitectura de microservicios con las siguientes capas:
 2. **Spring Cloud Gateway** — Punto único de entrada. Enruta peticiones usando `lb://SERVICE` (resuelto por Eureka).
 3. **Eureka** — Registro y descubrimiento de servicios.
 4. **Config Server** — Configuración centralizada desde `infra/config/config-repo/`.
-5. **Microservicios** — 16 servicios de dominio registrados en Eureka.
+5. **Microservicios** — 11 servicios de dominio registrados en Eureka.
 6. **Keycloak** — Autoridad de identidad OAuth2.
 7. **Kafka** — Mensajería asíncrona entre servicios (orden-ms, pago-ms).
 8. **PostgreSQL** — Base de datos por microservicio, migraciones con Flyway.
@@ -175,19 +171,14 @@ flowchart LR
     Gateway --> Auth[auth-ms]
     Gateway --> Producto[producto-ms]
     Gateway --> Categoria[categoria-ms]
-    Gateway --> Carrito[carrito-ms]
     Gateway --> Orden[orden-ms]
     Gateway --> Pago[pago-ms]
-    Gateway --> Inventario[inventario-ms]
     Gateway --> Persona[persona-ms]
     Gateway --> Publicacion[publicacion-ms]
     Gateway --> Chat[chat-ms]
     Gateway --> Favoritos[favoritos-ms]
     Gateway --> Calificacion[calificacion-ms]
-    Gateway --> Catalogo[catalogo-ms]
     Gateway --> Media[media-ms]
-    Gateway --> Notification[notification-ms]
-    Gateway --> Search[search-ms]
     Auth --> Keycloak[Keycloak :8080]
     Orden --> Kafka[Kafka]
     Pago --> Kafka
@@ -200,19 +191,14 @@ flowchart LR
         Auth
         Producto
         Categoria
-        Carrito
         Orden
         Pago
-        Inventario
         Persona
         Publicacion
         Chat
         Favoritos
         Calificacion
-        Catalogo
         Media
-        Notification
-        Search
     end
 ```
 
@@ -312,8 +298,8 @@ Angular → POST /api/v1/ordenes → Gateway → lb://ORDEN-MS → orden-ms → 
 | `/register` | `RegisterComponent` | `guestGuard` | Activo | Subdirectorio `pages/register/` |
 | `/publish` | `PublishPageComponent` | `authGuard` | Activo | Flat component `publish-page.component.*` |
 | `/listing/:id` | `ListingDetailPageComponent` | Ninguno | Activo | Flat component `listing-detail-page.component.*` |
-| `/profile` | `ProfileComponent` | `authGuard` | Activo | Subdirectorio `pages/profile/` (usa datos mock) |
-| `/chat` | `ChatComponent` | `authGuard` | Activo | Subdirectorio `pages/chat/` (usa datos mock/localStorage) |
+| `/profile` | `ProfileComponent` | `authGuard` | Activo | Subdirectorio `pages/profile/`; consume `persona-ms`, productos, favoritos y calificaciones via Gateway |
+| `/chat` | `ChatComponent` | `authGuard` | Activo | Subdirectorio `pages/chat/`; consume `chat-ms` via Gateway |
 | `/publicar` | Redirect -> `/publish` | -- | Alias | Redireccion |
 | `/publicacion/:id` | Redirect -> `/listing/:id` | -- | Alias | Redireccion |
 | `/registro` | Redirect -> `/register` | -- | Alias | Redireccion |
@@ -338,9 +324,9 @@ El frontend tiene **dos formas de organizar paginas** que coexisten:
 |----------|---------|-----------|
 | `GatewayService` | `core/services/gateway.service.ts` | Detecta Gateway activo (PROD/DEV) via health endpoint, expone `baseUrl()` |
 | `AuthApiService` | `core/services/auth-api.service.ts` | Login, register, me hacia `/auth/*` |
-| `MarketplaceService` | `core/services/marketplace.service.ts` | CRUD de productos, categorias, ordenes, pagos |
+| `MarketplaceService` | `core/services/marketplace.service.ts` | Listados, detalle, publicacion, categorias, favoritos, calificaciones, ordenes, pagos y composicion con media |
 | `SessionService` | `core/services/session.service.ts` | Persistencia de sesion en `localStorage`, getToken(), userId/username signals |
-| `ChatService` | `core/services/chat.service.ts` | Conversaciones y mensajes (actualmente con datos mock) |
+| `ChatService` | `core/services/chat.service.ts` | Conversaciones y mensajes via `/api/v1/chats/**` |
 
 ### 6.5 Interceptor y Guards
 
@@ -374,7 +360,7 @@ El frontend tiene **dos formas de organizar paginas** que coexisten:
 | Publicar | `MarketplaceService` | `POST /api/v1/productos` | `producto-route` | `PRODUCTO-MS` | Ruta existe en Gateway | -- |
 | Checkout (orden) | `MarketplaceService` | `POST /api/v1/ordenes` | `orden-route` | `ORDEN-MS` | Ruta existe en Gateway | -- |
 | Checkout (pago) | `MarketplaceService` | `POST /api/v1/pagos` | `pago-route` | `PAGO-MS` | Ruta existe en Gateway | -- |
-| Chat | `ChatService` | -- | `chat-route` | `CHAT-MS` | Pendiente de integracion real | Actualmente usa datos mock/localStorage |
+| Chat | `ChatService` | `GET/POST /api/v1/chats/**` | `chat-route` | `CHAT-MS` | Integrado en frontend / pendiente validar end-to-end | Usa Gateway y `API_CONFIG` |
 ---
 
 ## 8. Microservicios
@@ -385,30 +371,32 @@ El frontend tiene **dos formas de organizar paginas** que coexisten:
 |----------|----------------|-------|:---------------:|:------------:|:-----:|:-----------------:|:-----------------:|:--------------:|
 | `auth-ms` | Autenticacion y autorizacion, proxy hacia Keycloak | Basico | 1 test | No | No | No | No | No |
 | `calificacion-ms` | Calificaciones y resenas de productos/usuarios | Basico | No | No | No | No | No | No |
-| `carrito-ms` | Carrito de compras | Rico | No | Si | No | Si | Si | Si |
-| `catalogo-ms` | Catalogo (categorias extendidas, busqueda interna) | Rico | 4 tests | No | No | Si | Si | Si |
 | `categoria-ms` | CRUD de categorias | Basico | No | No | No | No | No | No |
 | `chat-ms` | Mensajeria entre usuarios | Basico | No | No | No | No | No | No |
 | `favoritos-ms` | Productos favoritos por usuario | Basico | No | No | No | No | No | No |
-| `inventario-ms` | Control de stock e inventario | Rico | No | Si | No | Si | Si | Si |
 | `media-ms` | Gestion de imagenes y archivos multimedia | Basico | No | No | No | No | No | No |
-| `notification-ms` | Notificaciones (in-app / email) | Basico | No | No | No | No | No | No |
 | `orden-ms` | Ordenes de compra | **Completo** | No | Si | Si | Si | Si | Si |
 | `pago-ms` | Procesamiento de pagos | **Completo** | No | Si | Si | Si | Si | Si |
 | `persona-ms` | Datos personales de usuarios | Basico | No | No | No | No | No | No |
-| `producto-ms` | CRUD de productos | Rico | 4 tests | Si | No | Si | Si | Si |
+| `producto-ms` | CRUD de productos | Rico | 4 tests | Si, hacia `categoria-ms` | No | Si | Si | Si |
 | `publicacion-ms` | Publicaciones y visibilidad de productos | Basico | No | No | No | No | No | No |
-| `search-ms` | Busqueda y filtrado de productos | Basico | No | No | No | No | No | No |
 
-### 8.2 Clasificacion
+### 8.2 Clasificación MVP
+
+| Estado | Servicios | Criterio |
+|--------|-----------|----------|
+| MVP activo | `auth-ms`, `persona-ms`, `producto-ms`, `categoria-ms`, `publicacion-ms`, `media-ms`, `favoritos-ms`, `calificacion-ms`, `chat-ms`, `orden-ms`, `pago-ms` | Consumidos por Angular o necesarios para login, perfil, publicacion, detalle, favoritos, resenas, chat y checkout |
+| Eliminados | `carrito-ms`, `inventario-ms`, `notification-ms`, `search-ms`, `catalogo-ms` | Sin consumo Angular actual o responsabilidad duplicada |
+
+### 8.3 Clasificacion tecnica
 
 | Nivel | Criterio | Servicios |
 |-------|----------|-----------|
 | **Completo** | Feign + Kafka + Exception + Filter + OpenAPI | `orden-ms`, `pago-ms` |
-| **Rico** | Feign + Exception + Filter + OpenAPI | `carrito-ms`, `catalogo-ms`, `inventario-ms`, `producto-ms` |
-| **Basico** | Sin extras arquitectonicos | `auth-ms`, `calificacion-ms`, `categoria-ms`, `chat-ms`, `favoritos-ms`, `media-ms`, `notification-ms`, `persona-ms`, `publicacion-ms`, `search-ms` |
+| **Rico** | Feign + Exception + Filter + OpenAPI | `producto-ms` |
+| **Basico** | Sin extras arquitectonicos | `auth-ms`, `calificacion-ms`, `categoria-ms`, `chat-ms`, `favoritos-ms`, `media-ms`, `persona-ms`, `publicacion-ms` |
 
-### 8.3 Patron de capas
+### 8.4 Patron de capas
 
 Los servicios siguen este patron general (con excepciones):
 
@@ -425,16 +413,16 @@ controller/ -> service/ (o service/impl/) -> repository/ -> entity/
 
 **Excepciones:** `auth-ms` y `persona-ms` no usan subpaquete `service/impl/`; colocan la implementacion directamente en `service/`.
 
-### 8.4 Vacios detectados en backend
+### 8.5 Vacios detectados en backend
 
 | Vacio | Servicios afectados | Severidad |
 |-------|-------------------|-----------|
-| Sin tests unitarios | 13 de 16 servicios | Alta |
-| Sin Exception Handler global | auth-ms, calificacion-ms, categoria-ms, chat-ms, favoritos-ms, media-ms, notification-ms, persona-ms, publicacion-ms, search-ms | Media |
-| Sin Correlation ID filter | Mismos 10 servicios basicos | Media |
-| Sin OpenAPI / Swagger | Mismos 10 servicios basicos | Media |
-| Sin Feign (comunicacion interna) | 10 servicios basicos | Baja (depende de necesidades) |
-| Sin Kafka events | 14 servicios (solo orden-ms y pago-ms lo usan) | Baja |
+| Sin tests unitarios | 9 de 11 servicios activos | Alta |
+| Sin Exception Handler global | auth-ms, calificacion-ms, categoria-ms, chat-ms, favoritos-ms, media-ms, persona-ms, publicacion-ms | Media |
+| Sin Correlation ID filter | Mismos 8 servicios basicos | Media |
+| Sin OpenAPI / Swagger | Mismos 8 servicios basicos | Media |
+| Sin Feign (comunicacion interna) | Servicios basicos sin necesidad actual de integracion interna | Baja |
+| Sin Kafka events | 9 servicios (solo orden-ms y pago-ms lo usan) | Baja |
 ---
 
 ## 9. Gateway
@@ -443,8 +431,8 @@ controller/ -> service/ (o service/impl/) -> repository/ -> entity/
 
 | Caracteristica | `gateway-dev.yml` | `gateway-prod.yml` |
 |---------------|-------------------|-------------------|
-| Rutas CRUD + instancia | Todas (16 servicios) | Todas (16 servicios) |
-| Rutas Swagger | 15 rutas swagger (todos excepto auth) | **Ausentes** |
+| Rutas CRUD + instancia | 11 microservicios activos | 11 microservicios activos |
+| Rutas Swagger | Rutas swagger solo para servicios activos | **Ausentes** |
 | `forwarded.enabled: false` | Si | Si |
 | Eureka URL | `http://localhost:18761/eureka` | `http://eureka:8761/eureka` |
 | Keycloak issuer-uri | `${KEYCLOAK_URL:http://localhost:8080}/realms/smartcampus` | `${KEYCLOAK_URL:http://keycloak:8080}/realms/smartcampus` |
@@ -455,25 +443,20 @@ controller/ -> service/ (o service/impl/) -> repository/ -> entity/
 
 | Ruta | Microservicio destino | DEV | PROD | Estado |
 |------|----------------------|:---:|:----:|--------|
-| `/auth/**` | `AUTH-MS` | Si | Si | Probado |
-| `/api/v1/catalogo/instancia` | `CATALOGO-MS` | Si | Si | Pendiente verificar |
-| `/api/v1/productos/**` | `PRODUCTO-MS` | Si | Si | Pendiente verificar |
-| `/api/v1/producto/instancia` | `PRODUCTO-MS` | Si | Si | Pendiente verificar |
-| `/api/v1/ordenes/**` | `ORDEN-MS` | Si | Si | Pendiente verificar |
-| `/api/v1/pagos/**` | `PAGO-MS` | Si | Si | Pendiente verificar |
-| `/api/v1/carritos/**` | `CARRITO-MS` | Si | Si | Pendiente verificar |
-| `/api/v1/inventarios/**` | `INVENTARIO-MS` | Si | Si | Pendiente verificar |
-| `/api/v1/calificaciones/**` | `CALIFICACION-MS` | Si | Si | Pendiente verificar |
-| `/api/v1/categorias/**` | `CATEGORIA-MS` | Si | Si | Pendiente verificar |
-| `/api/v1/chats/**` | `CHAT-MS` | Si | Si | Pendiente verificar |
-| `/api/v1/favoritos/**` | `FAVORITOS-MS` | Si | Si | Pendiente verificar |
-| `/api/v1/media/**` | `MEDIA-MS` | Si | Si | Pendiente verificar |
-| `/api/v1/notificaciones/**` | `NOTIFICATION-MS` | Si | Si | Pendiente verificar |
-| `/api/v1/personas/**` | `PERSONA-MS` | Si | Si | Pendiente verificar |
-| `/api/v1/publicaciones/**` | `PUBLICACION-MS` | Si | Si | Pendiente verificar |
-| `/api/v1/search/**` | `SEARCH-MS` | Si | Si | Pendiente verificar |
-| `/<service>/swagger-ui/**` | Swagger UI (cada MS) | Si -- 15 rutas | No | Solo DEV |
-| `/<service>/v3/api-docs/**` | OpenAPI docs (cada MS) | Si -- 15 rutas | No | Solo DEV |
+| `/auth/**` | `AUTH-MS` | Si | Si | MVP activo / probado |
+| `/api/v1/productos/**` | `PRODUCTO-MS` | Si | Si | MVP activo |
+| `/api/v1/producto/instancia` | `PRODUCTO-MS` | Si | Si | MVP activo / instancia |
+| `/api/v1/categorias/**` | `CATEGORIA-MS` | Si | Si | MVP activo |
+| `/api/v1/personas/**` | `PERSONA-MS` | Si | Si | MVP activo |
+| `/api/v1/publicaciones/**` | `PUBLICACION-MS` | Si | Si | MVP activo |
+| `/api/v1/media/**` | `MEDIA-MS` | Si | Si | MVP activo |
+| `/api/v1/favoritos/**` | `FAVORITOS-MS` | Si | Si | MVP activo |
+| `/api/v1/calificaciones/**` | `CALIFICACION-MS` | Si | Si | MVP activo |
+| `/api/v1/chats/**` | `CHAT-MS` | Si | Si | MVP activo |
+| `/api/v1/ordenes/**` | `ORDEN-MS` | Si | Si | MVP activo |
+| `/api/v1/pagos/**` | `PAGO-MS` | Si | Si | MVP activo |
+| `/<service>/swagger-ui/**` | Swagger UI (servicios activos) | Si | No | Solo DEV |
+| `/<service>/v3/api-docs/**` | OpenAPI docs (cada MS) | Si -- 11 rutas | No | Solo DEV |
 
 ### 9.3 Rutas publicas vs protegidas
 
@@ -580,7 +563,7 @@ Todos los servicios de produccion comparten la red externa `ecom-prod-net`.
 docker network create ecom-prod-net
 ```
 
-### 11.3 Como levantar el stack completo
+### 11.3 Como levantar el stack MVP
 
 ```bash
 # 1. Crear red compartida (solo primera vez)
@@ -592,15 +575,24 @@ docker compose -f keycloak/compose.yml up -d
 # 3. Levantar infraestructura base (Config Server, Eureka, Gateway)
 docker compose -f infra/compose.yml up -d --build
 
-# 4. Levantar Kafka (opcional, necesario para ordenes/pagos)
+# 4. Levantar Kafka (necesario para ordenes/pagos)
 docker compose -f kafka/compose.yml up -d
 
 # 5. Levantar observabilidad (opcional)
 docker compose -f obs/compose.yml up -d
 
-# 6. Levantar microservicios individuales
+# 6. Levantar microservicios MVP activos
 docker compose -f servicio/auth-ms/compose.yml up -d --build
+docker compose -f servicio/persona-ms/compose.yml up -d --build
+docker compose -f servicio/categoria-ms/compose.yml up -d --build
 docker compose -f servicio/producto-ms/compose.yml up -d --build
+docker compose -f servicio/publicacion-ms/compose.yml up -d --build
+docker compose -f servicio/media-ms/compose.yml up -d --build
+docker compose -f servicio/favoritos-ms/compose.yml up -d --build
+docker compose -f servicio/calificacion-ms/compose.yml up -d --build
+docker compose -f servicio/chat-ms/compose.yml up -d --build
+docker compose -f servicio/orden-ms/compose.yml up -d --build
+docker compose -f servicio/pago-ms/compose.yml up -d --build
 ```
 
 ### 11.4 Desarrollo local (sin Docker para microservicios)
@@ -612,7 +604,8 @@ docker compose -f keycloak/compose.yml up -d
 # 2. Levantar infraestructura base
 docker compose -f infra/compose.yml up -d --build
 
-# 3. Ejecutar auth-ms localmente (se registra en Eureka automaticamente)
+# 3. Ejecutar microservicios MVP localmente segun el flujo a probar.
+# Ejemplo minimo para autenticacion:
 mvn -f servicio/auth-ms/pom.xml spring-boot:run
 
 # 4. Ejecutar frontend
@@ -633,15 +626,13 @@ curl http://localhost:18080/actuator/health   # Gateway
 
 | Vacio | Detalle | Severidad |
 |-------|---------|-----------|
-| **13/16 servicios sin tests** | Solo `auth-ms`, `catalogo-ms` y `producto-ms` tienen tests unitarios | Alta |
-| **Servicios basicos sin filtros/exceptions/OpenAPI** | 10 servicios no implementan correlation ID filters, exception handlers globales ni OpenAPI | Media |
-| **Chat real pendiente** | `chat-ms` existe pero frontend usa datos mock; no hay integracion real verificada | Media |
-| **Search real pendiente** | `search-ms` existe pero no se ha validado su integracion ni el frontend lo consume | Media |
-| **Notificaciones reales pendientes** | `notification-ms` existe pero el frontend no lo consume | Media |
-| **Media/imagenes pendientes** | `media-ms` existe pero el frontend usa URLs hardcodeadas de Unsplash | Media |
+| **9/11 servicios sin tests** | Solo `auth-ms` y `producto-ms` tienen tests unitarios entre los servicios activos | Alta |
+| **Servicios basicos sin filtros/exceptions/OpenAPI** | 8 servicios no implementan correlation ID filters, exception handlers globales ni OpenAPI | Media |
+| **Chat end-to-end pendiente de validar** | El frontend consume `chat-ms` via Gateway, pero falta prueba completa con backend levantado | Media |
+| **Media/imagenes pendientes** | `media-ms` registra metadata; falta validar flujo completo de carga/visualizacion de imagenes reales | Media |
 | **Favoritos/calificaciones pendientes de validar** | Servicios existen pero no se ha verificado integracion end-to-end | Baja |
 | **Moderacion de contenido** | No se ha identificado un servicio de moderacion; pendiente de verificar si existe en algun servicio existente | Baja |
-| **`auth-ms` y `persona-ms` sin service/impl** | Inconsistencia arquitectonica leve respecto a los otros 14 servicios | Baja |
+| **`auth-ms` y `persona-ms` sin service/impl** | Inconsistencia arquitectonica leve respecto a otros servicios | Baja |
 
 ### 12.2 Vacios frontend
 
@@ -649,9 +640,9 @@ curl http://localhost:18080/actuator/health   # Gateway
 |-------|---------|-----------|
 | **Componentes duplicados** | 5 paginas tienen convencion flat + versiones en subdirectorio; conviven archivos legacy y nuevos | Media |
 | **Migracion incompleta de paginas** | Las rutas activas usan una mezcla de flat y subdirectorios | Media |
-| **Perfil con datos mock** | `ProfileComponent` usa `getCurrentUser()` que retorna datos hardcodeados | Media |
-| **Chat con localStorage/mock** | `ChatService` usa datos mock; no hay integracion real con `chat-ms` | Media |
-| **Imagenes hardcodeadas (Unsplash)** | `marketplace.service.ts` lineas 188-194: URLs fijas de Unsplash sin integracion con `media-ms` | Media |
+| **Perfil real pendiente de validar** | `ProfileComponent` consume `persona-ms` y datos de marketplace; falta prueba end-to-end con servicios levantados | Media |
+| **Chat real pendiente de validar** | `ChatService` consume `chat-ms`; falta prueba end-to-end con conversaciones y mensajes reales | Media |
+| **Imagenes reales pendientes** | El frontend usa placeholder local si `media-ms` no devuelve URL; falta carga/almacenamiento real de archivos | Media |
 | **Sin pagina 404 personalizada** | El catch-all redirige a `/` en lugar de mostrar una pagina 404 | Baja |
 | **Posibles botones/flujos pendientes** | Verificar si hay elementos de UI que referencian rutas o funcionalidades no implementadas | Baja |
 
@@ -693,14 +684,14 @@ curl http://localhost:18080/actuator/health   # Gateway
 
 ### Prioridad media (experiencia de usuario)
 
-5. **Conectar chat real** — Integrar `ChatComponent` con `chat-ms` via Gateway.
-6. **Reemplazar mocks** — Eliminar datos hardcodeados en `MarketplaceService` (imagenes Unsplash, getCurrentUser()).
+5. **Validar chat real** — Probar `ChatComponent` contra `chat-ms` via Gateway con conversaciones y mensajes reales.
+6. **Validar media real** — Confirmar que `media-ms` devuelve URLs/metadata usable y reemplazar placeholders cuando corresponda.
 7. **Migrar paginas a subdirectorios** — Completar la migracion de flat a subdirectorios y eliminar archivos legacy.
 8. **Limpiar componentes duplicados** — Despues de la migracion, eliminar los 5 componentes flat legacy.
 
 ### Prioridad baja (calidad y mantenibilidad)
 
-9. **Agregar tests a microservicios** — Comenzar con los servicios ricos (`carrito-ms`, `inventario-ms`, `orden-ms`, `pago-ms`).
+9. **Agregar tests a microservicios MVP** — Comenzar con `orden-ms`, `pago-ms`, `persona-ms`, `categoria-ms`, `publicacion-ms`, `media-ms`, `favoritos-ms`, `calificacion-ms` y `chat-ms`.
 10. **Agregar Exception Handlers y filters** — A los 10 servicios basicos que carecen de ellos.
 11. **Configurar Swagger/OpenAPI en todos los servicios** — Para facilitar desarrollo y pruebas.
 12. **Crear pagina 404 personalizada** — En lugar de redirigir al home.

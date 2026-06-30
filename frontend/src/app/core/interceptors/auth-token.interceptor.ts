@@ -12,7 +12,10 @@ export const authTokenInterceptor: HttpInterceptorFn = (request, next) => {
   const gatewayService = inject(GatewayService);
   const router = inject(Router);
   const authHeader = sessionService.authHeaderValue();
-  const shouldAttachAuth = authHeader && !isPublicReadEndpoint(request.method, request.url);
+  const shouldAttachAuth =
+    authHeader &&
+    !isPublicAuthEndpoint(request.url) &&
+    !isPublicReadEndpoint(request.method, request.url);
 
   const authReq = shouldAttachAuth
     ? request.clone({
@@ -49,6 +52,11 @@ function shouldHandleUnauthorized(url: string): boolean {
     !matchesPath(path, '/auth/register') &&
     !matchesPath(path, '/auth/me')
   );
+}
+
+function isPublicAuthEndpoint(url: string): boolean {
+  const path = extractPath(url);
+  return matchesPath(path, '/auth/login') || matchesPath(path, '/auth/register');
 }
 
 function isPublicReadEndpoint(method: string, url: string): boolean {

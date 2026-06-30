@@ -22,7 +22,7 @@ cd infra/gateway && mvn spring-boot:run
 
 Links:
 
-- Config Server: `http://localhost:18888/catalogo-ms/dev`
+- Config Server: `http://localhost:18888/producto-ms/dev`
 - Eureka Dashboard: `http://localhost:18761`
 - Gateway: `http://localhost:18080`
 

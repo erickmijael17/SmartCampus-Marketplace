@@ -18,7 +18,7 @@ spring:
           predicates:
             - Path=/persona-ms/swagger-ui/**,/persona-ms/v3/api-docs/**
 
-        # --- MVP ACTIVO: catalogo comercial ---
+        # --- MVP ACTIVO: productos y categorias ---
         - id: categoria-route
           uri: lb://CATEGORIA-MS
           predicates:
@@ -99,63 +99,6 @@ spring:
           uri: lb://PAGO-MS
           predicates:
             - Path=/pago-ms/swagger-ui/**,/pago-ms/v3/api-docs/**
-
-        # --- DEPRECADO: catalogo-ms (usar categoria-ms) ---
-        - id: catalogo-instancia
-          uri: lb://CATALOGO-MS
-          predicates:
-            - Path=/api/v1/catalogo/instancia
-        - id: catalogo-swagger
-          uri: lb://CATALOGO-MS
-          predicates:
-            - Path=/catalogo-ms/swagger-ui/**,/catalogo-ms/v3/api-docs/**
-
-        # --- FASE_FUTURA: sin consumo Angular actual ---
-        - id: carrito-route
-          uri: lb://CARRITO-MS
-          predicates:
-            - Path=/api/v1/carritos/**
-        - id: carrito-swagger
-          uri: lb://CARRITO-MS
-          predicates:
-            - Path=/carrito-ms/swagger-ui/**,/carrito-ms/v3/api-docs/**
-        - id: inventario-route
-          uri: lb://INVENTARIO-MS
-          predicates:
-            - Path=/api/v1/inventarios/**
-        - id: inventario-swagger
-          uri: lb://INVENTARIO-MS
-          predicates:
-            - Path=/inventario-ms/swagger-ui/**,/inventario-ms/v3/api-docs/**
-        - id: notification-route
-          uri: lb://NOTIFICATION-MS
-          predicates:
-            - Path=/api/v1/notificaciones/**
-        - id: notification-swagger
-          uri: lb://NOTIFICATION-MS
-          predicates:
-            - Path=/notification-ms/swagger-ui/**,/notification-ms/v3/api-docs/**
-        - id: search-route
-          uri: lb://SEARCH-MS
-          predicates:
-            - Path=/api/v1/search/**
-        - id: search-swagger
-          uri: lb://SEARCH-MS
-          predicates:
-            - Path=/search-ms/swagger-ui/**,/search-ms/v3/api-docs/**
-  security:
-    oauth2:
-      client:
-        registration:
-          keycloak:
-            client-id: marketplace-client
-            authorization-grant-type: authorization_code
-            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
-            scope: openid,profile,email
-        provider:
-          keycloak:
-            issuer-uri: ${KEYCLOAK_URL:http://localhost:8080}/realms/smartcampus
-
 eureka:
   instance:
     hostname: localhost

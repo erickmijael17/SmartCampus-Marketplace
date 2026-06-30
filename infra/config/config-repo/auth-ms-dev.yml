@@ -3,7 +3,7 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:15431/ecom_auth_db
+    url: jdbc:postgresql://localhost:15431/auth_db
     username: ecom
     password: ecom
     driver-class-name: org.postgresql.Driver

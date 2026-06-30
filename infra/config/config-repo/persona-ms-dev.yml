@@ -3,7 +3,7 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:15440/ecom_persona_ms_db
+    url: jdbc:postgresql://localhost:15440/persona_ms_db
     username: ecom
     password: ecom
     driver-class-name: org.postgresql.Driver

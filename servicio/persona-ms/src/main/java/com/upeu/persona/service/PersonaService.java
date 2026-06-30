@@ -31,14 +31,14 @@ public class PersonaService {
     }
 
     @Transactional(readOnly = true)
-    public PersonaDto.Response findByUserId(Long userId) {
+    public PersonaDto.Response findByUserId(String userId) {
         return personaRepository.findByUserId(userId)
                 .map(this::toResponse)
                 .orElseThrow(() -> new RuntimeException("Persona no encontrada para userId: " + userId));
     }
 
     @Transactional
-    public PersonaDto.Response create(Long userId, PersonaDto.Request request) {
+    public PersonaDto.Response create(String userId, PersonaDto.Request request) {
         if (personaRepository.existsByUserId(userId)) {
             throw new RuntimeException("Ya existe un perfil para el usuario: " + userId);
         }

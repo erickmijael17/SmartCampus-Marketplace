@@ -1,14 +1,13 @@
-# Matriz MVP de microservicios — SmartCampus Marketplace
+# Matriz MVP de microservicios - SmartCampus Marketplace
 
-Documento de referencia para agentes, frontend y backend. Basado en auditoría frontend-backend (Angular consume solo vía Gateway).
+Documento de referencia para agentes, frontend y backend. Basado en auditoria frontend-backend: Angular consume solo via Gateway.
 
 ## Resumen
 
-| Tier | Cantidad | Descripción |
+| Tier | Cantidad | Descripcion |
 |------|----------|-------------|
-| **MVP activo** | 11 | Consumidos por Angular o críticos para checkout |
-| **Pausado / futuro** | 5 | En Gateway pero sin consumo frontend actual |
-| **Deprecado** | 1 | `catalogo-ms` (CRUD categorías duplicado con `categoria-ms`) |
+| **MVP activo** | 11 | Consumidos por Angular o criticos para checkout |
+| **Eliminados** | 5 | Removidos del repo, Config Repo y Gateway para reducir complejidad |
 
 Contrato API frontend: [`frontend/docs/API_CONTRACT.md`](../frontend/docs/API_CONTRACT.md).
 
@@ -16,37 +15,37 @@ Contrato API frontend: [`frontend/docs/API_CONTRACT.md`](../frontend/docs/API_CO
 
 ## MVP activo (11 microservicios)
 
-| Microservicio | Clasificación | Frontend | Gateway |
+| Microservicio | Clasificacion | Frontend | Gateway |
 |---------------|---------------|----------|---------|
-| auth-ms | NECESARIO_ACTUALMENTE | Login, Register | `/auth/**` |
-| persona-ms | NECESARIO_ACTUALMENTE | Perfil, enriquecimiento sesión | `/api/v1/personas/**` |
+| auth-ms | NECESARIO_ACTUALMENTE | Login, Register, `/auth/me` | `/auth/**` |
+| persona-ms | NECESARIO_ACTUALMENTE | Perfil, enriquecimiento de sesion | `/api/v1/personas/**` |
 | producto-ms | NECESARIO_ACTUALMENTE | Home, detalle, publicar, perfil | `/api/v1/productos/**` |
-| categoria-ms | NECESARIO_ACTUALMENTE | Home, publicar | `/api/v1/categorias/**` |
+| categoria-ms | NECESARIO_ACTUALMENTE | Home, publicar, detalle enriquecido desde producto-ms | `/api/v1/categorias/**` |
 | orden-ms | NECESARIO_ACTUALMENTE | Checkout | `/api/v1/ordenes/**` |
 | pago-ms | NECESARIO_ACTUALMENTE | Checkout | `/api/v1/pagos/**` |
-| publicacion-ms | USADO_PARCIALMENTE | Publicar, favoritos, media | `/api/v1/publicaciones/**` |
-| media-ms | USADO_PARCIALMENTE | Imágenes metadata | `/api/v1/media/**` |
-| favoritos-ms | USADO_PARCIALMENTE | Detalle, perfil | `/api/v1/favoritos/**` |
-| calificacion-ms | USADO_PARCIALMENTE | Perfil (lectura + POST en detalle) | `/api/v1/calificaciones/**` |
-| chat-ms | USADO_PARCIALMENTE | Chat, mensajes vendedor | `/api/v1/chats/**` |
+| publicacion-ms | NECESARIO_ACTUALMENTE | Publicar, favoritos, media | `/api/v1/publicaciones/**` |
+| media-ms | NECESARIO_ACTUALMENTE | Imagenes metadata | `/api/v1/media/**` |
+| favoritos-ms | NECESARIO_ACTUALMENTE | Detalle, perfil | `/api/v1/favoritos/**` |
+| calificacion-ms | NECESARIO_ACTUALMENTE | Perfil, detalle | `/api/v1/calificaciones/**` |
+| chat-ms | NECESARIO_ACTUALMENTE | Chat, mensajes vendedor | `/api/v1/chats/**` |
 
 ---
 
-## Pausado / fase futura (5 microservicios)
+## Microservicios eliminados
 
-| Microservicio | Clasificación | Motivo |
-|---------------|---------------|--------|
-| carrito-ms | NO_USADO_POR_FRONTEND | Checkout directo producto→orden→pago |
-| inventario-ms | NO_USADO_POR_FRONTEND | Sin UI de stock |
-| notification-ms | FASE_FUTURA | Sin pantalla; Kafka integrado para eventos |
-| search-ms | NO_USADO_POR_FRONTEND | Búsqueda local en Home |
-| catalogo-ms | DUPLICADO_O_SOLAPADO | Solo `/instancia` en Gateway; usar categoria-ms |
+| Microservicio | Motivo |
+|---------------|--------|
+| carrito-ms | El checkout actual es directo producto -> orden -> pago |
+| inventario-ms | No existe UI de stock ni consumo Angular actual |
+| notification-ms | No existe pantalla ni consumo Angular actual |
+| search-ms | La busqueda actual se resuelve localmente en Home |
+| catalogo-ms | Duplicaba categorias; `categoria-ms` es el unico dueno |
 
-**No eliminar código** de estos servicios sin validación del equipo. Pausar en Compose MVP opcional.
+No reintroducir estos servicios ni sus rutas Gateway sin validacion del equipo.
 
 ---
 
-## Mapa pantalla → microservicio
+## Mapa pantalla -> microservicio
 
 | Ruta Angular | Microservicios |
 |--------------|----------------|
@@ -57,26 +56,24 @@ Contrato API frontend: [`frontend/docs/API_CONTRACT.md`](../frontend/docs/API_CO
 | `/profile` | persona-ms, producto-ms, favoritos-ms, publicacion-ms, media-ms, calificacion-ms |
 | `/chat` | chat-ms |
 
-\* Requiere JWT (invitados ven placeholders locales).
+\* Requiere JWT para enriquecer publicaciones/media; invitados ven datos publicos y placeholders locales.
 
 ---
 
-## Solapamientos documentados
+## Solapamientos resueltos
 
-| Par | Decisión MVP |
-|-----|--------------|
-| producto-ms vs publicacion-ms | Mantener ambos: producto=comercio, publicación=social |
-| catalogo-ms vs categoria-ms | **Usar solo categoria-ms**; catalogo-ms deprecado |
-| auth-ms vs persona-ms | Complementarios: JWT vs perfil numérico |
-| search-ms vs filtro Home | Fase futura server-side |
+| Antes | Decision actual |
+|-------|-----------------|
+| producto-ms vs publicacion-ms | Mantener ambos: producto=comercio, publicacion=social |
+| catalogo-ms vs categoria-ms | Eliminar `catalogo-ms`; usar solo `categoria-ms` |
+| search-ms vs filtro Home | Eliminar `search-ms`; mantener busqueda local mientras no exista busqueda server-side real |
+| carrito-ms vs orden-ms/pago-ms | Eliminar `carrito-ms`; checkout directo |
 
 ---
 
-## Docker Compose MVP sugerido
+## Docker Compose MVP
 
-Infra obligatoria: `infra/compose.yml`, Keycloak, Kafka (si checkout async).
-
-Microservicios mínimos:
+Infra obligatoria: `infra/compose.yml`, Keycloak y Kafka para ordenes/pagos.
 
 ```bash
 docker compose -f servicio/auth-ms/compose.yml up -d --build
@@ -91,7 +88,3 @@ docker compose -f servicio/favoritos-ms/compose.yml up -d --build
 docker compose -f servicio/calificacion-ms/compose.yml up -d --build
 docker compose -f servicio/chat-ms/compose.yml up -d --build
 ```
-
-Opcional fase futura: carrito-ms, inventario-ms, notification-ms, search-ms.
-
-No levantar en MVP: **catalogo-ms** (deprecado).

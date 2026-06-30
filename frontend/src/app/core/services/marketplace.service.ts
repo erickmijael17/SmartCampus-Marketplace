@@ -84,7 +84,7 @@ interface CatalogContext {
 
  * Estrategia de dominio:
 
- * - producto-ms: catalogo publico, detalle y checkout (idProducto).
+ * - producto-ms: catálogo público (listado/detalle), categorías vía Feign y checkout (idProducto).
 
  * - publicacion-ms: capa social (favoritos, calificaciones, media via idPublicacion).
 

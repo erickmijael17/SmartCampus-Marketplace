@@ -3,7 +3,7 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:15433/ecom_producto_db
+    url: jdbc:postgresql://localhost:15433/producto_db
     username: ecom
     password: ecom
     driver-class-name: org.postgresql.Driver
@@ -65,7 +65,7 @@ management:
 resilience4j:
   circuitbreaker:
     instances:
-      catalogo:
+      categoria:
         slidingWindowSize: 5
         minimumNumberOfCalls: 3
         failureRateThreshold: 50

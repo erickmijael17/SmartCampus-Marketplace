@@ -22,17 +22,12 @@ jobs:
       persona-ms: ${{ steps.filter.outputs.persona-ms }}
       publicacion-ms: ${{ steps.filter.outputs.publicacion-ms }}
       categoria-ms: ${{ steps.filter.outputs.categoria-ms }}
-      inventario-ms: ${{ steps.filter.outputs.inventario-ms }}
-      carrito-ms: ${{ steps.filter.outputs.carrito-ms }}
       orden-ms: ${{ steps.filter.outputs.orden-ms }}
       pago-ms: ${{ steps.filter.outputs.pago-ms }}
       calificacion-ms: ${{ steps.filter.outputs.calificacion-ms }}
       chat-ms: ${{ steps.filter.outputs.chat-ms }}
-      notification-ms: ${{ steps.filter.outputs.notification-ms }}
       media-ms: ${{ steps.filter.outputs.media-ms }}
       favoritos-ms: ${{ steps.filter.outputs.favoritos-ms }}
-      search-ms: ${{ steps.filter.outputs.search-ms }}
-      catalogo-ms: ${{ steps.filter.outputs.catalogo-ms }}
       producto-ms: ${{ steps.filter.outputs.producto-ms }}
     steps:
       - uses: actions/checkout@v4
@@ -54,10 +49,6 @@ jobs:
               - 'servicio/publicacion-ms/**'
             categoria-ms:
               - 'servicio/categoria-ms/**'
-            inventario-ms:
-              - 'servicio/inventario-ms/**'
-            carrito-ms:
-              - 'servicio/carrito-ms/**'
             orden-ms:
               - 'servicio/orden-ms/**'
             pago-ms:
@@ -66,16 +57,10 @@ jobs:
               - 'servicio/calificacion-ms/**'
             chat-ms:
               - 'servicio/chat-ms/**'
-            notification-ms:
-              - 'servicio/notification-ms/**'
             media-ms:
               - 'servicio/media-ms/**'
             favoritos-ms:
               - 'servicio/favoritos-ms/**'
-            search-ms:
-              - 'servicio/search-ms/**'
-            catalogo-ms:
-              - 'servicio/catalogo-ms/**'
             producto-ms:
               - 'servicio/producto-ms/**'
 
@@ -98,15 +83,6 @@ jobs:
           - service: auth-ms
             context: ./servicio/auth-ms
             changed: ${{ needs.detect-changes.outputs.auth-ms }}
-          - service: carrito-ms
-            context: ./servicio/carrito-ms
-            changed: ${{ needs.detect-changes.outputs.carrito-ms }}
-          - service: catalogo-ms
-            context: ./servicio/catalogo-ms
-            changed: ${{ needs.detect-changes.outputs.catalogo-ms }}
-          - service: inventario-ms
-            context: ./servicio/inventario-ms
-            changed: ${{ needs.detect-changes.outputs.inventario-ms }}
           - service: orden-ms
             context: ./servicio/orden-ms
             changed: ${{ needs.detect-changes.outputs.orden-ms }}
@@ -131,18 +107,12 @@ jobs:
           - service: chat-ms
             context: ./servicio/chat-ms
             changed: ${{ needs.detect-changes.outputs.chat-ms }}
-          - service: notification-ms
-            context: ./servicio/notification-ms
-            changed: ${{ needs.detect-changes.outputs.notification-ms }}
           - service: media-ms
             context: ./servicio/media-ms
             changed: ${{ needs.detect-changes.outputs.media-ms }}
           - service: favoritos-ms
             context: ./servicio/favoritos-ms
             changed: ${{ needs.detect-changes.outputs.favoritos-ms }}
-          - service: search-ms
-            context: ./servicio/search-ms
-            changed: ${{ needs.detect-changes.outputs.search-ms }}
     if: ${{ matrix.changed == 'true' }}
     steps:
       - uses: actions/checkout@v4

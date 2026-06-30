@@ -1,18 +1,18 @@
-name: ecom-media-ms-dev
+name: media-ms-dev
 
 services:
   postgres-media-ms-dev:
     image: postgres:16-alpine
-    container_name: ecom-postgres-media-ms-dev
+    container_name: postgres-media-ms-dev
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ecom_media_ms_db
+      POSTGRES_DB: media_ms_db
       POSTGRES_USER: ecom
       POSTGRES_PASSWORD: ecom
     ports:
       - "15446:5432"
     volumes:
-      - ecom_media_ms_dev_data:/var/lib/postgresql/data
+      - media_ms_dev_data:/var/lib/postgresql/data
 
 volumes:
-  ecom_media_ms_dev_data:
+  media_ms_dev_data:

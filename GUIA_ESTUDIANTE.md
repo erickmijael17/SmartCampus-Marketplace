@@ -1,382 +1,192 @@
-# Guia del Estudiante: levantar SmartCampus Marketplace
+# Guia del estudiante - SmartCampus Marketplace MVP
 
-Esta guia explica como levantar el backend de SmartCampus Marketplace despues de clonar el repositorio.
+Esta guia describe el entorno actual despues de la refactorizacion a **11 microservicios activos**. El frontend Angular siempre consume el backend por medio del Gateway.
 
-Hay dos formas de ejecucion:
+## Microservicios activos
 
-- **DEV**: infraestructura y microservicios Java con Maven (`mvn spring-boot:run`), bases de datos y servicios externos con Docker.
-- **PROD local**: todo el backend en contenedores Docker Compose.
+| Servicio | Ruta Gateway |
+|----------|--------------|
+| auth-ms | `/auth/**` |
+| persona-ms | `/api/v1/personas/**` |
+| producto-ms | `/api/v1/productos/**` |
+| categoria-ms | `/api/v1/categorias/**` |
+| publicacion-ms | `/api/v1/publicaciones/**` |
+| media-ms | `/api/v1/media/**` |
+| favoritos-ms | `/api/v1/favoritos/**` |
+| calificacion-ms | `/api/v1/calificaciones/**` |
+| chat-ms | `/api/v1/chats/**` |
+| orden-ms | `/api/v1/ordenes/**` |
+| pago-ms | `/api/v1/pagos/**` |
 
-No mezcles DEV y PROD al mismo tiempo si usan los mismos puertos.
+Servicios eliminados del MVP: `carrito-ms`, `inventario-ms`, `notification-ms`, `search-ms` y `catalogo-ms`.
 
-## 1. Requisitos
+## Modo DEV
 
-- Java JDK 17
-- Maven 3.8 o superior
-- Docker Desktop o Docker Engine
-- Git
-- `curl` o Postman para probar endpoints
+Usa este modo para desarrollar localmente. La infraestructura base corre con Maven en puertos DEV y las bases de datos de microservicios se levantan con `compose-dev.yml`.
 
-Clonar y entrar al proyecto:
+### 1. Crear redes Docker
 
-```bash
-git clone <URL_DEL_REPOSITORIO>
-cd SmartCampus-Marketplace
-```
-
-## 2. Variables locales necesarias
-
-Define `JWT_SECRET` antes de levantar servicios. Para desarrollo local puede ser un valor propio no productivo.
-
-PowerShell:
-
-```powershell
-$env:JWT_SECRET="dev-local-jwt-secret-change-me"
-```
-
-Bash:
-
-```bash
-export JWT_SECRET="dev-local-jwt-secret-change-me"
-```
-
-Usa la misma terminal para ejecutar los comandos Docker o Maven que dependan de esta variable.
-
-## 3. Puertos principales
-
-| Servicio | DEV | PROD local |
-|---|---:|---:|
-| Config Server | `http://localhost:18888` | `http://localhost:28888` |
-| Eureka | `http://localhost:18761` | `http://localhost:28761` |
-| Gateway | `http://localhost:18080` | `http://localhost:28082` |
-| Keycloak | `http://localhost:8080` | `http://localhost:8080` |
-| Kafka UI | `http://localhost:41085` | `http://localhost:28085` |
-| Grafana | `http://localhost:13000` | `http://localhost:23000` |
-
-Los microservicios deben consumirse por Gateway. En PROD no exponen su puerto HTTP al host.
-
-## 4. Ejecucion DEV con Maven y Docker
-
-Usa esta opcion cuando quieras desarrollar, depurar o modificar codigo Java.
-
-### 4.1 Crear redes Docker necesarias
+Keycloak usa `ecom-prod-net` aunque se use en desarrollo. Kafka DEV y observabilidad DEV usan `ecom-dev-net`.
 
 ```bash
 docker network create ecom-prod-net
 docker network create ecom-dev-net
 ```
 
-Si alguna red ya existe, Docker mostrara un mensaje de error. Puedes ignorarlo y continuar.
+Si Docker indica que la red ya existe, puedes continuar.
 
-### 4.2 Levantar servicios externos
+### 2. Levantar Keycloak
 
-Keycloak usa el realm `smartcampus` desde `keycloak/realm-smartcampus.json`:
+Luego levantalo con el nombre nuevo (`keycloak`):
 
 ```bash
 docker compose -f keycloak/compose.yml up -d
 ```
 
-Kafka y observabilidad en modo DEV:
+### 3. Levantar Kafka DEV
+
+Luego levantalo con el nombre nuevo (`kafka-dev`):
 
 ```bash
 docker compose -f kafka/compose-dev.yml up -d
-docker compose -f obs/compose-dev.yml up -d
 ```
 
-### 4.3 Levantar infraestructura Java con Maven
+### 4. Levantar bases de datos DEV
 
-Abre una terminal por servicio y ejecuta desde la raiz del repositorio:
-
-Terminal 1, Config Server:
-
-```bash
-mvn -f infra/config/pom.xml spring-boot:run
-```
-
-Terminal 2, Eureka:
-
-```bash
-mvn -f infra/eureka/pom.xml spring-boot:run -Dspring-boot.run.profiles=dev
-```
-
-Terminal 3, Gateway:
-
-```bash
-mvn -f infra/gateway/pom.xml spring-boot:run -Dspring-boot.run.profiles=dev
-```
-
-Verifica:
-
-```bash
-curl http://localhost:18888/actuator/health
-curl http://localhost:18761
-curl http://localhost:18080/actuator/health
-```
-
-### 4.4 Levantar bases de datos DEV
-
-Levanta solo las bases de datos de los microservicios que vayas a probar:
+Luego levantarlas:
 
 ```bash
 docker compose -f servicio/auth-ms/compose-dev.yml up -d
-docker compose -f servicio/catalogo-ms/compose-dev.yml up -d
-docker compose -f servicio/producto-ms/compose-dev.yml up -d
-docker compose -f servicio/carrito-ms/compose-dev.yml up -d
-docker compose -f servicio/orden-ms/compose-dev.yml up -d
-docker compose -f servicio/pago-ms/compose-dev.yml up -d
-docker compose -f servicio/inventario-ms/compose-dev.yml up -d
 docker compose -f servicio/persona-ms/compose-dev.yml up -d
-docker compose -f servicio/publicacion-ms/compose-dev.yml up -d
 docker compose -f servicio/categoria-ms/compose-dev.yml up -d
-docker compose -f servicio/calificacion-ms/compose-dev.yml up -d
-docker compose -f servicio/chat-ms/compose-dev.yml up -d
-docker compose -f servicio/notification-ms/compose-dev.yml up -d
+docker compose -f servicio/producto-ms/compose-dev.yml up -d
+docker compose -f servicio/publicacion-ms/compose-dev.yml up -d
 docker compose -f servicio/media-ms/compose-dev.yml up -d
 docker compose -f servicio/favoritos-ms/compose-dev.yml up -d
-docker compose -f servicio/search-ms/compose-dev.yml up -d
+docker compose -f servicio/calificacion-ms/compose-dev.yml up -d
+docker compose -f servicio/chat-ms/compose-dev.yml up -d
+docker compose -f servicio/orden-ms/compose-dev.yml up -d
+docker compose -f servicio/pago-ms/compose-dev.yml up -d
 ```
 
-Puertos de PostgreSQL en DEV:
+### 5. Levantar infraestructura DEV con Maven
 
-| Microservicio | Puerto host |
-|---|---:|
-| auth-ms | `15431` |
-| catalogo-ms | `15432` |
-| producto-ms | `15433` |
-| carrito-ms | `15434` |
-| pago-ms | `15435` |
-| orden-ms | `15436` |
-| inventario-ms | `15438` |
-| persona-ms | `15440` |
-| publicacion-ms | `15441` |
-| categoria-ms | `15442` |
-| calificacion-ms | `15443` |
-| chat-ms | `15444` |
-| notification-ms | `15445` |
-| media-ms | `15446` |
-| favoritos-ms | `15447` |
-| search-ms | `15448` |
-
-### 4.5 Levantar microservicios con Maven
-
-Abre una terminal por microservicio. Ejemplo minimo recomendado:
+Ejecutar cada comando en una terminal distinta:
 
 ```bash
-mvn -f servicio/auth-ms/pom.xml spring-boot:run -Dspring-boot.run.profiles=dev
-mvn -f servicio/catalogo-ms/pom.xml spring-boot:run -Dspring-boot.run.profiles=dev
-mvn -f servicio/producto-ms/pom.xml spring-boot:run -Dspring-boot.run.profiles=dev
+mvn -f infra/config/pom.xml spring-boot:run
+mvn -f infra/eureka/pom.xml spring-boot:run
+mvn -f infra/gateway/pom.xml spring-boot:run
 ```
 
-Para otros microservicios usa el mismo patron:
+Puertos DEV:
+
+| Componente | URL |
+|------------|-----|
+| Config Server | `http://localhost:18888` |
+| Eureka | `http://localhost:18761` |
+| Gateway | `http://localhost:18080` |
+
+### 6. Levantar microservicios DEV con Maven
+
+Ejecutar cada microservicio necesario en una terminal distinta:
 
 ```bash
-mvn -f servicio/<nombre-ms>/pom.xml spring-boot:run -Dspring-boot.run.profiles=dev
+mvn -f servicio/auth-ms/pom.xml spring-boot:run
+mvn -f servicio/persona-ms/pom.xml spring-boot:run
+mvn -f servicio/categoria-ms/pom.xml spring-boot:run
+mvn -f servicio/producto-ms/pom.xml spring-boot:run
+mvn -f servicio/publicacion-ms/pom.xml spring-boot:run
+mvn -f servicio/media-ms/pom.xml spring-boot:run
+mvn -f servicio/favoritos-ms/pom.xml spring-boot:run
+mvn -f servicio/calificacion-ms/pom.xml spring-boot:run
+mvn -f servicio/chat-ms/pom.xml spring-boot:run
+mvn -f servicio/orden-ms/pom.xml spring-boot:run
+mvn -f servicio/pago-ms/pom.xml spring-boot:run
 ```
 
-En DEV los microservicios usan `server.port: 0`, por eso Spring asigna un puerto aleatorio. Revisa Eureka en `http://localhost:18761` para confirmar que aparecen registrados.
-
-### 4.6 Probar DEV por Gateway
-
-Siempre llama por Gateway DEV:
+Para probar solo login y catalogo publico, normalmente basta con:
 
 ```bash
-curl http://localhost:18080/actuator/health
-curl http://localhost:18080/api/v1/productos
-curl http://localhost:18080/api/v1/carritos
-curl http://localhost:18080/api/v1/inventarios
-curl http://localhost:18080/api/v1/categorias
-curl http://localhost:18080/api/v1/publicaciones
+mvn -f servicio/auth-ms/pom.xml spring-boot:run
+mvn -f servicio/categoria-ms/pom.xml spring-boot:run
+mvn -f servicio/producto-ms/pom.xml spring-boot:run
 ```
 
-Probar Keycloak:
+### 7. Levantar frontend DEV
 
 ```bash
-curl http://127.0.0.1:8080/realms/smartcampus/.well-known/openid-configuration
-curl http://127.0.0.1:8080/realms/smartcampus/protocol/openid-connect/certs
+cd frontend
+npm install
+npm start
 ```
 
-Login por Gateway DEV:
+## Modo PROD / Docker
 
-```http
-POST http://localhost:18080/auth/login
-Content-Type: application/json
+Usa este modo para levantar contenedores completos en la red `ecom-prod-net`.
 
-{
-  "username": "usuario_prueba",
-  "password": "clave_usuario"
-}
-```
-
-## 5. Ejecucion PROD local con Docker Compose
-
-Usa esta opcion cuando quieras levantar el sistema como contenedores, similar al despliegue local documentado.
-
-### 5.1 Crear red PROD
+### Levantar infraestructura PROD
 
 ```bash
 docker network create ecom-prod-net
-```
-
-Si la red ya existe, continua.
-
-### 5.2 Levantar infraestructura base
-
-Desde la raiz del repositorio:
-
-```bash
 docker compose -f keycloak/compose.yml up -d
 docker compose -f infra/compose.yml up -d --build
 docker compose -f kafka/compose.yml up -d
 docker compose -f obs/compose.yml up -d
 ```
 
-Verifica:
-
-```bash
-curl http://localhost:28888/actuator/health
-curl http://localhost:28761
-curl http://localhost:28082/actuator/health
-```
-
-### 5.3 Levantar microservicios en PROD
-
-Levanta los servicios que necesites:
+### Levantar microservicios MVP en PROD
 
 ```bash
 docker compose -f servicio/auth-ms/compose.yml up -d --build
-docker compose -f servicio/catalogo-ms/compose.yml up -d --build
-docker compose -f servicio/producto-ms/compose.yml up -d --build
-docker compose -f servicio/carrito-ms/compose.yml up -d --build
-docker compose -f servicio/orden-ms/compose.yml up -d --build
-docker compose -f servicio/pago-ms/compose.yml up -d --build
-docker compose -f servicio/inventario-ms/compose.yml up -d --build
 docker compose -f servicio/persona-ms/compose.yml up -d --build
-docker compose -f servicio/publicacion-ms/compose.yml up -d --build
 docker compose -f servicio/categoria-ms/compose.yml up -d --build
-docker compose -f servicio/calificacion-ms/compose.yml up -d --build
-docker compose -f servicio/chat-ms/compose.yml up -d --build
-docker compose -f servicio/notification-ms/compose.yml up -d --build
+docker compose -f servicio/producto-ms/compose.yml up -d --build
+docker compose -f servicio/publicacion-ms/compose.yml up -d --build
 docker compose -f servicio/media-ms/compose.yml up -d --build
 docker compose -f servicio/favoritos-ms/compose.yml up -d --build
-docker compose -f servicio/search-ms/compose.yml up -d --build
+docker compose -f servicio/calificacion-ms/compose.yml up -d --build
+docker compose -f servicio/chat-ms/compose.yml up -d --build
+docker compose -f servicio/orden-ms/compose.yml up -d --build
+docker compose -f servicio/pago-ms/compose.yml up -d --build
 ```
 
-Para cualquier otro microservicio:
+## Health checks
+
+DEV:
 
 ```bash
-docker compose -f servicio/<nombre-ms>/compose.yml up -d --build
+curl http://localhost:18888/actuator/health
+curl http://localhost:18761/eureka/apps
+curl http://localhost:18080/actuator/health
 ```
 
-Revisa que se registren en Eureka PROD:
-
-```text
-http://localhost:28761
-```
-
-### 5.4 Probar PROD por Gateway
-
-Siempre llama por Gateway PROD:
+PROD:
 
 ```bash
 curl http://localhost:28082/actuator/health
-curl http://localhost:28082/api/v1/productos
-curl http://localhost:28082/api/v1/carritos
-curl http://localhost:28082/api/v1/inventarios
+```
+
+## Probar por Gateway
+
+DEV:
+
+```bash
+curl http://localhost:18080/api/v1/categorias
+curl http://localhost:18080/api/v1/productos
+curl http://localhost:18080/api/v1/productos/detalle/1
+```
+
+PROD:
+
+```bash
 curl http://localhost:28082/api/v1/categorias
-curl http://localhost:28082/api/v1/publicaciones
+curl http://localhost:28082/api/v1/productos
+curl http://localhost:28082/api/v1/productos/detalle/1
 ```
 
-Login por Gateway PROD:
+No consumir microservicios directamente desde Angular ni desde pruebas de frontend. La ruta correcta siempre es:
 
-```http
-POST http://localhost:28082/auth/login
-Content-Type: application/json
-
-{
-  "username": "usuario_prueba",
-  "password": "clave_usuario"
-}
+```txt
+Angular -> Gateway -> lb://SERVICIO -> microservicio
 ```
-
-## 6. Comandos Maven utiles
-
-Compilar un servicio:
-
-```bash
-mvn -f servicio/auth-ms/pom.xml clean compile
-mvn -f servicio/producto-ms/pom.xml clean compile
-```
-
-Ejecutar pruebas:
-
-```bash
-mvn -f infra/gateway/pom.xml test
-mvn -f servicio/auth-ms/pom.xml test
-```
-
-Empaquetar:
-
-```bash
-mvn -f servicio/auth-ms/pom.xml clean package
-```
-
-## 7. Apagar el entorno
-
-Apagar PROD:
-
-```bash
-docker compose -f servicio/auth-ms/compose.yml down
-docker compose -f servicio/catalogo-ms/compose.yml down
-docker compose -f servicio/producto-ms/compose.yml down
-docker compose -f servicio/carrito-ms/compose.yml down
-docker compose -f servicio/orden-ms/compose.yml down
-docker compose -f servicio/pago-ms/compose.yml down
-docker compose -f servicio/inventario-ms/compose.yml down
-docker compose -f servicio/persona-ms/compose.yml down
-docker compose -f servicio/publicacion-ms/compose.yml down
-docker compose -f servicio/categoria-ms/compose.yml down
-docker compose -f servicio/calificacion-ms/compose.yml down
-docker compose -f servicio/chat-ms/compose.yml down
-docker compose -f servicio/notification-ms/compose.yml down
-docker compose -f servicio/media-ms/compose.yml down
-docker compose -f servicio/favoritos-ms/compose.yml down
-docker compose -f servicio/search-ms/compose.yml down
-docker compose -f infra/compose.yml down
-docker compose -f keycloak/compose.yml down
-docker compose -f kafka/compose.yml down
-docker compose -f obs/compose.yml down
-```
-
-Apagar dependencias DEV:
-
-```bash
-docker compose -f servicio/auth-ms/compose-dev.yml down
-docker compose -f servicio/catalogo-ms/compose-dev.yml down
-docker compose -f servicio/producto-ms/compose-dev.yml down
-docker compose -f servicio/carrito-ms/compose-dev.yml down
-docker compose -f servicio/orden-ms/compose-dev.yml down
-docker compose -f servicio/pago-ms/compose-dev.yml down
-docker compose -f servicio/inventario-ms/compose-dev.yml down
-docker compose -f servicio/persona-ms/compose-dev.yml down
-docker compose -f servicio/publicacion-ms/compose-dev.yml down
-docker compose -f servicio/categoria-ms/compose-dev.yml down
-docker compose -f servicio/calificacion-ms/compose-dev.yml down
-docker compose -f servicio/chat-ms/compose-dev.yml down
-docker compose -f servicio/notification-ms/compose-dev.yml down
-docker compose -f servicio/media-ms/compose-dev.yml down
-docker compose -f servicio/favoritos-ms/compose-dev.yml down
-docker compose -f servicio/search-ms/compose-dev.yml down
-docker compose -f keycloak/compose.yml down
-docker compose -f kafka/compose-dev.yml down
-docker compose -f obs/compose-dev.yml down
-```
-
-Para detener servicios Java levantados con Maven, usa `Ctrl + C` en cada terminal.
-
-## 8. Problemas comunes
-
-- Si Gateway responde `503`, revisa Eureka y confirma que el microservicio este registrado.
-- Si Keycloak no inicia, confirma que exista la red `ecom-prod-net`.
-- Si un microservicio no conecta a PostgreSQL en DEV, verifica que su `compose-dev.yml` este levantado y que el puerto no este ocupado.
-- Si Docker indica que un puerto esta ocupado, deten el contenedor anterior o cambia el servicio que usa ese puerto.
-- Si cambias configuracion en `infra/config/config-repo`, reinicia el servicio afectado.

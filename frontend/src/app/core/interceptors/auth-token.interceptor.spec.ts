@@ -48,6 +48,26 @@ describe('authTokenInterceptor', () => {
     req.flush({});
   });
 
+  it('does not attach bearer token to login requests', () => {
+    sessionService.authHeaderValue.and.returnValue('Bearer expired-token');
+
+    http.post('http://localhost:18080/auth/login', {}).subscribe();
+
+    const req = httpMock.expectOne('http://localhost:18080/auth/login');
+    expect(req.request.headers.has('Authorization')).toBeFalse();
+    req.flush({});
+  });
+
+  it('does not attach bearer token to register requests', () => {
+    sessionService.authHeaderValue.and.returnValue('Bearer expired-token');
+
+    http.post('http://localhost:18080/auth/register', {}).subscribe();
+
+    const req = httpMock.expectOne('http://localhost:18080/auth/register');
+    expect(req.request.headers.has('Authorization')).toBeFalse();
+    req.flush({});
+  });
+
   it('clears session and redirects on 401 for protected requests', () => {
     sessionService.authHeaderValue.and.returnValue('Bearer expired-token');
 

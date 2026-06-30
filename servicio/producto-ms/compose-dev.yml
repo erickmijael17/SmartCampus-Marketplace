@@ -1,18 +1,18 @@
-name: ecom-producto-dev
+name: producto-dev
 
 services:
   postgres-producto-dev:
     image: postgres:16-alpine
-    container_name: ecom-postgres-producto-dev
+    container_name: postgres-producto-dev
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ecom_producto_db
+      POSTGRES_DB: producto_db
       POSTGRES_USER: ecom
       POSTGRES_PASSWORD: ecom
     ports:
       - "15433:5432"
     volumes:
-      - ecom_producto_dev_data:/var/lib/postgresql/data
+      - producto_dev_data:/var/lib/postgresql/data
 
 volumes:
-  ecom_producto_dev_data:
+  producto_dev_data:

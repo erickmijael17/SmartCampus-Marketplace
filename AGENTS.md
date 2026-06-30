@@ -72,19 +72,14 @@ Angular no debe llamar directo a Keycloak ni a auth-ms fuera del Gateway.
 | `auth-ms` | Login, register, me, integracion Keycloak | `/auth/**` |
 | `producto-ms` | CRUD de productos del marketplace | `/api/v1/productos/**` |
 | `categoria-ms` | CRUD de categorias | `/api/v1/categorias/**` |
-| `catalogo-ms` | Catalogo extendido o endpoints de instancia | `/api/v1/catalogo/**` |
-| `carrito-ms` | Carrito de compras | `/api/v1/carritos/**` |
 | `orden-ms` | Ordenes de compra | `/api/v1/ordenes/**` |
 | `pago-ms` | Procesamiento de pagos | `/api/v1/pagos/**` |
-| `inventario-ms` | Control de stock e inventario | `/api/v1/inventarios/**` |
 | `persona-ms` | Perfil y datos personales | `/api/v1/personas/**` |
 | `chat-ms` | Mensajeria entre usuarios | `/api/v1/chats/**` |
 | `favoritos-ms` | Productos favoritos por usuario | `/api/v1/favoritos/**` |
 | `calificacion-ms` | Calificaciones y resenas | `/api/v1/calificaciones/**` |
 | `media-ms` | Imagenes y archivos multimedia | `/api/v1/media/**` |
-| `notification-ms` | Notificaciones (in-app / email) | `/api/v1/notificaciones/**` |
 | `publicacion-ms` | Publicaciones y visibilidad de productos | `/api/v1/publicaciones/**` |
-| `search-ms` | Busqueda y filtrado de productos | `/api/v1/search/**` |
 
 ## 5. Reglas para frontend Angular
 
@@ -122,7 +117,7 @@ Angular no debe llamar directo a Keycloak ni a auth-ms fuera del Gateway.
   - `GET /api/v1/productos/**` puede ser publico
   - `GET /api/v1/categorias/**` puede ser publico
   - `POST`, `PUT`, `DELETE` sobre cualquier recurso deben requerir JWT salvo justificacion explicita
-- Ordenes, pagos, carrito, perfil, chat, favoritos y escritura de productos deben requerir JWT.
+- Ordenes, pagos, perfil, chat, favoritos y escritura de productos deben requerir JWT.
 - Las rutas Swagger/OpenAPI pueden estar publicas en DEV pero no en PROD.
 - Mantener CORS restringido a origenes necesarios (`localhost:4200`, `localhost:4300`).
 - No exponer endpoints sensibles sin autenticacion.
@@ -179,9 +174,8 @@ Orden de importancia para el desarrollo:
 10. Chat real (chat-ms).
 11. Media real (media-ms, subida de imagenes).
 12. Favoritos y calificaciones.
-13. Search real (search-ms).
-14. Limpieza de componentes duplicados (flat -> subdirectorios).
-15. Agregar tests a microservicios.
+13. Limpieza de componentes duplicados (flat -> subdirectorios).
+14. Agregar tests a microservicios.
 
 ## 10. Validaciones obligatorias
 
@@ -271,13 +265,12 @@ Matriz completa: [`docs/MVP_MICROSERVICES.md`](docs/MVP_MICROSERVICES.md).
 | Tier | Servicios |
 |------|-----------|
 | **MVP activo (11)** | auth-ms, persona-ms, producto-ms, categoria-ms, orden-ms, pago-ms, publicacion-ms, media-ms, favoritos-ms, calificacion-ms, chat-ms |
-| **Pausado / futuro (5)** | carrito-ms, inventario-ms, notification-ms, search-ms, catalogo-ms (deprecado; usar categoria-ms) |
+| **Eliminados del repo** | carrito-ms, inventario-ms, notification-ms, search-ms, catalogo-ms |
 
 Reglas para agentes:
 
-- No eliminar microservicios pausados sin validacion del equipo.
-- No anadir rutas Gateway duplicadas (ej. categorias en catalogo-ms y categoria-ms).
-- Las rutas Gateway marcadas `# FASE_FUTURA` pueden existir pero no tienen consumo Angular actual.
+- No reintroducir rutas Gateway para microservicios eliminados sin validacion del equipo.
+- No anadir rutas Gateway duplicadas para categorias; `categoria-ms` es el unico dueno.
 - Priorizar integracion real sobre mocks (`TEMPORAL_MOCK`) en servicios MVP activos.
 
 ## 15. Referencias

@@ -21,8 +21,8 @@ public class Persona {
     /**
      * Referencia al ID del usuario en auth-ms (no FK directa, microservicio independiente)
      */
-    @Column(name = "user_id", nullable = false, unique = true)
-    private Long userId;
+    @Column(name = "user_id", nullable = false, unique = true, length = 100)
+    private String userId;
 
     @Column(name = "nombres", nullable = false, length = 100)
     private String nombres;

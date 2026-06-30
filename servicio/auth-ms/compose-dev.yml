@@ -1,18 +1,18 @@
-name: ecom-auth-dev
+name: auth-dev
 
 services:
   postgres-auth-dev:
     image: postgres:16-alpine
-    container_name: ecom-postgres-auth-dev
+    container_name: postgres-auth-dev
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ecom_auth_db
+      POSTGRES_DB: auth_db
       POSTGRES_USER: ecom
       POSTGRES_PASSWORD: ecom
     ports:
       - "15431:5432"
     volumes:
-      - ecom_auth_dev_data:/var/lib/postgresql/data
+      - auth_dev_data:/var/lib/postgresql/data
 
 volumes:
-  ecom_auth_dev_data:
+  auth_dev_data:

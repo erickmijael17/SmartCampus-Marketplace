@@ -5,7 +5,7 @@ spring:
   kafka:
     bootstrap-servers: localhost:41092
   datasource:
-    url: jdbc:postgresql://localhost:15435/ecom_pago_db
+    url: jdbc:postgresql://localhost:15435/pago_db
     username: ecom
     password: ecom
     driver-class-name: org.postgresql.Driver

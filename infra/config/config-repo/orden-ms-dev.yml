@@ -5,7 +5,7 @@ spring:
   kafka:
     bootstrap-servers: localhost:41092
   datasource:
-    url: jdbc:postgresql://localhost:15436/ecom_orden_db
+    url: jdbc:postgresql://localhost:15436/orden_db
     username: ecom
     password: ecom
     driver-class-name: org.postgresql.Driver

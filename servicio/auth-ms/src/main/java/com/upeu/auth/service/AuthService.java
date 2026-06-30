@@ -11,7 +11,9 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
 
@@ -157,6 +159,8 @@ public class AuthService {
         userRepresentation.put("email", request.getEmail());
         userRepresentation.put("firstName", request.getFullName());
         userRepresentation.put("enabled", true);
+        // emailVerified=true evita que Keycloak 25+ bloquee el login con VERIFY_PROFILE
+        userRepresentation.put("emailVerified", true);
 
         Map<String, Object> credentials = new HashMap<>();
         credentials.put("type", "password");
@@ -179,7 +183,22 @@ public class AuthService {
         String usersUrl = adminUrl + "/admin/realms/smartcampus/users";
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(userRepresentation, headers);
 
-        restTemplate.postForEntity(usersUrl, entity, String.class);
+        try {
+            restTemplate.postForEntity(usersUrl, entity, String.class);
+        } catch (RestClientResponseException e) {
+            if (e.getStatusCode() == HttpStatus.CONFLICT) {
+                throw new ResponseStatusException(
+                        HttpStatus.CONFLICT,
+                        "Ya existe una cuenta registrada con ese correo o usuario."
+                );
+            }
+
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_GATEWAY,
+                    "Keycloak rechazo la creacion del usuario: " + e.getStatusText(),
+                    e
+            );
+        }
     }
 
     @SuppressWarnings("unchecked")

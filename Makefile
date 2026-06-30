@@ -18,12 +18,11 @@ NAMESPACE   ?= ecom
 INFRA_SERVICES := config-server eureka gateway
 
 # ─── Microservicios (todos los que tienen código en servicio/) ────────────────
-EXISTING_SERVICES := auth-ms carrito-ms catalogo-ms inventario-ms \
-                     orden-ms pago-ms producto-ms
+EXISTING_SERVICES := auth-ms orden-ms pago-ms producto-ms
 
 # ─── Microservicios nuevos (creados en esta migración) ───────────────────────
 NEW_SERVICES := persona-ms publicacion-ms categoria-ms calificacion-ms \
-                chat-ms notification-ms media-ms favoritos-ms search-ms
+                chat-ms media-ms favoritos-ms
 
 ALL_SERVICES := $(EXISTING_SERVICES) $(NEW_SERVICES)
 
@@ -77,17 +76,12 @@ build-auth-ms:         ; docker build -t $(REGISTRY)/ecom-auth-ms:$(VERSION)    
 build-persona-ms:      ; docker build -t $(REGISTRY)/ecom-persona-ms:$(VERSION)      ./servicio/persona-ms
 build-publicacion-ms:  ; docker build -t $(REGISTRY)/ecom-publicacion-ms:$(VERSION)  ./servicio/publicacion-ms
 build-categoria-ms:    ; docker build -t $(REGISTRY)/ecom-categoria-ms:$(VERSION)    ./servicio/categoria-ms
-build-inventario-ms:   ; docker build -t $(REGISTRY)/ecom-inventario-ms:$(VERSION)   ./servicio/inventario-ms
-build-carrito-ms:      ; docker build -t $(REGISTRY)/ecom-carrito-ms:$(VERSION)      ./servicio/carrito-ms
 build-orden-ms:        ; docker build -t $(REGISTRY)/ecom-orden-ms:$(VERSION)        ./servicio/orden-ms
 build-pago-ms:         ; docker build -t $(REGISTRY)/ecom-pago-ms:$(VERSION)         ./servicio/pago-ms
 build-calificacion-ms: ; docker build -t $(REGISTRY)/ecom-calificacion-ms:$(VERSION) ./servicio/calificacion-ms
 build-chat-ms:         ; docker build -t $(REGISTRY)/ecom-chat-ms:$(VERSION)         ./servicio/chat-ms
-build-notification-ms: ; docker build -t $(REGISTRY)/ecom-notification-ms:$(VERSION) ./servicio/notification-ms
 build-media-ms:        ; docker build -t $(REGISTRY)/ecom-media-ms:$(VERSION)        ./servicio/media-ms
 build-favoritos-ms:    ; docker build -t $(REGISTRY)/ecom-favoritos-ms:$(VERSION)    ./servicio/favoritos-ms
-build-search-ms:       ; docker build -t $(REGISTRY)/ecom-search-ms:$(VERSION)       ./servicio/search-ms
-build-catalogo-ms:     ; docker build -t $(REGISTRY)/ecom-catalogo-ms:$(VERSION)     ./servicio/catalogo-ms
 build-producto-ms:     ; docker build -t $(REGISTRY)/ecom-producto-ms:$(VERSION)     ./servicio/producto-ms
 build-config-server:   ; docker build -t $(REGISTRY)/ecom-config-server:$(VERSION)   ./infra/config
 build-eureka:          ; docker build -t $(REGISTRY)/ecom-eureka:$(VERSION)           ./infra/eureka
@@ -155,7 +149,7 @@ compose-down: ## Detener todos los servicios Docker Compose
 	docker compose -f keycloak/compose.yml down 2>/dev/null || true
 	docker compose -f kafka/compose.yml down 2>/dev/null || true
 	docker compose -f obs/compose.yml down 2>/dev/null || true
-	@for svc in auth-ms carrito-ms catalogo-ms inventario-ms orden-ms pago-ms producto-ms $(NEW_SERVICES); do \
+	@for svc in $(ALL_SERVICES); do \
 		docker compose -f servicio/$$svc/compose.yml down 2>/dev/null || true; \
 	done
 

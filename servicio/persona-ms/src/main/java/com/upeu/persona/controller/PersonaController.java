@@ -31,7 +31,7 @@ public class PersonaController {
 
     @GetMapping("/me")
     public ResponseEntity<PersonaDto.Response> findMyProfile(@AuthenticationPrincipal Jwt jwt) {
-        Long userId = jwt.getClaim("userId");
+        String userId = jwt.getSubject(); // 'sub' claim de Keycloak (UUID)
         return ResponseEntity.ok(personaService.findByUserId(userId));
     }
 
@@ -39,7 +39,7 @@ public class PersonaController {
     public ResponseEntity<PersonaDto.Response> create(
             @AuthenticationPrincipal Jwt jwt,
             @Valid @RequestBody PersonaDto.Request request) {
-        Long userId = jwt.getClaim("userId");
+        String userId = jwt.getSubject(); // 'sub' claim de Keycloak (UUID)
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(personaService.create(userId, request));
     }

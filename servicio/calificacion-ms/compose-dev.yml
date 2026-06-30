@@ -1,18 +1,18 @@
-name: ecom-calificacion-ms-dev
+name: calificacion-ms-dev
 
 services:
   postgres-calificacion-ms-dev:
     image: postgres:16-alpine
-    container_name: ecom-postgres-calificacion-ms-dev
+    container_name: postgres-calificacion-ms-dev
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ecom_calificacion_ms_db
+      POSTGRES_DB: calificacion_ms_db
       POSTGRES_USER: ecom
       POSTGRES_PASSWORD: ecom
     ports:
       - "15443:5432"
     volumes:
-      - ecom_calificacion_ms_dev_data:/var/lib/postgresql/data
+      - calificacion_ms_dev_data:/var/lib/postgresql/data
 
 volumes:
-  ecom_calificacion_ms_dev_data:
+  calificacion_ms_dev_data:

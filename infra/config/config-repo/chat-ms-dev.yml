@@ -3,7 +3,7 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:15444/ecom_chat_ms_db
+    url: jdbc:postgresql://localhost:15444/chat_ms_db
     username: ecom
     password: ecom
     driver-class-name: org.postgresql.Driver

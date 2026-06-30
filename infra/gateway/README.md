@@ -17,11 +17,11 @@ Ejemplos:
 
 - `/auth/**` -> `lb://AUTH-MS`
 - `/api/v1/productos/**` -> `lb://PRODUCTO-MS`
-- `/api/v1/carritos/**` -> `lb://CARRITO-MS`
-- `/api/v1/inventarios/**` -> `lb://INVENTARIO-MS`
 - `/api/v1/categorias/**` -> `lb://CATEGORIA-MS`
 - `/api/v1/publicaciones/**` -> `lb://PUBLICACION-MS`
-- `/api/v1/chat/**` -> `lb://CHAT-MS`
+- `/api/v1/chats/**` -> `lb://CHAT-MS`
+- `/api/v1/ordenes/**` -> `lb://ORDEN-MS`
+- `/api/v1/pagos/**` -> `lb://PAGO-MS`
 
 ## Seguridad
 
