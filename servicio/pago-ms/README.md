@@ -6,6 +6,8 @@ Microservicio para registrar y consultar pagos de ordenes en CampusMarket.
 - Registrar pago asociado a una orden.
 - Actualizar estado de pago.
 - Consultar pagos por comprador.
+- Crear preferencias de pago con Mercado Pago Checkout Pro.
+- Sincronizar pagos por retorno/webhook de Mercado Pago.
 
 ## Endpoints
 - POST /api/v1/pagos
@@ -14,3 +16,17 @@ Microservicio para registrar y consultar pagos de ordenes en CampusMarket.
 - GET /api/v1/pagos/usuario/{idComprador}
 - PUT /api/v1/pagos/{id}
 - DELETE /api/v1/pagos/{id}
+- POST /api/v1/pagos/mercadopago/preference
+- GET /api/v1/pagos/mercadopago/return
+- POST /api/v1/pagos/mercadopago/webhook
+
+## Mercado Pago
+
+Checkout Pro usa credenciales por variables de entorno:
+
+- `MP_ACCESS_TOKEN`: access token privado usado solo por pago-ms.
+- `MP_PUBLIC_KEY`: public key de prueba o produccion, reservada para futuras integraciones frontend.
+- `MP_NOTIFICATION_URL`: URL publica del webhook.
+- `MP_SUCCESS_URL`, `MP_FAILURE_URL`, `MP_PENDING_URL`: rutas de retorno al frontend.
+
+No guardar credenciales reales en el repositorio.

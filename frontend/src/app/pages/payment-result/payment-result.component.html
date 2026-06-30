@@ -1,0 +1,14 @@
+<section class="payment-result container">
+  <p class="eyebrow">Mercado Pago</p>
+  <h1>{{ title }}</h1>
+  <p class="muted">{{ message }}</p>
+
+  @if (paymentId) {
+    <p class="reference">ID Mercado Pago: <strong>{{ paymentId }}</strong></p>
+  }
+
+  <div class="actions">
+    <a routerLink="/" class="btn btn-primary">Volver al marketplace</a>
+    <a routerLink="/profile" class="btn btn-secondary">Ver perfil</a>
+  </div>
+</section>

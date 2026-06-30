@@ -11,7 +11,8 @@ export const API_CONFIG = {
       productDetail: (id: number) => `/api/v1/productos/detalle/${id}`,
       categories: '/api/v1/categorias',
       orders: '/api/v1/ordenes',
-      payments: '/api/v1/pagos'
+      payments: '/api/v1/pagos',
+      mercadoPagoPreference: '/api/v1/pagos/mercadopago/preference'
     },
     personas: {
       base: '/auth/profile',

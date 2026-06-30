@@ -13,10 +13,12 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OrdenServiceImpl implements OrdenService {
@@ -49,7 +51,15 @@ public class OrdenServiceImpl implements OrdenService {
                 .timestamp(Instant.now().toEpochMilli())
                 .build();
 
-        productorOrden.publicarOrdenCreada(evento);
+        try {
+            productorOrden.publicarOrdenCreada(evento);
+        } catch (RuntimeException ex) {
+            log.warn(
+                    "service=orden-ms component=order-service ordenId={} status=created eventStatus=not_published error=\"{}\"",
+                    ordenGuardada.getId(),
+                    ex.getMessage()
+            );
+        }
 
         return ordenesMapper.toResponse(ordenGuardada);
     }

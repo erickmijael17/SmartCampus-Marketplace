@@ -74,4 +74,5 @@ export interface PurchaseSummary {
   orderId: number;
   paymentId: number;
   status: string;
+  checkoutUrl?: string;
 }

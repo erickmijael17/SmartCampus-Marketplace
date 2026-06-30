@@ -49,6 +49,21 @@ h1 {
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
 }
 
+.checkout-box {
+  display: grid;
+  gap: 0.8rem;
+  margin: 1rem 0;
+  padding: 1rem;
+  border: 1px solid #dbeafe;
+  border-radius: 12px;
+  background: #f8fbff;
+}
+
+.checkout-box h2 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
 label {
   display: grid;
   gap: 0.35rem;
@@ -59,6 +74,14 @@ input {
   border: 1px solid #cbd5e1;
   border-radius: 8px;
   padding: 0.5rem;
+}
+
+select,
+textarea {
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 0.5rem;
+  font: inherit;
 }
 
 button {
@@ -160,6 +183,12 @@ button:disabled {
     grid-template-columns: 1fr;
   }
 
+}
+
+.field-error {
+  margin: 0;
+  color: #b91c1c;
+  font-weight: 700;
 }
 
 .review-box {

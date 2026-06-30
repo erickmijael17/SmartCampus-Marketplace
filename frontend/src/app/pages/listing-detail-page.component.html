@@ -18,7 +18,10 @@
           <span>{{ item.sellerLabel }}</span>
         </div>
 
-        <div class="buy-box">
+        <section class="checkout-box">
+          <h2>Finalizar compra</h2>
+
+          <div class="buy-box">
           <label>
             Cantidad
             <input type="number" [(ngModel)]="quantity" min="1" />
@@ -27,14 +30,41 @@
           <label>
             Metodo de pago
             <select [(ngModel)]="paymentMethod">
-              <option value="TARJETA">Tarjeta</option>
               <option value="YAPE">Yape</option>
-              <option value="PLIN">Plin</option>
+              <option value="TARJETA">Tarjeta</option>
             </select>
           </label>
-        </div>
 
-        <button (click)="buyNow()">{{ canBuy ? 'Comprar ahora' : 'Inicia sesion para comprar' }}</button>
+          <label>
+            Nombre completo
+            <input type="text" [(ngModel)]="buyerName" placeholder="Ej. Maria Quispe" />
+          </label>
+
+          <label>
+            Correo
+            <input type="email" [(ngModel)]="buyerEmail" placeholder="tu correo institucional" />
+          </label>
+
+          <label>
+            Celular
+            <input type="tel" [(ngModel)]="buyerPhone" maxlength="9" placeholder="9 digitos" />
+          </label>
+
+          <label>
+            Referencia (opcional)
+            <input type="text" [(ngModel)]="paymentReference" placeholder="Horario o indicacion para el vendedor" />
+          </label>
+          </div>
+
+          <p class="field-error" *ngIf="checkoutTouched && !checkoutFormValid">
+            Ingresa nombre, correo valido y celular de 9 digitos.
+          </p>
+
+          <button (click)="buyNow()" [disabled]="canBuy && checkoutTouched && !checkoutFormValid">
+            {{ canBuy ? 'Continuar con Mercado Pago' : 'Inicia sesion para comprar' }}
+          </button>
+        </section>
+
         <button type="button" class="secondary-action" (click)="toggleFavorite()" [disabled]="favoriteBusy">
           {{ favoriteLabel }}
         </button>

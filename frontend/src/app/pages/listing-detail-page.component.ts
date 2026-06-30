@@ -27,7 +27,12 @@ export class ListingDetailPageComponent implements OnInit {
   listing: MarketplaceListing | null = null;
   loading = true;
   quantity = 1;
-  paymentMethod = 'TARJETA';
+  paymentMethod: 'YAPE' | 'TARJETA' = 'YAPE';
+  buyerName = '';
+  buyerEmail = '';
+  buyerPhone = '';
+  paymentReference = '';
+  checkoutTouched = false;
   statusMessage = '';
   chatMessage = '';
   messages: ChatMessage[] = [];
@@ -68,12 +73,21 @@ export class ListingDetailPageComponent implements OnInit {
       return;
     }
 
+    this.checkoutTouched = true;
+    if (!this.checkoutFormValid) {
+      this.statusMessage = 'Completa tus datos de compra antes de continuar.';
+      return;
+    }
+
     this.loading = true;
 
     this.marketplaceService.checkout(this.listing, this.quantity, this.paymentMethod).subscribe({
       next: (summary) => {
-        this.statusMessage = `Compra completada. Orden ${summary.orderId} y pago ${summary.paymentId} registrados.`;
+        this.statusMessage = `Redirigiendo a Mercado Pago. Orden ${summary.orderId} y pago ${summary.paymentId} pendientes.`;
         this.loading = false;
+        if (summary.checkoutUrl) {
+          window.location.href = summary.checkoutUrl;
+        }
       },
       error: (error) => {
         this.statusMessage = describeHttpError(error, 'la compra');
@@ -188,6 +202,15 @@ export class ListingDetailPageComponent implements OnInit {
 
   get canBuy(): boolean {
     return this.sessionService.isAuthenticated();
+  }
+
+  get checkoutFormValid(): boolean {
+    return (
+      this.quantity > 0 &&
+      this.buyerName.trim().length >= 3 &&
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.buyerEmail.trim()) &&
+      /^\d{9}$/.test(this.buyerPhone.trim())
+    );
   }
 
   get favoriteLabel(): string {

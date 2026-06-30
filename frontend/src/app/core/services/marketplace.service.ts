@@ -5,6 +5,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable, catchError, forkJoin, map, of, switchMap, tap, throwError } from 'rxjs';
 
 import { API_CONFIG } from '../config/api.config';
+import { environment } from '../../../environments/environment';
 
 import { AuthMeResponse } from '../models/auth.model';
 import { PersonaResponse } from '../models/persona.model';
@@ -60,6 +61,22 @@ interface PagoResponse {
   id: number;
 
   estado: string;
+
+}
+
+interface MercadoPagoPreferenceResponse {
+
+  pagoId: number;
+
+  idOrden: number;
+
+  estado: string;
+
+  preferenceId: string;
+
+  initPoint: string;
+
+  sandboxInitPoint: string;
 
 }
 
@@ -311,49 +328,40 @@ export class MarketplaceService {
 
       switchMap((order) => {
 
-        const paymentRequest: CheckoutRequest = {
-
-          idComprador: userId,
-
-          idProducto: listing.id,
-
-          cantidad: quantity,
-
-          precioUnitario: listing.price,
-
-          metodoPago: paymentMethod,
-
-          referenciaTransaccion: `SCM-${Date.now()}`
-
-        };
-
         return this.http
 
-          .post<PagoResponse>(this.url(API_CONFIG.endpoints.marketplace.payments), {
-
-            idComprador: paymentRequest.idComprador,
+          .post<MercadoPagoPreferenceResponse>(this.url(API_CONFIG.endpoints.marketplace.mercadoPagoPreference), {
 
             idOrden: order.id,
 
-            monto: paymentRequest.precioUnitario * paymentRequest.cantidad,
+            idComprador: userId,
 
-            metodoPago: paymentRequest.metodoPago,
+            idProducto: listing.id,
 
-            estado: 'APROBADO',
+            titulo: listing.title,
 
-            referenciaTransaccion: paymentRequest.referenciaTransaccion
+            descripcion: listing.description,
+
+            cantidad: quantity,
+
+            precioUnitario: listing.price,
+
+            metodoPago: paymentMethod
 
           })
-
           .pipe(
 
-            map((payment) => ({
+            map((preference) => ({
 
               orderId: order.id,
 
-              paymentId: payment.id,
+              paymentId: preference.pagoId,
 
-              status: payment.estado
+              status: preference.estado,
+
+              checkoutUrl: environment.production
+                ? preference.initPoint || preference.sandboxInitPoint
+                : preference.sandboxInitPoint || preference.initPoint
 
             }))
 

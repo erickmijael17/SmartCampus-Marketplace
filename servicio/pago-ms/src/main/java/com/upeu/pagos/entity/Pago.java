@@ -45,7 +45,25 @@ public class Pago {
     @Column(name = "referencia_transaccion", length = 80)
     private String referenciaTransaccion;
 
+    @Column(name = "mp_preference_id", length = 120)
+    private String mpPreferenceId;
+
+    @Column(name = "mp_payment_id", length = 80)
+    private String mpPaymentId;
+
+    @Column(name = "mp_status", length = 50)
+    private String mpStatus;
+
+    @Column(name = "checkout_url", length = 500)
+    private String checkoutUrl;
+
+    @Column(name = "external_reference", length = 120)
+    private String externalReference;
+
     @Column(name = "created_at", nullable = false, insertable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 }
 

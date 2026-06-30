@@ -62,6 +62,15 @@ app:
     group-id:
       pagos: pagos-group
 
+mercadopago:
+  access-token: ${MP_ACCESS_TOKEN:}
+  public-key: ${MP_PUBLIC_KEY:}
+  base-url: https://api.mercadopago.com
+  notification-url: ${MP_NOTIFICATION_URL:http://localhost:18080/api/v1/pagos/mercadopago/webhook}
+  success-url: ${MP_SUCCESS_URL:http://localhost:4200/payment-result?status=success}
+  failure-url: ${MP_FAILURE_URL:http://localhost:4200/payment-result?status=failure}
+  pending-url: ${MP_PENDING_URL:http://localhost:4200/payment-result?status=pending}
+
 jwt:
   secret: 1s3alJJATsWK91vf5zrODYlQa+LauM/9udaLZlQhHlpu46g/KzmSS5c3CGy6xF9kzAqBhvjmKBuZO/pSL7tfOg==
   issuer: auth

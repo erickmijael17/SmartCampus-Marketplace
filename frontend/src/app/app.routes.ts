@@ -6,6 +6,7 @@ import { RegisterComponent } from './pages/register/register.component';
 import { PublishPageComponent } from './pages/publish-page.component';
 import { ProfileComponent } from './pages/profile/profile.component';
 import { ChatComponent } from './pages/chat/chat.component';
+import { PaymentResultComponent } from './pages/payment-result/payment-result.component';
 import { authGuard } from './guards/auth.guard';
 import { guestGuard } from './guards/guest.guard';
 
@@ -42,6 +43,10 @@ export const routes: Routes = [
 		path: 'chat',
 		canActivate: [authGuard],
 		component: ChatComponent
+	},
+	{
+		path: 'payment-result',
+		component: PaymentResultComponent
 	},
 	{
 		path: 'publicar',

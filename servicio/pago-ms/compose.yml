@@ -39,6 +39,12 @@ services:
       DB_NAME: ${DB_NAME}
       DB_USER: ${DB_USER}
       DB_PASS: ${DB_PASS}
+      MP_ACCESS_TOKEN: ${MP_ACCESS_TOKEN}
+      MP_PUBLIC_KEY: ${MP_PUBLIC_KEY}
+      MP_NOTIFICATION_URL: ${MP_NOTIFICATION_URL}
+      MP_SUCCESS_URL: ${MP_SUCCESS_URL}
+      MP_FAILURE_URL: ${MP_FAILURE_URL}
+      MP_PENDING_URL: ${MP_PENDING_URL}
     expose:
       - "8080"
     volumes:
