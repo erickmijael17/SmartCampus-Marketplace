@@ -14,7 +14,7 @@ export interface PersonaRequest {
 
 export interface PersonaResponse {
   id: number;
-  userId: number;
+  userId: string;
   nombres: string;
   apellidos: string;
   email: string;

@@ -25,6 +25,11 @@ public class ProductoController {
 
     private final ProductoService productoService;
 
+    @GetMapping("/health")
+    public ResponseEntity<String> health() {
+        return ResponseEntity.ok("OK - Producto Service is up and running via Gateway!");
+    }
+
     @PostMapping
     public ResponseEntity<ProductoResponse> create(@Valid @RequestBody ProductoRequest request) {
         ProductoResponse response = productoService.create(request);

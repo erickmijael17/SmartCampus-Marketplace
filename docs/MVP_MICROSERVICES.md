@@ -13,12 +13,11 @@ Contrato API frontend: [`frontend/docs/API_CONTRACT.md`](../frontend/docs/API_CO
 
 ---
 
-## MVP activo (11 microservicios)
+## MVP activo (10 microservicios)
 
 | Microservicio | Clasificacion | Frontend | Gateway |
 |---------------|---------------|----------|---------|
-| auth-ms | NECESARIO_ACTUALMENTE | Login, Register, `/auth/me` | `/auth/**` |
-| persona-ms | NECESARIO_ACTUALMENTE | Perfil, enriquecimiento de sesion | `/api/v1/personas/**` |
+| auth-ms | NECESARIO_ACTUALMENTE | Login, Register, `/auth/me`, `/auth/profile` | `/auth/**`, `/api/v1/personas/**` |
 | producto-ms | NECESARIO_ACTUALMENTE | Home, detalle, publicar, perfil | `/api/v1/productos/**` |
 | categoria-ms | NECESARIO_ACTUALMENTE | Home, publicar, detalle enriquecido desde producto-ms | `/api/v1/categorias/**` |
 | orden-ms | NECESARIO_ACTUALMENTE | Checkout | `/api/v1/ordenes/**` |
@@ -31,10 +30,11 @@ Contrato API frontend: [`frontend/docs/API_CONTRACT.md`](../frontend/docs/API_CO
 
 ---
 
-## Microservicios eliminados
+## Microservicios eliminados / fusionados
 
 | Microservicio | Motivo |
 |---------------|--------|
+| persona-ms | Fusionado en auth-ms. Perfil de usuario ahora en `/auth/profile` |
 | carrito-ms | El checkout actual es directo producto -> orden -> pago |
 | inventario-ms | No existe UI de stock ni consumo Angular actual |
 | notification-ms | No existe pantalla ni consumo Angular actual |
@@ -49,11 +49,11 @@ No reintroducir estos servicios ni sus rutas Gateway sin validacion del equipo.
 
 | Ruta Angular | Microservicios |
 |--------------|----------------|
-| `/login`, `/register` | auth-ms, persona-ms |
+| `/login`, `/register` | auth-ms |
 | `/` | producto-ms, categoria-ms, publicacion-ms*, media-ms* |
 | `/publish` | publicacion-ms, producto-ms, categoria-ms, media-ms |
 | `/listing/:id` | producto-ms, publicacion-ms*, media-ms*, orden-ms, pago-ms, favoritos-ms, chat-ms, calificacion-ms |
-| `/profile` | persona-ms, producto-ms, favoritos-ms, publicacion-ms, media-ms, calificacion-ms |
+| `/profile` | auth-ms, producto-ms, favoritos-ms, publicacion-ms, media-ms, calificacion-ms |
 | `/chat` | chat-ms |
 
 \* Requiere JWT para enriquecer publicaciones/media; invitados ven datos publicos y placeholders locales.
@@ -77,7 +77,6 @@ Infra obligatoria: `infra/compose.yml`, Keycloak y Kafka para ordenes/pagos.
 
 ```bash
 docker compose -f servicio/auth-ms/compose.yml up -d --build
-docker compose -f servicio/persona-ms/compose.yml up -d --build
 docker compose -f servicio/categoria-ms/compose.yml up -d --build
 docker compose -f servicio/producto-ms/compose.yml up -d --build
 docker compose -f servicio/publicacion-ms/compose.yml up -d --build

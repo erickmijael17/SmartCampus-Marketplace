@@ -14,16 +14,16 @@ export class PersonaApiService {
     return this.http.get<PersonaResponse>(this.url(API_CONFIG.endpoints.personas.me));
   }
 
-  getById(id: number): Observable<PersonaResponse> {
-    return this.http.get<PersonaResponse>(this.url(API_CONFIG.endpoints.personas.detail(id)));
+  getById(_id: number): Observable<PersonaResponse> {
+    return this.http.get<PersonaResponse>(this.url(API_CONFIG.endpoints.personas.me));
   }
 
   create(request: PersonaRequest): Observable<PersonaResponse> {
-    return this.http.post<PersonaResponse>(this.url(API_CONFIG.endpoints.personas.base), request);
+    return this.http.put<PersonaResponse>(this.url(API_CONFIG.endpoints.personas.base), request);
   }
 
-  update(id: number, request: PersonaRequest): Observable<PersonaResponse> {
-    return this.http.put<PersonaResponse>(this.url(API_CONFIG.endpoints.personas.detail(id)), request);
+  update(_id: number, request: PersonaRequest): Observable<PersonaResponse> {
+    return this.http.put<PersonaResponse>(this.url(API_CONFIG.endpoints.personas.detail(_id)), request);
   }
 
   private url(path: string): string {

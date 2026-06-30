@@ -1,6 +1,6 @@
-package com.upeu.persona.repository;
+package com.upeu.auth.repository;
 
-import com.upeu.persona.entity.Persona;
+import com.upeu.auth.entity.Persona;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

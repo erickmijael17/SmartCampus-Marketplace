@@ -4,7 +4,6 @@ import { provideHttpClient } from '@angular/common/http';
 import { of } from 'rxjs';
 import { AuthApiService } from './auth-api.service';
 import { GatewayService } from './gateway.service';
-import { PersonaApiService } from './persona-api.service';
 import { SessionService } from './session.service';
 import { AuthSession } from '../models/auth.model';
 
@@ -12,7 +11,6 @@ describe('AuthApiService', () => {
   let service: AuthApiService;
   let httpMock: HttpTestingController;
   let sessionService: jasmine.SpyObj<SessionService>;
-  let personaApi: jasmine.SpyObj<PersonaApiService>;
 
   const loginResponse: AuthSession = {
     accessToken: 'login-token',
@@ -24,7 +22,6 @@ describe('AuthApiService', () => {
 
   beforeEach(() => {
     sessionService = jasmine.createSpyObj('SessionService', ['setSession', 'clear', 'session', 'isSessionExpired']);
-    personaApi = jasmine.createSpyObj('PersonaApiService', ['getMyProfile']);
 
     TestBed.configureTestingModule({
       providers: [
@@ -32,8 +29,7 @@ describe('AuthApiService', () => {
         provideHttpClientTesting(),
         AuthApiService,
         { provide: GatewayService, useValue: { baseUrl: () => 'http://localhost:18080' } },
-        { provide: SessionService, useValue: sessionService },
-        { provide: PersonaApiService, useValue: personaApi }
+        { provide: SessionService, useValue: sessionService }
       ]
     });
 
@@ -47,22 +43,9 @@ describe('AuthApiService', () => {
     httpMock.verify();
   });
 
-  it('login establishes session through /auth/me and persona-ms', () => {
-    personaApi.getMyProfile.and.returnValue(
-      of({
-        id: 1,
-        userId: 1001,
-        nombres: 'Ana',
-        apellidos: 'Ramos',
-        email: 'ana@test.com',
-        tipoUsuario: 'ESTUDIANTE',
-        activo: true
-      })
-    );
-
+  it('login establishes session through /auth/me', () => {
     service.login({ username: 'demo', password: 'secret123' }).subscribe((session) => {
-      expect(session.userId).toBe(1001);
-      expect(session.personaId).toBe(1);
+      expect(session.userId).toBe('uuid-keycloak');
     });
 
     const loginReq = httpMock.expectOne('http://localhost:18080/auth/login');
@@ -70,7 +53,12 @@ describe('AuthApiService', () => {
     loginReq.flush(loginResponse);
 
     const meReq = httpMock.expectOne('http://localhost:18080/auth/me');
-    meReq.flush({ username: 'demo', roles: ['USER'], userId: 'uuid-keycloak' });
+    meReq.flush({
+      username: 'demo',
+      roles: ['USER'],
+      userId: 'uuid-keycloak',
+      persona: { id: 1, userId: 'uuid-keycloak', nombres: 'Ana', apellidos: 'Ramos', email: 'ana@test.com', tipoUsuario: 'ESTUDIANTE', activo: true }
+    });
 
     expect(sessionService.setSession).toHaveBeenCalled();
   });

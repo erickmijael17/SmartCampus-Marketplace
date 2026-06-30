@@ -210,8 +210,8 @@ export class ListingDetailPageComponent implements OnInit {
       return;
     }
 
-    const currentUserId = this.sessionService.userId();
-    if (!currentUserId || currentUserId === listing.sellerId) {
+    const currentPersonaId = this.sessionService.personaId();
+    if (currentPersonaId === null || currentPersonaId === listing.sellerId) {
       return;
     }
 

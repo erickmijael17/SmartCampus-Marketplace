@@ -19,7 +19,6 @@ jobs:
       eureka: ${{ steps.filter.outputs.eureka }}
       gateway: ${{ steps.filter.outputs.gateway }}
       auth-ms: ${{ steps.filter.outputs.auth-ms }}
-      persona-ms: ${{ steps.filter.outputs.persona-ms }}
       publicacion-ms: ${{ steps.filter.outputs.publicacion-ms }}
       categoria-ms: ${{ steps.filter.outputs.categoria-ms }}
       orden-ms: ${{ steps.filter.outputs.orden-ms }}
@@ -43,8 +42,6 @@ jobs:
               - 'infra/gateway/**'
             auth-ms:
               - 'servicio/auth-ms/**'
-            persona-ms:
-              - 'servicio/persona-ms/**'
             publicacion-ms:
               - 'servicio/publicacion-ms/**'
             categoria-ms:
@@ -92,9 +89,6 @@ jobs:
           - service: producto-ms
             context: ./servicio/producto-ms
             changed: ${{ needs.detect-changes.outputs.producto-ms }}
-          - service: persona-ms
-            context: ./servicio/persona-ms
-            changed: ${{ needs.detect-changes.outputs.persona-ms }}
           - service: publicacion-ms
             context: ./servicio/publicacion-ms
             changed: ${{ needs.detect-changes.outputs.publicacion-ms }}

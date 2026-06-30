@@ -96,9 +96,9 @@ export class ChatService {
   }
 
   private toThreadSummary(conversation: ConversacionResponse): ChatThread {
-    const currentUserId = this.sessionService.userId();
+    const currentUserId = this.sessionService.personaId();
     const otherUserId =
-      conversation.idUsuario1 === currentUserId ? conversation.idUsuario2 : conversation.idUsuario1;
+      currentUserId !== null && conversation.idUsuario1 === currentUserId ? conversation.idUsuario2 : conversation.idUsuario1;
 
     return {
       id: conversation.id,
@@ -127,8 +127,8 @@ export class ChatService {
   }
 
   private toChatMessage(message: MensajeResponse): ChatMessage {
-    const currentUserId = this.sessionService.userId();
-    const fromMe = message.idRemitente === currentUserId;
+    const currentUserId = this.sessionService.personaId();
+    const fromMe = currentUserId !== null && message.idRemitente === currentUserId;
 
     return {
       from: fromMe ? 'me' : 'them',
@@ -140,12 +140,12 @@ export class ChatService {
   }
 
   private requireUserId(): number {
-    const userId = this.sessionService.userId();
-    if (userId === null || userId <= 0) {
+    const personaId = this.sessionService.personaId();
+    if (personaId === null || personaId <= 0) {
       throw new Error('Debes iniciar sesion para usar el chat.');
     }
 
-    return userId;
+    return personaId;
   }
 
   private url(path: string): string {

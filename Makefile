@@ -73,7 +73,7 @@ build-all: build-infra build-services ## Construir TODAS las imágenes del proye
 
 # Targets individuales por servicio
 build-auth-ms:         ; docker build -t $(REGISTRY)/ecom-auth-ms:$(VERSION)         ./servicio/auth-ms
-build-persona-ms:      ; docker build -t $(REGISTRY)/ecom-persona-ms:$(VERSION)      ./servicio/persona-ms
+# persona-ms fusionado en auth-ms
 build-publicacion-ms:  ; docker build -t $(REGISTRY)/ecom-publicacion-ms:$(VERSION)  ./servicio/publicacion-ms
 build-categoria-ms:    ; docker build -t $(REGISTRY)/ecom-categoria-ms:$(VERSION)    ./servicio/categoria-ms
 build-orden-ms:        ; docker build -t $(REGISTRY)/ecom-orden-ms:$(VERSION)        ./servicio/orden-ms

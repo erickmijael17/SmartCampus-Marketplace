@@ -3,7 +3,8 @@ export const API_CONFIG = {
     auth: {
       login: '/auth/login',
       register: '/auth/register',
-      me: '/auth/me'
+      me: '/auth/me',
+      profile: '/auth/profile'
     },
     marketplace: {
       products: '/api/v1/productos',
@@ -13,9 +14,9 @@ export const API_CONFIG = {
       payments: '/api/v1/pagos'
     },
     personas: {
-      base: '/api/v1/personas',
-      me: '/api/v1/personas/me',
-      detail: (id: number) => `/api/v1/personas/${id}`
+      base: '/auth/profile',
+      me: '/auth/profile',
+      detail: (_id: number) => '/auth/profile'
     },
     chats: {
       base: '/api/v1/chats',

@@ -1,9 +1,11 @@
-package com.upeu.persona.service;
+package com.upeu.auth.service;
 
-import com.upeu.persona.dto.PersonaDto;
-import com.upeu.persona.entity.Persona;
-import com.upeu.persona.repository.PersonaRepository;
+import com.upeu.auth.dto.PersonaDto;
+import com.upeu.auth.entity.Persona;
+import com.upeu.auth.exception.PersonaNotFoundException;
+import com.upeu.auth.repository.PersonaRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,14 +29,14 @@ public class PersonaService {
     public PersonaDto.Response findById(Long id) {
         return personaRepository.findById(id)
                 .map(this::toResponse)
-                .orElseThrow(() -> new RuntimeException("Persona no encontrada con id: " + id));
+                .orElseThrow(() -> new PersonaNotFoundException("Persona no encontrada con id: " + id));
     }
 
     @Transactional(readOnly = true)
     public PersonaDto.Response findByUserId(String userId) {
         return personaRepository.findByUserId(userId)
                 .map(this::toResponse)
-                .orElseThrow(() -> new RuntimeException("Persona no encontrada para userId: " + userId));
+                .orElseThrow(() -> new PersonaNotFoundException("Persona no encontrada para userId: " + userId));
     }
 
     @Transactional
@@ -64,9 +66,36 @@ public class PersonaService {
     }
 
     @Transactional
-    public PersonaDto.Response update(Long id, PersonaDto.Request request) {
-        Persona persona = personaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Persona no encontrada con id: " + id));
+    public PersonaDto.Response createFromJwt(Jwt jwt) {
+        String userId = jwt.getSubject();
+        String email = jwt.getClaimAsString("email");
+        String name = jwt.getClaimAsString("name");
+        String preferredUsername = jwt.getClaimAsString("preferred_username");
+
+        if (personaRepository.existsByUserId(userId)) {
+            return personaRepository.findByUserId(userId).map(this::toResponse)
+                    .orElseThrow(() -> new RuntimeException("Inconsistencia: userId existe pero no se pudo recuperar"));
+        }
+
+        String nombres = name != null ? name : preferredUsername != null ? preferredUsername : "Usuario";
+        String emailFinal = email != null ? email : preferredUsername != null ? preferredUsername + "@smartcampus.edu.pe" : "usuario@smartcampus.edu.pe";
+
+        Persona persona = Persona.builder()
+                .userId(userId)
+                .nombres(nombres)
+                .apellidos("")
+                .email(emailFinal)
+                .tipoUsuario(Persona.TipoUsuario.ESTUDIANTE)
+                .activo(true)
+                .build();
+
+        return toResponse(personaRepository.save(persona));
+    }
+
+    @Transactional
+    public PersonaDto.Response update(String userId, PersonaDto.Request request) {
+        Persona persona = personaRepository.findByUserId(userId)
+                .orElseThrow(() -> new PersonaNotFoundException("Persona no encontrada para userId: " + userId));
 
         persona.setNombres(request.getNombres());
         persona.setApellidos(request.getApellidos());

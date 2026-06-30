@@ -10,7 +10,7 @@ spring:
           predicates:
             - Path=/auth/**
         - id: persona-route
-          uri: lb://PERSONA-MS
+          uri: lb://AUTH-MS
           predicates:
             - Path=/api/v1/personas/**
         - id: categoria-route

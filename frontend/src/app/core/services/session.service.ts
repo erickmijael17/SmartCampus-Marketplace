@@ -10,7 +10,6 @@ export class SessionService {
   private readonly sessionSignal = signal<AuthSession | null>(this.loadSession());
   private expirationTimerId: ReturnType<typeof setTimeout> | null = null;
 
-  /** Emits when the access token expires and the session is cleared automatically. */
   readonly sessionExpired$ = new Subject<void>();
 
   readonly session = this.sessionSignal.asReadonly();
@@ -20,7 +19,6 @@ export class SessionService {
   });
   readonly userId = computed(() => this.sessionSignal()?.userId ?? null);
   readonly personaId = computed(() => this.sessionSignal()?.personaId ?? null);
-  readonly keycloakUserId = computed(() => this.sessionSignal()?.keycloakUserId ?? null);
   readonly username = computed(() => this.sessionSignal()?.username ?? '');
   readonly roles = computed(() => this.sessionSignal()?.roles ?? []);
   readonly token = computed(() => this.sessionSignal()?.accessToken ?? '');
@@ -52,24 +50,19 @@ export class SessionService {
     return token ? `Bearer ${token}` : null;
   }
 
-  hasNumericUserId(): boolean {
-    const userId = this.userId();
-    return userId !== null && userId > 0;
-  }
-
   isSessionExpired(): boolean {
     const current = this.sessionSignal();
     return current !== null && this.isExpired(current);
   }
 
   private loadSession(): AuthSession | null {
-    const rawSession = this.storage.getItem(SESSION_KEY);
-    if (!rawSession) {
+    const raw = this.storage.getItem(SESSION_KEY);
+    if (!raw) {
       return null;
     }
 
     try {
-      const session = this.normalizeSession(JSON.parse(rawSession) as AuthSession);
+      const session = this.normalizeSession(JSON.parse(raw) as AuthSession);
       if (this.isExpired(session)) {
         this.removePersistedSession();
         return null;
@@ -85,16 +78,12 @@ export class SessionService {
 
   private normalizeSession(session: AuthSession): AuthSession {
     const expiresAt = session.expiresAt ?? this.computeExpiresAt(session.expiresIn);
-    const numericUserId = this.parseNumericUserId(session.userId);
-    const keycloakUserId = session.keycloakUserId ?? this.parseKeycloakUserId(session.userId);
 
     return {
       ...session,
       tokenType: session.tokenType || 'Bearer',
       roles: session.roles ?? [],
-      userId: numericUserId,
-      personaId: session.personaId ?? null,
-      keycloakUserId,
+      userId: session.userId ?? null,
       expiresAt
     };
   }
@@ -150,26 +139,5 @@ export class SessionService {
 
   private removePersistedSession(): void {
     this.storage.removeItem(SESSION_KEY);
-  }
-
-  private parseNumericUserId(value: unknown): number | null {
-    if (typeof value === 'number' && Number.isFinite(value) && value > 0) {
-      return value;
-    }
-
-    if (typeof value === 'string' && /^\d+$/.test(value)) {
-      const parsed = Number(value);
-      return parsed > 0 ? parsed : null;
-    }
-
-    return null;
-  }
-
-  private parseKeycloakUserId(value: unknown): string | null {
-    if (typeof value === 'string' && value.length > 0 && !/^\d+$/.test(value)) {
-      return value;
-    }
-
-    return null;
   }
 }

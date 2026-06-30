@@ -4,6 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.upeu.auth.dto.AuthLoginRequest;
 import com.upeu.auth.dto.AuthLoginResponse;
 import com.upeu.auth.dto.AuthRegisterRequest;
+import com.upeu.auth.dto.PersonaDto;
+import com.upeu.auth.entity.Persona;
+import com.upeu.auth.exception.PersonaNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,6 +36,7 @@ public class AuthService {
     @Value("${keycloak.admin-password}")
     private String adminPassword;
 
+    private final PersonaService personaService;
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -53,7 +57,24 @@ public class AuthService {
 
         createKeycloakUser(adminToken, username, password, request);
 
-        return doLogin(username, password);
+        AuthLoginResponse loginResponse = doLogin(username, password);
+
+        String userId = extractUserIdFromToken(loginResponse.getAccessToken());
+        if (userId != null) {
+            try {
+                personaService.findByUserId(userId);
+            } catch (PersonaNotFoundException e) {
+                PersonaDto.Request personaRequest = PersonaDto.Request.builder()
+                        .nombres(request.getFullName() != null ? request.getFullName() : username)
+                        .apellidos("")
+                        .email(request.getEmail() != null ? request.getEmail() : username)
+                        .tipoUsuario(Persona.TipoUsuario.ESTUDIANTE)
+                        .build();
+                personaService.create(userId, personaRequest);
+            }
+        }
+
+        return loginResponse;
     }
 
     @SuppressWarnings("unchecked")
@@ -66,22 +87,87 @@ public class AuthService {
         String accessToken = authHeader.substring(7);
 
         try {
-            String[] chunks = accessToken.split("\\.");
-            Base64.Decoder decoder = Base64.getUrlDecoder();
-            String payload = new String(decoder.decode(chunks[1]));
-            Map<String, Object> claims = objectMapper.readValue(payload, Map.class);
+            Map<String, Object> claims = decodeToken(accessToken);
+            String userId = (String) claims.get("sub");
 
             Map<String, Object> result = new HashMap<>();
             result.put("username", claims.get("preferred_username"));
             result.put("email", claims.get("email"));
-            result.put("userId", claims.get("sub"));
+            result.put("userId", userId);
             result.put("roles", extractRoles(claims));
             result.put("accessToken", accessToken);
+
+            try {
+                PersonaDto.Response persona = personaService.findByUserId(userId);
+                result.put("persona", persona);
+            } catch (PersonaNotFoundException e) {
+                org.springframework.security.oauth2.jwt.Jwt jwt = createJwtFromClaims(accessToken, claims);
+                PersonaDto.Response persona = personaService.createFromJwt(jwt);
+                result.put("persona", persona);
+            }
 
             return result;
         } catch (Exception e) {
             throw new RuntimeException("Error al decodificar el token: " + e.getMessage(), e);
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    public PersonaDto.Response getProfile(String accessToken) {
+        Map<String, Object> claims = decodeToken(accessToken);
+        String userId = (String) claims.get("sub");
+
+        try {
+            return personaService.findByUserId(userId);
+        } catch (PersonaNotFoundException e) {
+            return personaService.createFromJwt(createJwtFromClaims(accessToken, claims));
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public PersonaDto.Response updateProfile(String accessToken, PersonaDto.Request request) {
+        Map<String, Object> claims = decodeToken(accessToken);
+        String userId = (String) claims.get("sub");
+
+        try {
+            personaService.findByUserId(userId);
+        } catch (PersonaNotFoundException e) {
+            personaService.createFromJwt(createJwtFromClaims(accessToken, claims));
+            return personaService.update(userId, request);
+        }
+
+        return personaService.update(userId, request);
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> decodeToken(String accessToken) {
+        try {
+            String[] chunks = accessToken.split("\\.");
+            Base64.Decoder decoder = Base64.getUrlDecoder();
+            String payload = new String(decoder.decode(chunks[1]));
+            return objectMapper.readValue(payload, Map.class);
+        } catch (Exception e) {
+            throw new RuntimeException("Error al decodificar el token: " + e.getMessage(), e);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private String extractUserIdFromToken(String accessToken) {
+        try {
+            Map<String, Object> claims = decodeToken(accessToken);
+            return (String) claims.get("sub");
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private org.springframework.security.oauth2.jwt.Jwt createJwtFromClaims(String accessToken, Map<String, Object> claims) {
+        Map<String, Object> headers = new HashMap<>();
+        headers.put("typ", "JWT");
+        Map<String, Object> jwtClaims = new HashMap<>(claims);
+        return new org.springframework.security.oauth2.jwt.Jwt(
+                accessToken != null ? accessToken : "",
+                null, null, headers, jwtClaims);
     }
 
     @SuppressWarnings("unchecked")

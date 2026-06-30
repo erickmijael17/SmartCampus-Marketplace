@@ -10,13 +10,9 @@ spring:
           predicates:
             - Path=/auth/**
         - id: persona-route
-          uri: lb://PERSONA-MS
+          uri: lb://AUTH-MS
           predicates:
             - Path=/api/v1/personas/**
-        - id: persona-swagger
-          uri: lb://PERSONA-MS
-          predicates:
-            - Path=/persona-ms/swagger-ui/**,/persona-ms/v3/api-docs/**
 
         # --- MVP ACTIVO: productos y categorias ---
         - id: categoria-route

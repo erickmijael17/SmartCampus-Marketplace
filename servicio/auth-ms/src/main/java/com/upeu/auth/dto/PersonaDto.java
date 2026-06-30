@@ -1,6 +1,6 @@
-package com.upeu.persona.dto;
+package com.upeu.auth.dto;
 
-import com.upeu.persona.entity.Persona.TipoUsuario;
+import com.upeu.auth.entity.Persona.TipoUsuario;
 import jakarta.validation.constraints.*;
 import lombok.*;
 

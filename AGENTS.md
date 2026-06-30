@@ -74,7 +74,7 @@ Angular no debe llamar directo a Keycloak ni a auth-ms fuera del Gateway.
 | `categoria-ms` | CRUD de categorias | `/api/v1/categorias/**` |
 | `orden-ms` | Ordenes de compra | `/api/v1/ordenes/**` |
 | `pago-ms` | Procesamiento de pagos | `/api/v1/pagos/**` |
-| `persona-ms` | Perfil y datos personales | `/api/v1/personas/**` |
+| `persona-ms` | **Fusionado en auth-ms** | `/auth/**` y `/api/v1/personas/**` |
 | `chat-ms` | Mensajeria entre usuarios | `/api/v1/chats/**` |
 | `favoritos-ms` | Productos favoritos por usuario | `/api/v1/favoritos/**` |
 | `calificacion-ms` | Calificaciones y resenas | `/api/v1/calificaciones/**` |

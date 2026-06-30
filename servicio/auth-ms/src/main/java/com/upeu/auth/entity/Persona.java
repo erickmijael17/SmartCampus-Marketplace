@@ -1,14 +1,10 @@
-package com.upeu.persona.entity;
+package com.upeu.auth.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
 
-/**
- * Entidad Persona - Perfil de usuario del SmartCampus Marketplace
- * Relacionada con el auth-ms mediante userId (referencia al usuario autenticado)
- */
 @Entity
 @Table(name = "personas")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
@@ -18,9 +14,6 @@ public class Persona {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    /**
-     * Referencia al ID del usuario en auth-ms (no FK directa, microservicio independiente)
-     */
     @Column(name = "user_id", nullable = false, unique = true, length = 100)
     private String userId;
 

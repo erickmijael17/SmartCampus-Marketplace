@@ -2,17 +2,18 @@ import { HttpClient } from '@angular/common/http';
 
 import { Injectable, inject } from '@angular/core';
 
-import { Observable, catchError, forkJoin, map, of, switchMap, throwError } from 'rxjs';
+import { Observable, catchError, forkJoin, map, of, switchMap, tap, throwError } from 'rxjs';
 
 import { API_CONFIG } from '../config/api.config';
+
+import { AuthMeResponse } from '../models/auth.model';
+import { PersonaResponse } from '../models/persona.model';
 
 import { CalificacionResponse } from '../models/calificacion.model';
 
 import { FavoritoResponse } from '../models/favorito.model';
 
 import { MediaFileResponse } from '../models/media.model';
-
-import { PersonaResponse } from '../models/persona.model';
 
 import { PublicacionResponse } from '../models/publicacion.model';
 
@@ -42,13 +43,9 @@ import { GatewayService } from './gateway.service';
 
 import { MediaApiService } from './media-api.service';
 
-import { PersonaApiService } from './persona-api.service';
-
 import { PublicacionApiService } from './publicacion-api.service';
 
 import { SessionService } from './session.service';
-
-
 
 interface OrdenResponse {
 
@@ -58,8 +55,6 @@ interface OrdenResponse {
 
 }
 
-
-
 interface PagoResponse {
 
   id: number;
@@ -68,8 +63,6 @@ interface PagoResponse {
 
 }
 
-
-
 interface CatalogContext {
 
   publicaciones: PublicacionResponse[];
@@ -77,20 +70,6 @@ interface CatalogContext {
   mediaFiles: MediaFileResponse[];
 
 }
-
-
-
-/**
-
- * Estrategia de dominio:
-
- * - producto-ms: catálogo público (listado/detalle), categorías vía Feign y checkout (idProducto).
-
- * - publicacion-ms: capa social (favoritos, calificaciones, media via idPublicacion).
-
- * - Al publicar: se crea publicacion + producto + metadata de imagen en media-ms.
-
- */
 
 @Injectable({ providedIn: 'root' })
 
@@ -102,8 +81,6 @@ export class MarketplaceService {
 
   private readonly sessionService = inject(SessionService);
 
-  private readonly personaApi = inject(PersonaApiService);
-
   private readonly publicacionApi = inject(PublicacionApiService);
 
   private readonly mediaApi = inject(MediaApiService);
@@ -111,8 +88,6 @@ export class MarketplaceService {
   private readonly favoritosApi = inject(FavoritosApiService);
 
   private readonly calificacionApi = inject(CalificacionApiService);
-
-
 
   getListings(): Observable<MarketplaceListing[]> {
 
@@ -127,8 +102,6 @@ export class MarketplaceService {
     );
 
   }
-
-
 
   getListingById(id: number): Observable<MarketplaceListing> {
 
@@ -152,15 +125,11 @@ export class MarketplaceService {
 
   }
 
-
-
   getCategories(): Observable<CategoriaDto[]> {
 
     return this.http.get<CategoriaDto[]>(this.url(API_CONFIG.endpoints.marketplace.categories));
 
   }
-
-
 
   createListing(
 
@@ -180,39 +149,29 @@ export class MarketplaceService {
 
   ): Observable<MarketplaceListing> {
 
-    let userId: number;
+    return this.ensurePersona().pipe(
 
-    try {
+      switchMap(() => {
 
-      userId = this.requireUserId();
+        const userId = this.requireUserId();
 
-    } catch (error) {
+        const publicacionRequest = {
 
-      return throwError(() => error);
+          titulo: payload.titulo,
 
-    }
+          descripcion: payload.descripcion,
 
+          precio: payload.precio,
 
+          estado: 'ACTIVO',
 
-    const publicacionRequest = {
+          idUsuario: userId,
 
-      titulo: payload.titulo,
+          idCategoria: payload.categoriaId
 
-      descripcion: payload.descripcion,
+        };
 
-      precio: payload.precio,
-
-      estado: 'ACTIVO',
-
-      idUsuario: userId,
-
-      idCategoria: payload.categoriaId
-
-    };
-
-
-
-    return this.publicacionApi.create(publicacionRequest).pipe(
+        return this.publicacionApi.create(publicacionRequest).pipe(
 
       switchMap((publicacion) => {
 
@@ -234,8 +193,6 @@ export class MarketplaceService {
 
         };
 
-
-
         return this.http
 
           .post<ProductResponse>(this.url(API_CONFIG.endpoints.marketplace.products), productRequest)
@@ -249,8 +206,6 @@ export class MarketplaceService {
                 return of(this.toListing(product, publicacion.id, null));
 
               }
-
-
 
               return this.mediaApi
 
@@ -318,25 +273,19 @@ export class MarketplaceService {
 
     );
 
+      })
+
+    );
+
   }
-
-
 
   checkout(listing: MarketplaceListing, quantity: number, paymentMethod: string): Observable<PurchaseSummary> {
 
-    let userId: number;
+    return this.ensurePersona().pipe(
 
-    try {
+      switchMap(() => {
 
-      userId = this.requireUserId();
-
-    } catch (error) {
-
-      return throwError(() => error);
-
-    }
-
-
+    const userId = this.requireUserId();
 
     const orderRequest = {
 
@@ -351,8 +300,6 @@ export class MarketplaceService {
       estado: 'PENDIENTE'
 
     };
-
-
 
     return this.http.post<OrdenResponse>(this.url(API_CONFIG.endpoints.marketplace.orders), orderRequest).pipe(
 
@@ -373,8 +320,6 @@ export class MarketplaceService {
           referenciaTransaccion: `SCM-${Date.now()}`
 
         };
-
-
 
         return this.http
 
@@ -412,9 +357,11 @@ export class MarketplaceService {
 
     );
 
+      })
+
+    );
+
   }
-
-
 
   getProducts(): Observable<MarketplaceListing[]> {
 
@@ -422,23 +369,17 @@ export class MarketplaceService {
 
   }
 
-
-
   getProductById(id: number): Observable<MarketplaceListing> {
 
     return this.getListingById(id);
 
   }
 
-
-
   getSimilarProducts(product: MarketplaceListing): Observable<MarketplaceListing[]> {
 
     return this.getListings().pipe(map((items) => items.filter((i) => i.id !== product.id).slice(0, 4)));
 
   }
-
-
 
   getCurrentUser(): Observable<MarketplaceUser> {
 
@@ -448,11 +389,17 @@ export class MarketplaceService {
 
     }
 
+    const session = this.sessionService.session();
 
+    if (!session) {
+
+      return throwError(() => new Error('Sesion no disponible.'));
+
+    }
 
     return forkJoin({
 
-      persona: this.personaApi.getMyProfile().pipe(catchError(() => of(null))),
+      me: this.http.get<AuthMeResponse>(this.url(API_CONFIG.endpoints.auth.me)).pipe(catchError(() => of(null))),
 
       listings: this.getUserProducts(),
 
@@ -462,9 +409,9 @@ export class MarketplaceService {
 
     }).pipe(
 
-      map(({ persona, listings, favoritos, calificaciones }) =>
+      map(({ me, listings, favoritos, calificaciones }) =>
 
-        this.toMarketplaceUser(persona, listings.length, favoritos.length, calificaciones.length)
+        this.toMarketplaceUser(me, listings.length, favoritos.length, calificaciones.length)
 
       )
 
@@ -472,17 +419,13 @@ export class MarketplaceService {
 
   }
 
-
-
   getUserProducts(): Observable<MarketplaceListing[]> {
 
-    const userId = this.sessionService.userId();
+    const personaId = this.sessionService.personaId();
 
-    return this.getListings().pipe(map((items) => items.filter((i) => i.sellerId === userId)));
+    return this.getListings().pipe(map((items) => items.filter((i) => personaId !== null && i.sellerId === personaId)));
 
   }
-
-
 
   getMyFavoritos(): Observable<FavoritoResponse[]> {
 
@@ -492,19 +435,15 @@ export class MarketplaceService {
 
     }
 
-
-
-    const userId = this.sessionService.userId();
+    const personaId = this.sessionService.personaId();
 
     return this.favoritosApi
 
       .findAll()
 
-      .pipe(map((items) => items.filter((item) => item.idUsuario === userId)));
+      .pipe(map((items) => items.filter((item) => personaId !== null && item.idUsuario === personaId)));
 
   }
-
-
 
   getFavoriteListings(): Observable<MarketplaceListing[]> {
 
@@ -536,8 +475,6 @@ export class MarketplaceService {
 
         );
 
-
-
         const matched = listings.filter(
 
           (listing) =>
@@ -548,8 +485,6 @@ export class MarketplaceService {
 
         );
 
-
-
         return Array.from(new Map(matched.map((item) => [item.id, item])).values());
 
       })
@@ -558,8 +493,6 @@ export class MarketplaceService {
 
   }
 
-
-
   getMyCalificaciones(): Observable<CalificacionResponse[]> {
 
     if (!this.sessionService.isAuthenticated()) {
@@ -567,8 +500,6 @@ export class MarketplaceService {
       return of([]);
 
     }
-
-
 
     return this.calificacionApi.findAll().pipe(
 
@@ -592,8 +523,6 @@ export class MarketplaceService {
 
   }
 
-
-
   getCalificacionesForListing(listing: MarketplaceListing): Observable<CalificacionResponse[]> {
 
     if (!listing.publicacionId) {
@@ -601,8 +530,6 @@ export class MarketplaceService {
       return of([]);
 
     }
-
-
 
     return this.calificacionApi
 
@@ -612,23 +539,13 @@ export class MarketplaceService {
 
   }
 
-
-
   addFavorite(listing: MarketplaceListing): Observable<FavoritoResponse> {
 
-    let userId: number;
+    return this.ensurePersona().pipe(
 
-    try {
+      switchMap(() => {
 
-      userId = this.requireUserId();
-
-    } catch (error) {
-
-      return throwError(() => error);
-
-    }
-
-
+    const userId = this.requireUserId();
 
     if (!listing.publicacionId) {
 
@@ -640,8 +557,6 @@ export class MarketplaceService {
 
     }
 
-
-
     return this.favoritosApi.create({
 
       idUsuario: userId,
@@ -650,17 +565,17 @@ export class MarketplaceService {
 
     });
 
+      })
+
+    );
+
   }
-
-
 
   removeFavorite(favoritoId: number): Observable<void> {
 
     return this.favoritosApi.delete(favoritoId);
 
   }
-
-
 
   findFavoriteForListing(listing: MarketplaceListing): Observable<FavoritoResponse | null> {
 
@@ -670,8 +585,6 @@ export class MarketplaceService {
 
     }
 
-
-
     return this.getMyFavoritos().pipe(
 
       map((items) => items.find((item) => item.idPublicacion === listing.publicacionId) ?? null)
@@ -679,8 +592,6 @@ export class MarketplaceService {
     );
 
   }
-
-
 
   submitCalificacion(
 
@@ -692,19 +603,11 @@ export class MarketplaceService {
 
   ): Observable<CalificacionResponse> {
 
-    let userId: number;
+    return this.ensurePersona().pipe(
 
-    try {
+      switchMap(() => {
 
-      userId = this.requireUserId();
-
-    } catch (error) {
-
-      return throwError(() => error);
-
-    }
-
-
+    const userId = this.requireUserId();
 
     if (!listing.publicacionId) {
 
@@ -715,8 +618,6 @@ export class MarketplaceService {
       );
 
     }
-
-
 
     return this.calificacionApi.create({
 
@@ -730,9 +631,11 @@ export class MarketplaceService {
 
     });
 
+      })
+
+    );
+
   }
-
-
 
   isFavorite(listing: MarketplaceListing): Observable<boolean> {
 
@@ -742,8 +645,6 @@ export class MarketplaceService {
 
     }
 
-
-
     return this.getMyFavoritos().pipe(
 
       map((items) => items.some((item) => item.idPublicacion === listing.publicacionId))
@@ -751,8 +652,6 @@ export class MarketplaceService {
     );
 
   }
-
-
 
   publishListing(model: {
 
@@ -782,8 +681,6 @@ export class MarketplaceService {
 
   }
 
-
-
   private loadCatalogContext(): Observable<CatalogContext> {
 
     if (!this.sessionService.isAuthenticated()) {
@@ -791,8 +688,6 @@ export class MarketplaceService {
       return of({ publicaciones: [], mediaFiles: [] });
 
     }
-
-
 
     return forkJoin({
 
@@ -804,8 +699,6 @@ export class MarketplaceService {
 
   }
 
-
-
   private loadPublicaciones(): Observable<PublicacionResponse[]> {
 
     if (!this.sessionService.isAuthenticated()) {
@@ -814,13 +707,9 @@ export class MarketplaceService {
 
     }
 
-
-
     return this.publicacionApi.findAll().pipe(catchError(() => of([] as PublicacionResponse[])));
 
   }
-
-
 
   private joinCatalog(products: ProductResponse[], context: CatalogContext): MarketplaceListing[] {
 
@@ -832,8 +721,6 @@ export class MarketplaceService {
 
     const mediaByPublication = new Map<number, string>();
 
-
-
     for (const media of context.mediaFiles) {
 
       if (media.idPublicacion) {
@@ -843,8 +730,6 @@ export class MarketplaceService {
       }
 
     }
-
-
 
     return products.map((product) => {
 
@@ -860,19 +745,15 @@ export class MarketplaceService {
 
   }
 
-
-
   private publicationKey(userId: number, title: string, categoryId: number): string {
 
     return `${userId}::${title.trim().toLowerCase()}::${categoryId}`;
 
   }
 
-
-
   private toMarketplaceUser(
 
-    persona: PersonaResponse | null,
+    me: AuthMeResponse | null,
 
     published: number,
 
@@ -881,6 +762,8 @@ export class MarketplaceService {
     reviews: number
 
   ): MarketplaceUser {
+
+    const persona = me?.persona;
 
     const fullName = persona ? `${persona.nombres} ${persona.apellidos}`.trim() : this.sessionService.username();
 
@@ -896,8 +779,6 @@ export class MarketplaceService {
 
       .join('') || 'U';
 
-
-
     return {
 
       id: String(persona?.id ?? this.sessionService.personaId() ?? this.sessionService.userId() ?? '0'),
@@ -906,7 +787,7 @@ export class MarketplaceService {
 
       initials,
 
-      email: persona?.email ?? this.sessionService.session()?.email ?? `${this.sessionService.username()}@smartcampus.test`,
+      email: persona?.email ?? me?.email ?? `${this.sessionService.username()}@smartcampus.test`,
 
       career: persona?.carrera ?? 'Sin carrera registrada',
 
@@ -926,7 +807,25 @@ export class MarketplaceService {
 
   }
 
-
+  /** Ensures personaId exists in session by fetching /auth/profile if needed. */
+  private ensurePersona(): Observable<void> {
+    if (this.sessionService.personaId() !== null) {
+      return of(void 0);
+    }
+    return this.http.get<PersonaResponse>(this.url(API_CONFIG.endpoints.auth.profile)).pipe(
+      tap((persona) => {
+        const session = this.sessionService.session();
+        if (session) {
+          this.sessionService.setSession({ ...session, personaId: persona.id });
+        }
+      }),
+      map(() => void 0),
+      catchError(() => {
+        this.sessionService.clear();
+        return of(void 0);
+      })
+    );
+  }
 
   private requireUserId(): number {
 
@@ -936,31 +835,13 @@ export class MarketplaceService {
 
     }
 
+    const personaId = this.sessionService.personaId();
 
+    if (personaId !== null && personaId > 0) {
 
-    const userId = this.sessionService.userId();
-
-    if (userId !== null && userId > 0) {
-
-      return userId;
+      return personaId;
 
     }
-
-
-
-    const keycloakUserId = this.sessionService.keycloakUserId();
-
-    if (keycloakUserId) {
-
-      throw new Error(
-
-        'Tu sesion tiene identidad Keycloak pero no un ID numerico de persona-ms. Completa tu perfil en persona-ms o valida el claim userId en el JWT.'
-
-      );
-
-    }
-
-
 
     throw new Error(
 
@@ -969,8 +850,6 @@ export class MarketplaceService {
     );
 
   }
-
-
 
   private toListing(
 
@@ -1014,16 +893,11 @@ export class MarketplaceService {
 
   }
 
-
-
-  /** Placeholder local cuando media-ms no devuelve URL. */
   private resolveImage(_product: ProductResponse): string {
 
     return '/assets/placeholder-listing.svg';
 
   }
-
-
 
   private url(path: string): string {
 
@@ -1032,5 +906,3 @@ export class MarketplaceService {
   }
 
 }
-
-

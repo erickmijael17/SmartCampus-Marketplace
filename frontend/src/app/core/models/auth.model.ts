@@ -16,24 +16,32 @@ export interface AuthRegisterRequest {
 export interface AuthMeResponse {
   username?: string;
   email?: string;
-  /** Keycloak `sub` (UUID) when returned by /auth/me */
-  userId?: string | number | null;
+  userId?: string;
   roles?: string[];
   accessToken?: string;
+  persona?: {
+    id: number;
+    userId: string;
+    nombres: string;
+    apellidos: string;
+    email: string;
+    telefono?: string | null;
+    codigoUniversitario?: string | null;
+    tipoUsuario: string;
+    carrera?: string | null;
+    facultad?: string | null;
+    fotoPerfilUrl?: string | null;
+    activo: boolean;
+  } | null;
 }
 
 export interface AuthSession {
-  /** Numeric ID for microservices (persona-ms) when available */
-  userId?: number | null;
-  /** Persona record id from persona-ms */
+  userId?: string | null;
   personaId?: number | null;
-  /** Keycloak subject from JWT (/auth/me) */
-  keycloakUserId?: string | null;
   email?: string | null;
   accessToken: string;
   tokenType: string;
   expiresIn: number;
-  /** Epoch ms when the access token expires */
   expiresAt?: number;
   username: string;
   roles: string[];
