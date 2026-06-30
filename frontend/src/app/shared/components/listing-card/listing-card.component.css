@@ -14,7 +14,7 @@
 .image-wrap {
   position: relative;
   display: block;
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 1 / 1;
   background: #eef2ff;
 }
 

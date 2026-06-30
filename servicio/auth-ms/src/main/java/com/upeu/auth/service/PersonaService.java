@@ -33,6 +33,22 @@ public class PersonaService {
     }
 
     @Transactional(readOnly = true)
+    public PersonaDto.Response findByEmailStartingWith(String prefix) {
+        return personaRepository.findByEmailStartingWith(prefix)
+                .stream()
+                .findFirst()
+                .map(this::toResponse)
+                .orElseThrow(() -> new PersonaNotFoundException("Persona no encontrada con email que empiece por: " + prefix));
+    }
+
+    @Transactional(readOnly = true)
+    public PersonaDto.Response findByEmail(String email) {
+        return personaRepository.findByEmail(email)
+                .map(this::toResponse)
+                .orElseThrow(() -> new PersonaNotFoundException("Persona no encontrada para email: " + email));
+    }
+
+    @Transactional(readOnly = true)
     public PersonaDto.Response findByUserId(String userId) {
         return personaRepository.findByUserId(userId)
                 .map(this::toResponse)
@@ -108,6 +124,11 @@ public class PersonaService {
         persona.setFotoPerfilUrl(request.getFotoPerfilUrl());
 
         return toResponse(personaRepository.save(persona));
+    }
+
+    @Transactional
+    public void deleteByUserId(String userId) {
+        personaRepository.deleteByUserId(userId);
     }
 
     private PersonaDto.Response toResponse(Persona p) {

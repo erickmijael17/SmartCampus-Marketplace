@@ -50,12 +50,45 @@
 
       <label>
         URL de imagen (opcional)
-        <input formControlName="imageUrl" type="url" class="field" placeholder="https://ejemplo.com/imagen.jpg" [class.invalid]="fieldError('imageUrl')" />
-        <small class="muted">Se registra en media-ms como metadata vinculada a la publicacion.</small>
+        <input
+          formControlName="imageUrl"
+          type="url"
+          class="field"
+          placeholder="https://ejemplo.com/imagen.jpg"
+          [class.invalid]="fieldError('imageUrl') || imageErrorMessage"
+          (input)="onImageUrlInput()"
+        />
+        <small class="muted">Las URL web se guardan en media-ms y vuelven a mostrarse al iniciar la app.</small>
         @if (fieldError('imageUrl'); as message) {
           <p class="field-error">{{ message }}</p>
         }
       </label>
+
+      <div class="image-picker">
+        <label class="file-control">
+          Imagen desde tu equipo
+          <input type="file" accept="image/png,image/jpeg,image/webp,image/gif" (change)="onLocalImageSelected($event)" />
+          <span>Seleccionar imagen</span>
+        </label>
+        <small class="muted">PNG, JPG, JPEG, WEBP o GIF. La imagen local se subira a media-ms al publicar.</small>
+      </div>
+
+      @if (imageErrorMessage) {
+        <p class="field-error">{{ imageErrorMessage }}</p>
+      }
+
+      @if (imagePreviewUrl) {
+        <div class="image-preview-panel">
+          <img [src]="imagePreviewUrl" alt="Vista previa de la publicacion" />
+          <div>
+            <strong>{{ imageSource === 'url' ? 'Imagen web lista' : 'Vista previa local' }}</strong>
+            <small class="muted">
+              {{ imageSource === 'url' ? 'Se guardara con la publicacion.' : 'Se subira a media-ms despues de crear la publicacion.' }}
+            </small>
+            <button type="button" class="link-button" (click)="clearSelectedImage()">Quitar imagen</button>
+          </div>
+        </div>
+      }
 
       @if (errorMessage) {
         <p class="form-error">{{ errorMessage }}</p>

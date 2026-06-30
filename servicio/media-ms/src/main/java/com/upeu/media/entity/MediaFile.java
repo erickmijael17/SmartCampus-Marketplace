@@ -6,7 +6,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
@@ -16,7 +15,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "mediaFiles")
+@Table(name = "archivos")
 @Getter
 @Setter
 @Builder
@@ -31,32 +30,38 @@ public class MediaFile {
     @Column(name = "url")
     private String url;
 
+    @Column(name = "nombre_original")
+    private String nombreOriginal;
+
+    @Column(name = "nombre_almacen")
+    private String nombreAlmacen;
+
+    @Column(name = "ruta")
+    private String ruta;
+
     @Column(name = "tipo_mime")
     private String tipoMime;
 
-    @Column(name = "tamano_bytes")
+    @Column(name = "tamanio")
     private Long tamanoBytes;
 
-    @Column(name = "id_uploader")
+    @Column(name = "propietario_id")
     private Long idUploader;
 
-    @Column(name = "id_publicacion")
+    @Column(name = "entidad_id")
     private Long idPublicacion;
 
-    @Column(name = "creado_en", updatable = false)
+    @Column(name = "entidad_tipo")
+    private String entidadTipo;
+
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime creadoEn;
 
-    @Column(name = "actualizado_en")
+    @jakarta.persistence.Transient
     private LocalDateTime actualizadoEn;
 
     @PrePersist
     public void prePersist() {
         this.creadoEn = LocalDateTime.now();
-        this.actualizadoEn = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    public void preUpdate() {
-        this.actualizadoEn = LocalDateTime.now();
     }
 }

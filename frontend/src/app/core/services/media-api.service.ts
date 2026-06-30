@@ -18,6 +18,15 @@ export class MediaApiService {
     return this.http.post<MediaFileResponse>(this.url(API_CONFIG.endpoints.media.base), request);
   }
 
+  upload(file: File, idUploader: number, idPublicacion: number): Observable<MediaFileResponse> {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('idUploader', String(idUploader));
+    formData.append('idPublicacion', String(idPublicacion));
+
+    return this.http.post<MediaFileResponse>(this.url(`${API_CONFIG.endpoints.media.base}/upload`), formData);
+  }
+
   private url(path: string): string {
     return this.gateway.baseUrl() + path;
   }

@@ -3,18 +3,12 @@ package com.upeu.producto.controller;
 import com.upeu.producto.dto.ProductoRequest;
 import com.upeu.producto.dto.ProductoResponse;
 import com.upeu.producto.service.ProductoService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -31,8 +25,10 @@ public class ProductoController {
     }
 
     @PostMapping
-    public ResponseEntity<ProductoResponse> create(@Valid @RequestBody ProductoRequest request) {
-        ProductoResponse response = productoService.create(request);
+    public ResponseEntity<ProductoResponse> create(@Valid @RequestBody ProductoRequest request,
+                                                   HttpServletRequest httpRequest) {
+        String token = extractToken(httpRequest);
+        ProductoResponse response = productoService.create(request, token);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -48,13 +44,17 @@ public class ProductoController {
 
     @PutMapping("/{id}")
     public ResponseEntity<ProductoResponse> update(@PathVariable Long id,
-                                                   @Valid @RequestBody ProductoRequest request) {
-        return ResponseEntity.ok(productoService.update(id, request));
+                                                   @Valid @RequestBody ProductoRequest request,
+                                                   HttpServletRequest httpRequest) {
+        String token = extractToken(httpRequest);
+        return ResponseEntity.ok(productoService.update(id, request, token));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        productoService.delete(id);
+    public ResponseEntity<Void> delete(@PathVariable Long id,
+                                       HttpServletRequest httpRequest) {
+        String token = extractToken(httpRequest);
+        productoService.delete(id, token);
         return ResponseEntity.noContent().build();
     }
 
@@ -63,4 +63,11 @@ public class ProductoController {
         return ResponseEntity.ok(productoService.findDetalleById(id));
     }
 
+    private String extractToken(HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            return authHeader.substring(7);
+        }
+        return null;
+    }
 }

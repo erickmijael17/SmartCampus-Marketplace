@@ -279,6 +279,12 @@ export class MarketplaceService {
 
   }
 
+  uploadListingImage(publicacionId: number, file: File): Observable<MediaFileResponse> {
+    return this.ensurePersona().pipe(
+      switchMap(() => this.mediaApi.upload(file, this.requireUserId(), publicacionId))
+    );
+  }
+
   checkout(listing: MarketplaceListing, quantity: number, paymentMethod: string): Observable<PurchaseSummary> {
 
     return this.ensurePersona().pipe(

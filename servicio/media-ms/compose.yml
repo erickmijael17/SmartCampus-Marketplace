@@ -42,12 +42,14 @@ services:
       - '8080'
     volumes:
       - ./logs:/app/logs
+      - ecom_media_files:/data/media
     networks:
       - ecom-media-ms-int
       - ecom-prod-net
 
 volumes:
   ecom_media_data:
+  ecom_media_files:
 
 networks:
   ecom-prod-net:

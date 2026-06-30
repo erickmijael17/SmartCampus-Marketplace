@@ -57,7 +57,6 @@ Luego levantarlas:
 
 ```bash
 docker compose -f servicio/auth-ms/compose-dev.yml up -d
-docker compose -f servicio/persona-ms/compose-dev.yml up -d
 docker compose -f servicio/categoria-ms/compose-dev.yml up -d
 docker compose -f servicio/producto-ms/compose-dev.yml up -d
 docker compose -f servicio/publicacion-ms/compose-dev.yml up -d
@@ -93,7 +92,6 @@ Ejecutar cada microservicio necesario en una terminal distinta:
 
 ```bash
 mvn -f servicio/auth-ms/pom.xml spring-boot:run
-mvn -f servicio/persona-ms/pom.xml spring-boot:run
 mvn -f servicio/categoria-ms/pom.xml spring-boot:run
 mvn -f servicio/producto-ms/pom.xml spring-boot:run
 mvn -f servicio/publicacion-ms/pom.xml spring-boot:run

@@ -42,7 +42,38 @@ public class AuthService {
 
     @SuppressWarnings("unchecked")
     public AuthLoginResponse login(AuthLoginRequest request) {
-        return doLogin(request.getUsername(), request.getPassword());
+        String rawInput = request.getUsername();
+        String password = request.getPassword();
+        try {
+            return doLogin(rawInput, password);
+        } catch (RuntimeException e) {
+            try {
+                PersonaDto.Response persona = personaService.findByEmailStartingWith(rawInput);
+                String keycloakUsername = findKeycloakUsername(persona.getUserId());
+                if (keycloakUsername != null && !keycloakUsername.equals(rawInput)) {
+                    return doLogin(keycloakUsername, password);
+                }
+            } catch (Exception ignored) {
+            }
+            throw e;
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private String findKeycloakUsername(String userId) {
+        try {
+            String adminToken = getAdminToken();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setBearerAuth(adminToken);
+            String userUrl = adminUrl + "/admin/realms/smartcampus/users/" + userId;
+            ResponseEntity<Map> response = restTemplate.exchange(userUrl, HttpMethod.GET, new HttpEntity<>(headers), Map.class);
+            if (response.getBody() != null) {
+                return (String) response.getBody().get("username");
+            }
+        } catch (Exception e) {
+            log.warn("No se pudo obtener el username de Keycloak para userId {}: {}", userId, e.getMessage());
+        }
+        return null;
     }
 
     @SuppressWarnings("unchecked")
@@ -138,6 +169,58 @@ public class AuthService {
 
         return personaService.update(userId, request);
     }
+
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> getUserInfo(String accessToken) {
+        try {
+            Map<String, Object> claims = decodeToken(accessToken);
+            String userId = (String) claims.get("sub");
+            List<String> roles = extractRoles(claims);
+
+            Map<String, Object> result = new HashMap<>();
+            result.put("userId", userId);
+            result.put("username", claims.get("preferred_username"));
+            result.put("roles", roles);
+
+            try {
+                PersonaDto.Response persona = personaService.findByUserId(userId);
+                result.put("localId", persona.getId());
+            } catch (PersonaNotFoundException e) {
+                result.put("localId", null);
+            }
+
+            return result;
+        } catch (Exception e) {
+            throw new RuntimeException("Error al obtener informacion del usuario: " + e.getMessage(), e);
+        }
+    }
+
+    public List<PersonaDto.Response> getAllUsers() {
+        return personaService.findAll();
+    }
+
+    @SuppressWarnings("unchecked")
+    public void deleteUser(String userId) {
+        String adminToken = getAdminToken();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(adminToken);
+
+        String keycloakUserUrl = adminUrl + "/admin/realms/smartcampus/users/" + userId;
+        try {
+            restTemplate.exchange(keycloakUserUrl, HttpMethod.DELETE, new HttpEntity<>(headers), Void.class);
+        } catch (Exception e) {
+            log.warn("No se pudo eliminar el usuario de Keycloak: {}", e.getMessage());
+        }
+
+        try {
+            personaService.deleteByUserId(userId);
+        } catch (Exception e) {
+            log.warn("No se pudo eliminar la persona de la DB local: {}", e.getMessage());
+        }
+    }
+
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(AuthService.class);
 
     @SuppressWarnings("unchecked")
     private Map<String, Object> decodeToken(String accessToken) {
@@ -245,7 +328,6 @@ public class AuthService {
         userRepresentation.put("email", request.getEmail());
         userRepresentation.put("firstName", request.getFullName());
         userRepresentation.put("enabled", true);
-        // emailVerified=true evita que Keycloak 25+ bloquee el login con VERIFY_PROFILE
         userRepresentation.put("emailVerified", true);
 
         Map<String, Object> credentials = new HashMap<>();
@@ -270,7 +352,15 @@ public class AuthService {
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(userRepresentation, headers);
 
         try {
-            restTemplate.postForEntity(usersUrl, entity, String.class);
+            ResponseEntity<String> createResponse = restTemplate.exchange(usersUrl, HttpMethod.POST, entity, String.class);
+            String location = createResponse.getHeaders().getLocation() != null
+                    ? createResponse.getHeaders().getLocation().getPath()
+                    : null;
+            String createdUserId = location != null ? location.substring(location.lastIndexOf('/') + 1) : null;
+
+            if (createdUserId != null) {
+                assignUserRole(adminToken, createdUserId, "USER");
+            }
         } catch (RestClientResponseException e) {
             if (e.getStatusCode() == HttpStatus.CONFLICT) {
                 throw new ResponseStatusException(
@@ -284,6 +374,29 @@ public class AuthService {
                     "Keycloak rechazo la creacion del usuario: " + e.getStatusText(),
                     e
             );
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void assignUserRole(String adminToken, String userId, String roleName) {
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setBearerAuth(adminToken);
+
+            String roleUrl = adminUrl + "/admin/realms/smartcampus/roles/" + roleName;
+            ResponseEntity<Map> roleResponse = restTemplate.exchange(roleUrl, HttpMethod.GET, new HttpEntity<>(headers), Map.class);
+
+            if (roleResponse.getBody() == null) return;
+
+            List<Map<String, Object>> roleMapping = Collections.singletonList(roleResponse.getBody());
+
+            String mappingUrl = adminUrl + "/admin/realms/smartcampus/users/" + userId + "/role-mappings/realm";
+            restTemplate.exchange(mappingUrl, HttpMethod.POST, new HttpEntity<>(roleMapping, headers), String.class);
+
+            log.info("Rol {} asignado al usuario {}", roleName, userId);
+        } catch (Exception e) {
+            log.warn("No se pudo asignar el rol {} al usuario {}: {}", roleName, userId, e.getMessage());
         }
     }
 

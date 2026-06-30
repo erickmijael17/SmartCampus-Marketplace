@@ -7,8 +7,9 @@
 
 .detail-grid img {
   width: 100%;
-  height: 360px;
+  aspect-ratio: 1 / 1;
   object-fit: cover;
+  object-position: center;
   border-radius: 14px;
 }
 
@@ -159,9 +160,6 @@ button:disabled {
     grid-template-columns: 1fr;
   }
 
-  .detail-grid img {
-    height: 250px;
-  }
 }
 
 .review-box {

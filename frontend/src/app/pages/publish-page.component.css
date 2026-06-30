@@ -47,6 +47,83 @@ textarea.field {
   min-height: 110px;
 }
 
+.image-picker {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.file-control {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.file-control input {
+  inline-size: 1px;
+  block-size: 1px;
+  opacity: 0;
+  position: absolute;
+  pointer-events: none;
+}
+
+.file-control span {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 44px;
+  border: 1px dashed #9ab0d7;
+  border-radius: 8px;
+  background: #f8fbff;
+  color: #1d4ed8;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.file-control:focus-within span {
+  outline: 3px solid rgba(37, 99, 235, 0.24);
+  outline-offset: 2px;
+}
+
+.image-preview-panel {
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr);
+  gap: 1rem;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.75rem;
+  background: #f8fafc;
+}
+
+.image-preview-panel img {
+  width: 112px;
+  aspect-ratio: 1 / 1;
+  border-radius: 8px;
+  object-fit: cover;
+  object-position: center;
+  background: #e5e7eb;
+}
+
+.image-preview-panel div {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.link-button {
+  justify-self: start;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: #1d4ed8;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.link-button:focus-visible {
+  outline: 3px solid rgba(37, 99, 235, 0.24);
+  outline-offset: 3px;
+}
+
 @media (max-width: 620px) {
   .publish-wrapper {
     padding-top: 1rem;
@@ -54,5 +131,13 @@ textarea.field {
 
   .publish-form {
     padding: 1rem;
+  }
+
+  .image-preview-panel {
+    grid-template-columns: 88px minmax(0, 1fr);
+  }
+
+  .image-preview-panel img {
+    width: 88px;
   }
 }

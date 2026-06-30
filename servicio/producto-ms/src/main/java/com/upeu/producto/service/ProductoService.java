@@ -7,15 +7,15 @@ import java.util.List;
 
 public interface ProductoService {
 
-    ProductoResponse create(ProductoRequest request);
+    ProductoResponse create(ProductoRequest request, String token);
 
     List<ProductoResponse> findAll();
 
     ProductoResponse findById(Long id);
 
-    ProductoResponse update(Long id, ProductoRequest request);
+    ProductoResponse update(Long id, ProductoRequest request, String token);
 
-    void delete(Long id);
+    void delete(Long id, String token);
 
     ProductoResponse findDetalleById(Long id);
 }
