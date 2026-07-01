@@ -1,5 +1,6 @@
 package com.upeu.pagos.dto;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -16,14 +17,19 @@ import lombok.Setter;
 @AllArgsConstructor
 public class MercadoPagoPreferenceRequest {
 
+    @JsonAlias("ordenId")
     @NotNull(message = "idOrden es obligatorio")
     private Long idOrden;
 
-    @NotNull(message = "idComprador es obligatorio")
     private Long idComprador;
 
+    @JsonAlias("publicacionId")
     @NotNull(message = "idProducto es obligatorio")
     private Long idProducto;
+
+    @JsonAlias({"idVendedor", "idPublicador", "vendedorId", "publicadorId"})
+    @NotNull(message = "idVendedor es obligatorio para generar comprobante de pago en chat")
+    private Long idVendedor;
 
     @NotBlank(message = "titulo es obligatorio")
     private String titulo;
@@ -36,7 +42,9 @@ public class MercadoPagoPreferenceRequest {
 
     @NotNull(message = "precioUnitario es obligatorio")
     @DecimalMin(value = "0.0", inclusive = false, message = "precioUnitario debe ser mayor a 0")
+    @JsonAlias("precio")
     private BigDecimal precioUnitario;
 
     private String metodoPago;
+    private String compradorEmail;
 }

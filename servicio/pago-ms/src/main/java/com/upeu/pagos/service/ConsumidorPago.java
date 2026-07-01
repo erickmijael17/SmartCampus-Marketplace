@@ -61,17 +61,9 @@ public class ConsumidorPago {
         String estadoPago = pagoAprobado ? ESTADO_APROBADO : ESTADO_RECHAZADO;
         String tipoEventoPago = pagoAprobado ? TIPO_EVENTO_PAGO_APROBADO : TIPO_EVENTO_PAGO_RECHAZADO;
 
-        Pago pago = Pago.builder()
-                .idOrden(eventoOrden.getOrdenId())
-                .idComprador(eventoOrden.getIdComprador() != null ? eventoOrden.getIdComprador() : 1L)
-                .monto(BigDecimal.valueOf(eventoOrden.getTotal()))
-                .metodoPago("KAFKA_EVENT")
-                .estado(estadoPago)
-                .referenciaTransaccion("TXN-KAFKA-" + eventoOrden.getOrdenId())
-                .build();
-
-        pagoRepository.save(pago);
-
+        // TEMPORAL_MOCK: Ya no creamos ni guardamos un Pago aquí porque MercadoPagoCheckoutServiceImpl
+        // se encarga de crear el Pago real. Evitamos duplicados y errores de constraints.
+        
         EventoPago eventoPago = EventoPago.builder()
                 .tipoEvento(tipoEventoPago)
                 .ordenId(eventoOrden.getOrdenId())

@@ -65,7 +65,12 @@ function isPublicReadEndpoint(method: string, url: string): boolean {
   }
 
   const path = extractPath(url);
-  return matchesPath(path, '/api/v1/productos') || matchesPath(path, '/api/v1/categorias');
+  return (
+    matchesPath(path, '/api/v1/productos') ||
+    matchesPath(path, '/api/v1/categorias') ||
+    matchesPath(path, '/api/v1/publicaciones') ||
+    matchesPath(path, '/api/v1/media')
+  );
 }
 
 function extractPath(url: string): string {

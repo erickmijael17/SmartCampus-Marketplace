@@ -1,5 +1,6 @@
 package com.upeu.ordenes.service.impl;
 
+import com.upeu.ordenes.dto.ActualizarEstadoRequest;
 import com.upeu.ordenes.dto.OrdenRequest;
 import com.upeu.ordenes.dto.OrdenResponse;
 import com.upeu.ordenes.entity.Orden;
@@ -92,6 +93,14 @@ public class OrdenServiceImpl implements OrdenService {
 
     @Override
     @Transactional
+    public OrdenResponse updateEstado(Long id, ActualizarEstadoRequest request) {
+        Orden entity = getEntity(id);
+        entity.setEstado(request.getEstado());
+        return ordenesMapper.toResponse(ordenesRepository.save(entity));
+    }
+
+    @Override
+    @Transactional
     public void delete(Long id) {
         getEntity(id);
         ordenesRepository.deleteById(id);
@@ -102,4 +111,3 @@ public class OrdenServiceImpl implements OrdenService {
                 .orElseThrow(() -> new ResourceNotFoundException("Orden con id " + id + " no encontrado"));
     }
 }
-

@@ -30,7 +30,8 @@ class MercadoPagoClientTest {
                 List.of(new MercadoPagoPreferencePayload.Item("Producto", "Detalle", 1, "PEN", BigDecimal.TEN)),
                 new MercadoPagoPreferencePayload.BackUrls("http://localhost/success", "http://localhost/failure", "http://localhost/pending"),
                 "http://localhost/webhook",
-                "SCM-ORDEN-1-PAGO-2"
+                "ORDEN-1",
+                "approved"
         );
 
         server.expect(requestTo("https://api.mercadopago.com/checkout/preferences"))

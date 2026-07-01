@@ -17,4 +17,5 @@ public class MercadoPagoPreferenceResponse {
     private String preferenceId;
     private String initPoint;
     private String sandboxInitPoint;
+    private String externalReference;
 }

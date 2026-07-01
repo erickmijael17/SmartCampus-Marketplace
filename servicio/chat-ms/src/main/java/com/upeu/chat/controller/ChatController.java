@@ -1,5 +1,7 @@
 package com.upeu.chat.controller;
 
+import com.upeu.chat.dto.ComprobantePagoRequest;
+import com.upeu.chat.dto.ComprobantePagoResponse;
 import com.upeu.chat.dto.ConversacionRequest;
 import com.upeu.chat.dto.ConversacionResponse;
 import com.upeu.chat.dto.MensajeRequest;
@@ -38,6 +40,11 @@ public class ChatController {
     @PostMapping
     public ResponseEntity<ConversacionResponse> create(@RequestBody ConversacionRequest request) {
         return ResponseEntity.ok(chatService.save(request));
+    }
+
+    @PostMapping("/comprobantes")
+    public ResponseEntity<ComprobantePagoResponse> createReceipt(@RequestBody ComprobantePagoRequest request) {
+        return ResponseEntity.ok(chatService.crearComprobante(request));
     }
 
     @PutMapping("/{id}")

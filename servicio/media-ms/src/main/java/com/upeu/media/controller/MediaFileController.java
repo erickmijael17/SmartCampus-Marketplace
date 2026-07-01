@@ -54,6 +54,7 @@ public class MediaFileController {
     public ResponseEntity<Resource> findFile(@PathVariable String storedName) {
         Resource resource = service.loadFile(storedName);
         return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(service.contentTypeOf(storedName)))
                 .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
                 .body(resource);
     }

@@ -13,6 +13,7 @@ public interface MediaFileService {
     MediaFileResponse create(MediaFileRequest request);
     MediaFileResponse upload(MultipartFile file, Long idUploader, Long idPublicacion);
     Resource loadFile(String storedName);
+    String contentTypeOf(String storedName);
     MediaFileResponse update(Long id, MediaFileRequest request);
     void delete(Long id);
 }

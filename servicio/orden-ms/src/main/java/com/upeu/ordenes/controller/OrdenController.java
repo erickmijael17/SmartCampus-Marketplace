@@ -1,5 +1,6 @@
 package com.upeu.ordenes.controller;
 
+import com.upeu.ordenes.dto.ActualizarEstadoRequest;
 import com.upeu.ordenes.dto.OrdenRequest;
 import com.upeu.ordenes.dto.OrdenResponse;
 import com.upeu.ordenes.service.OrdenService;
@@ -10,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -47,6 +49,11 @@ public class OrdenController {
     @PutMapping("/{id}")
     public ResponseEntity<OrdenResponse> update(@PathVariable Long id, @Valid @RequestBody OrdenRequest request) {
         return ResponseEntity.ok(ordenesService.update(id, request));
+    }
+
+    @PatchMapping("/{id}/estado")
+    public ResponseEntity<OrdenResponse> updateEstado(@PathVariable Long id, @Valid @RequestBody ActualizarEstadoRequest request) {
+        return ResponseEntity.ok(ordenesService.updateEstado(id, request));
     }
 
     @DeleteMapping("/{id}")

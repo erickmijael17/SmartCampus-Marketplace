@@ -23,11 +23,13 @@ class MercadoPagoControllerTest {
                 12L,
                 8L,
                 99L,
+                5L,
                 "Audifonos",
                 "Audifonos para clases",
                 1,
                 BigDecimal.valueOf(50),
-                "TARJETA"
+                "TARJETA",
+                "comprador@ejemplo.com"
         );
         when(service.createPreference(request)).thenReturn(new MercadoPagoPreferenceResponse(
                 44L,
@@ -35,14 +37,17 @@ class MercadoPagoControllerTest {
                 "PENDIENTE",
                 "pref_44",
                 "https://init",
-                "https://sandbox"
+                "https://sandbox",
+                "ORDEN-12"
         ));
 
-        ResponseEntity<MercadoPagoPreferenceResponse> response = controller.createPreference(request);
+        ResponseEntity<?> response = controller.createPreference(request);
 
-        assertThat(response.getStatusCode().value()).isEqualTo(201);
+        assertThat(response.getStatusCode().value()).isEqualTo(200);
         assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getSandboxInitPoint()).isEqualTo("https://sandbox");
+        MercadoPagoPreferenceResponse body = (MercadoPagoPreferenceResponse) response.getBody();
+        assertThat(body.getSandboxInitPoint()).isEqualTo("https://sandbox");
+        assertThat(body.getExternalReference()).isEqualTo("ORDEN-12");
     }
 
     @Test
@@ -53,6 +58,6 @@ class MercadoPagoControllerTest {
         ResponseEntity<Void> response = controller.webhook(Map.of("data", Map.of("id", "9988")), Map.of());
 
         assertThat(response.getStatusCode().value()).isEqualTo(200);
-        verify(service).syncPayment("9988");
+        verify(service).confirmarPago("9988");
     }
 }

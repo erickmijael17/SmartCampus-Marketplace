@@ -2,12 +2,12 @@ import { AppEnvironment } from './environment.model';
 
 export const environment: AppEnvironment = {
   production: false,
-  gatewayUrl: 'http://localhost:18080',
+  gatewayUrl: '',
   gatewayCandidates: [
-    { label: 'DEV', url: 'http://localhost:18080' },
+    { label: 'DEV', url: '' },
     { label: 'PROD', url: 'http://localhost:28082' }
   ],
-  gatewayProbeEnabled: true,
+  gatewayProbeEnabled: false,
   authMode: 'gateway-password',
   sessionStorageMode: 'localStorage',
   keycloak: {

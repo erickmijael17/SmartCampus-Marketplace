@@ -15,4 +15,9 @@ export class ListingCardComponent {
   conditionClass(): string {
     return `condition ${this.product.condition?.toLowerCase() || 'nuevo'}`;
   }
+
+  onImgError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    img.src = '/assets/placeholder-listing.svg';
+  }
 }

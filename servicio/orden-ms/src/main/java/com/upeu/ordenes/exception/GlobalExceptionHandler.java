@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -41,6 +42,19 @@ public class GlobalExceptionHandler {
                 .message("Error de validacion")
                 .path(request.getRequestURI())
                 .validationErrors(validationErrors)
+                .build();
+
+        return ResponseEntity.badRequest().body(error);
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiErrorResponse> handleDataIntegrity(DataIntegrityViolationException ex, HttpServletRequest request) {
+        ApiErrorResponse error = ApiErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
+                .message("Datos de orden invalidos o incompletos")
+                .path(request.getRequestURI())
                 .build();
 
         return ResponseEntity.badRequest().body(error);

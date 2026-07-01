@@ -1,6 +1,6 @@
 <article class="card">
   <a [routerLink]="['/listing', product.id]" class="image-wrap" [attr.aria-label]="product.title">
-    <img [src]="product.imageUrl" [alt]="product.title">
+    <img [src]="product.imageUrl" [alt]="product.title" (error)="onImgError($event)">
     <span [class]="conditionClass()">{{ product.condition || 'Nuevo' }}</span>
   </a>
   <div class="body">

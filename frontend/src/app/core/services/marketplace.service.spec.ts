@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { of } from 'rxjs';
 import { MarketplaceService } from './marketplace.service';
 import { GatewayService } from './gateway.service';
 import { SessionService } from './session.service';
@@ -9,6 +10,8 @@ import { MediaApiService } from './media-api.service';
 import { FavoritosApiService } from './favoritos-api.service';
 import { CalificacionApiService } from './calificacion-api.service';
 import { MarketplaceListing } from '../models/product.model';
+import { PublicacionResponse } from '../models/publicacion.model';
+import { MediaFileResponse } from '../models/media.model';
 
 describe('MarketplaceService Mercado Pago checkout', () => {
   let service: MarketplaceService;
@@ -101,5 +104,94 @@ describe('MarketplaceService Mercado Pago checkout', () => {
       initPoint: 'https://mercadopago.test/checkout',
       sandboxInitPoint: 'https://sandbox.mercadopago.test/checkout'
     });
+  });
+});
+
+describe('MarketplaceService public catalog images', () => {
+  let service: MarketplaceService;
+  let http: HttpTestingController;
+  let publicacionApi: jasmine.SpyObj<PublicacionApiService>;
+  let mediaApi: jasmine.SpyObj<MediaApiService>;
+
+  beforeEach(() => {
+    publicacionApi = jasmine.createSpyObj<PublicacionApiService>('PublicacionApiService', ['findAll']);
+    mediaApi = jasmine.createSpyObj<MediaApiService>('MediaApiService', ['findAll']);
+
+    TestBed.configureTestingModule({
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        MarketplaceService,
+        { provide: GatewayService, useValue: { baseUrl: () => 'http://localhost:18080' } },
+        {
+          provide: SessionService,
+          useValue: {
+            isAuthenticated: () => false,
+            personaId: () => null,
+            session: () => null,
+            setSession: jasmine.createSpy('setSession'),
+            clear: jasmine.createSpy('clear'),
+            username: () => 'invitado'
+          }
+        },
+        { provide: PublicacionApiService, useValue: publicacionApi },
+        { provide: MediaApiService, useValue: mediaApi },
+        { provide: FavoritosApiService, useValue: {} },
+        { provide: CalificacionApiService, useValue: {} }
+      ]
+    });
+
+    service = TestBed.inject(MarketplaceService);
+    http = TestBed.inject(HttpTestingController);
+  });
+
+  afterEach(() => {
+    http.verify();
+  });
+
+  it('shows media images in the public catalog without an authenticated session', () => {
+    const publicaciones: PublicacionResponse[] = [
+      {
+        id: 77,
+        titulo: 'Polera UPeU',
+        descripcion: 'Talla L en buen estado',
+        precio: 20,
+        estado: 'ACTIVO',
+        idUsuario: 2,
+        idCategoria: 5
+      }
+    ];
+    const mediaFiles: MediaFileResponse[] = [
+      {
+        id: 8,
+        url: 'http://localhost:18080/api/v1/media/files/polera.jpg',
+        tipoMime: 'image/jpeg',
+        tamanoBytes: 123,
+        idUploader: 2,
+        idPublicacion: 77
+      }
+    ];
+    publicacionApi.findAll.and.returnValue(of(publicaciones));
+    mediaApi.findAll.and.returnValue(of(mediaFiles));
+
+    service.getListings().subscribe((listings) => {
+      expect(listings[0].publicacionId).toBe(77);
+      expect(listings[0].imageUrl).toBe('http://localhost:18080/api/v1/media/files/polera.jpg');
+    });
+
+    const productsRequest = http.expectOne('http://localhost:18080/api/v1/productos');
+    expect(productsRequest.request.method).toBe('GET');
+    productsRequest.flush([
+      {
+        id: 99,
+        titulo: 'Polera UPeU',
+        descripcion: 'Talla L en buen estado',
+        precio: 20,
+        moneda: 'PEN',
+        estado: 'PUBLICADO',
+        idCategoria: 5,
+        idVendedor: 2
+      }
+    ]);
   });
 });

@@ -41,3 +41,6 @@ frontend/.angular/cache/
 .env
 .env.*
 !.env.example
+*.env
+application-secret.yml
+application-local.yml

@@ -5,9 +5,11 @@ import com.upeu.media.dto.MediaFileResponse;
 import com.upeu.media.entity.MediaFile;
 import com.upeu.media.repository.MediaFileRepository;
 import com.upeu.media.service.MediaFileService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -34,6 +36,7 @@ public class MediaFileServiceImpl implements MediaFileService {
     private final String publicBaseUrl;
     private final String publicPath;
 
+    @Autowired
     public MediaFileServiceImpl(
             MediaFileRepository repository,
             @Value("${media.storage.upload-dir:uploads/media}") String uploadDir,
@@ -43,7 +46,7 @@ public class MediaFileServiceImpl implements MediaFileService {
         this(repository, Path.of(uploadDir), publicBaseUrl, publicPath);
     }
 
-    public MediaFileServiceImpl(MediaFileRepository repository, Path uploadRoot, String publicBaseUrl, String publicPath) {
+    private MediaFileServiceImpl(MediaFileRepository repository, Path uploadRoot, String publicBaseUrl, String publicPath) {
         this.repository = repository;
         this.uploadRoot = uploadRoot.toAbsolutePath().normalize();
         this.publicBaseUrl = trimTrailingSlash(publicBaseUrl);
@@ -93,7 +96,7 @@ public class MediaFileServiceImpl implements MediaFileService {
             entity.setNombreOriginal(originalName);
             entity.setNombreAlmacen(storedName);
             entity.setRuta(target.toString());
-            entity.setUrl(publicBaseUrl + publicPath + "/" + storedName);
+            entity.setUrl(publicPath + "/" + storedName);
             entity.setTipoMime(file.getContentType());
             entity.setTamanoBytes(file.getSize());
             entity.setIdUploader(idUploader);
@@ -122,6 +125,31 @@ public class MediaFileServiceImpl implements MediaFileService {
         } catch (MalformedURLException e) {
             throw new IllegalArgumentException("Ruta de archivo invalida", e);
         }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public String contentTypeOf(String storedName) {
+        String storedMime = repository.findByNombreAlmacen(storedName)
+                .map(MediaFile::getTipoMime)
+                .filter(mime -> mime != null && !mime.isBlank())
+                .orElse(null);
+        if (storedMime != null) {
+            return storedMime;
+        }
+
+        try {
+            Path file = uploadRoot.resolve(storedName).normalize();
+            if (file.startsWith(uploadRoot)) {
+                String detectedMime = Files.probeContentType(file);
+                if (detectedMime != null && !detectedMime.isBlank()) {
+                    return detectedMime;
+                }
+            }
+        } catch (IOException ignored) {
+            // Fall through to a safe binary type when the OS cannot infer the MIME type.
+        }
+        return MediaType.APPLICATION_OCTET_STREAM_VALUE;
     }
 
     @Override

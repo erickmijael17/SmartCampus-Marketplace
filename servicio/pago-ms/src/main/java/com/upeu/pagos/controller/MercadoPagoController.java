@@ -2,6 +2,7 @@ package com.upeu.pagos.controller;
 
 import com.upeu.pagos.dto.MercadoPagoPreferenceRequest;
 import com.upeu.pagos.dto.MercadoPagoPreferenceResponse;
+import com.upeu.pagos.dto.PagoConfirmacionResponse;
 import com.upeu.pagos.service.MercadoPagoCheckoutService;
 import jakarta.validation.Valid;
 import java.net.URI;
@@ -24,10 +25,13 @@ public class MercadoPagoController {
     private final MercadoPagoCheckoutService checkoutService;
 
     @PostMapping("/preference")
-    public ResponseEntity<MercadoPagoPreferenceResponse> createPreference(
+    public ResponseEntity<?> createPreference(
             @Valid @RequestBody MercadoPagoPreferenceRequest request
     ) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(checkoutService.createPreference(request));
+        if (request.getIdVendedor() == null) {
+            return ResponseEntity.badRequest().body(Map.of("message", "idVendedor es obligatorio para generar comprobante de pago en chat"));
+        }
+        return ResponseEntity.ok(checkoutService.createPreference(request));
     }
 
     @PostMapping("/webhook")
@@ -37,7 +41,7 @@ public class MercadoPagoController {
     ) {
         String paymentId = extractPaymentId(body, params);
         if (paymentId != null && !paymentId.isBlank()) {
-            checkoutService.syncPayment(paymentId);
+            checkoutService.confirmarPago(paymentId);
         }
         return ResponseEntity.ok().build();
     }
@@ -52,6 +56,15 @@ public class MercadoPagoController {
         return ResponseEntity.status(HttpStatus.FOUND)
                 .location(URI.create("/payment-result?status=" + status))
                 .build();
+    }
+
+    @GetMapping("/confirmar")
+    public ResponseEntity<PagoConfirmacionResponse> confirmarPago(@RequestParam Map<String, String> params) {
+        String paymentId = params.get("payment_id");
+        if (paymentId == null || paymentId.isBlank()) {
+            return ResponseEntity.badRequest().build();
+        }
+        return ResponseEntity.ok(checkoutService.confirmarPago(paymentId));
     }
 
     @SuppressWarnings("unchecked")

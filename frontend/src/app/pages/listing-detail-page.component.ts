@@ -7,6 +7,7 @@ import { FavoritoResponse } from '../core/models/favorito.model';
 import { MarketplaceListing } from '../core/models/product.model';
 import { ChatService } from '../core/services/chat.service';
 import { MarketplaceService } from '../core/services/marketplace.service';
+import { PagoApiService } from '../core/services/pago-api.service';
 import { SessionService } from '../core/services/session.service';
 import { describeHttpError } from '../core/utils/http-error.util';
 
@@ -21,18 +22,14 @@ export class ListingDetailPageComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly marketplaceService = inject(MarketplaceService);
+  private readonly pagoApiService = inject(PagoApiService);
   private readonly sessionService = inject(SessionService);
   private readonly chatService = inject(ChatService);
 
   listing: MarketplaceListing | null = null;
   loading = true;
   quantity = 1;
-  paymentMethod: 'YAPE' | 'TARJETA' = 'YAPE';
-  buyerName = '';
-  buyerEmail = '';
-  buyerPhone = '';
-  paymentReference = '';
-  checkoutTouched = false;
+  paymentRedirecting = false;
   statusMessage = '';
   chatMessage = '';
   messages: ChatMessage[] = [];
@@ -73,27 +70,48 @@ export class ListingDetailPageComponent implements OnInit {
       return;
     }
 
-    this.checkoutTouched = true;
-    if (!this.checkoutFormValid) {
-      this.statusMessage = 'Completa tus datos de compra antes de continuar.';
-      return;
-    }
+    this.paymentRedirecting = true;
+    this.statusMessage = '';
 
-    this.loading = true;
+    console.log('Listing completo:', this.listing);
 
-    this.marketplaceService.checkout(this.listing, this.quantity, this.paymentMethod).subscribe({
-      next: (summary) => {
-        this.statusMessage = `Redirigiendo a Mercado Pago. Orden ${summary.orderId} y pago ${summary.paymentId} pendientes.`;
-        this.loading = false;
-        if (summary.checkoutUrl) {
-          window.location.href = summary.checkoutUrl;
+    this.pagoApiService
+      .crearPreferencia({
+        publicacionId: this.listing.publicacionId ?? null,
+        cantidad: this.quantity,
+        titulo: this.listing.title,
+        precio: this.listing.price,
+        vendedorId: this.listing.sellerId,
+        idProducto: this.listing.id,
+        descripcion: this.listing.description
+      })
+      .subscribe({
+        next: (response) => {
+          const checkoutUrl =
+            response.sandboxInitPoint ||
+            response.sandbox_init_point ||
+            response.initPoint ||
+            response.init_point ||
+            response.urlPago;
+
+          if (checkoutUrl) {
+            this.redirectToPayment(checkoutUrl);
+            return;
+          }
+
+          this.paymentRedirecting = false;
+          this.statusMessage = 'No se pudo iniciar el pago. Intentalo nuevamente.';
+        },
+        error: (error) => {
+          console.error('No se pudo iniciar el pago con Mercado Pago.', error);
+          this.statusMessage = 'No se pudo iniciar el pago. Intentalo nuevamente.';
+          this.paymentRedirecting = false;
         }
-      },
-      error: (error) => {
-        this.statusMessage = describeHttpError(error, 'la compra');
-        this.loading = false;
-      }
-    });
+      });
+  }
+
+  redirectToPayment(url: string): void {
+    window.location.href = url;
   }
 
   toggleFavorite(): void {
@@ -204,17 +222,16 @@ export class ListingDetailPageComponent implements OnInit {
     return this.sessionService.isAuthenticated();
   }
 
-  get checkoutFormValid(): boolean {
-    return (
-      this.quantity > 0 &&
-      this.buyerName.trim().length >= 3 &&
-      /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.buyerEmail.trim()) &&
-      /^\d{9}$/.test(this.buyerPhone.trim())
-    );
-  }
-
   get favoriteLabel(): string {
     return this.isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos';
+  }
+
+  get orderSubtotal(): number {
+    return (this.listing?.price ?? 0) * Math.max(1, Number(this.quantity) || 1);
+  }
+
+  get orderTotal(): number {
+    return this.orderSubtotal;
   }
 
   private loadFavoriteState(listing: MarketplaceListing): void {
@@ -226,6 +243,11 @@ export class ListingDetailPageComponent implements OnInit {
       this.favoriteRecord = favorito;
       this.isFavorite = favorito !== null;
     });
+  }
+
+  onImgError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    img.src = '/assets/placeholder-listing.svg';
   }
 
   private prepareConversation(listing: MarketplaceListing): void {

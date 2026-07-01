@@ -5,7 +5,7 @@
 <ng-container *ngIf="!loading">
   <ng-container *ngIf="listing as item; else notFound">
     <section class="detail-grid">
-      <img [src]="item.imageUrl" [alt]="item.title" />
+      <img [src]="item.imageUrl" [alt]="item.title" (error)="onImgError($event)" />
 
       <div class="info">
         <a routerLink="/" class="back">Volver al marketplace</a>
@@ -18,50 +18,15 @@
           <span>{{ item.sellerLabel }}</span>
         </div>
 
-        <section class="checkout-box">
-          <h2>Finalizar compra</h2>
-
-          <div class="buy-box">
-          <label>
-            Cantidad
-            <input type="number" [(ngModel)]="quantity" min="1" />
-          </label>
-
-          <label>
-            Metodo de pago
-            <select [(ngModel)]="paymentMethod">
-              <option value="YAPE">Yape</option>
-              <option value="TARJETA">Tarjeta</option>
-            </select>
-          </label>
-
-          <label>
-            Nombre completo
-            <input type="text" [(ngModel)]="buyerName" placeholder="Ej. Maria Quispe" />
-          </label>
-
-          <label>
-            Correo
-            <input type="email" [(ngModel)]="buyerEmail" placeholder="tu correo institucional" />
-          </label>
-
-          <label>
-            Celular
-            <input type="tel" [(ngModel)]="buyerPhone" maxlength="9" placeholder="9 digitos" />
-          </label>
-
-          <label>
-            Referencia (opcional)
-            <input type="text" [(ngModel)]="paymentReference" placeholder="Horario o indicacion para el vendedor" />
-          </label>
+        <section class="purchase-card">
+          <div>
+            <p class="meta">Compra segura</p>
+            <h2>Listo para comprar?</h2>
+            <p>El pago se completa fuera de SmartCampus en Mercado Pago.</p>
           </div>
 
-          <p class="field-error" *ngIf="checkoutTouched && !checkoutFormValid">
-            Ingresa nombre, correo valido y celular de 9 digitos.
-          </p>
-
-          <button (click)="buyNow()" [disabled]="canBuy && checkoutTouched && !checkoutFormValid">
-            {{ canBuy ? 'Continuar con Mercado Pago' : 'Inicia sesion para comprar' }}
+          <button type="button" data-testid="buy-now-button" (click)="buyNow()" [disabled]="paymentRedirecting">
+            {{ paymentRedirecting ? 'Redirigiendo a Mercado Pago...' : (canBuy ? 'Comprar ahora' : 'Inicia sesion para comprar') }}
           </button>
         </section>
 

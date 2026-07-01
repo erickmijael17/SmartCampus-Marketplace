@@ -46,6 +46,7 @@ management:
         enabled: true
 
 app:
+  frontend-url: ${FRONTEND_URL}
   kafka:
     topic:
       ordenes: ordenes-topic
@@ -58,9 +59,9 @@ mercadopago:
   public-key: ${MP_PUBLIC_KEY:}
   base-url: https://api.mercadopago.com
   notification-url: ${MP_NOTIFICATION_URL}
-  success-url: ${MP_SUCCESS_URL}
-  failure-url: ${MP_FAILURE_URL}
-  pending-url: ${MP_PENDING_URL}
+  success-url: ${MP_SUCCESS_URL:${FRONTEND_URL}/pago/exito}
+  failure-url: ${MP_FAILURE_URL:${FRONTEND_URL}/pago/error}
+  pending-url: ${MP_PENDING_URL:${FRONTEND_URL}/pago/pendiente}
 
 jwt:
   secret: 1s3alJJATsWK91vf5zrODYlQa+LauM/9udaLZlQhHlpu46g/KzmSS5c3CGy6xF9kzAqBhvjmKBuZO/pSL7tfOg==

@@ -30,7 +30,7 @@ class MediaFileServiceImplTest {
         });
         MediaFileServiceImpl service = new MediaFileServiceImpl(
                 repository,
-                uploadDir,
+                uploadDir.toString(),
                 "http://localhost:18080",
                 "/api/v1/media/files"
         );
@@ -43,7 +43,7 @@ class MediaFileServiceImplTest {
 
         MediaFileResponse response = service.upload(file, 9L, 20L);
 
-        assertThat(response.getUrl()).startsWith("http://localhost:18080/api/v1/media/files/");
+        assertThat(response.getUrl()).startsWith("/api/v1/media/files/");
         assertThat(response.getTipoMime()).isEqualTo("image/jpeg");
         assertThat(response.getTamanoBytes()).isEqualTo(10L);
         assertThat(response.getIdUploader()).isEqualTo(9L);

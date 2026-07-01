@@ -5,7 +5,7 @@ spring:
     active: dev
 
   config:
-    import: "optional:configserver:${CONFIG_SERVER_URL:http://localhost:18888}"
+    import: "optional:file:./.env[.properties],optional:file:../../.env[.properties],optional:configserver:${CONFIG_SERVER_URL:http://localhost:18888}"
 
 management:
   endpoints:
@@ -20,3 +20,9 @@ logging:
   level:
     root: INFO
 
+app:
+  frontend-url: ${FRONTEND_URL:http://localhost:4200}
+
+mercadopago:
+  access-token: ${MP_ACCESS_TOKEN}
+  public-key: ${MP_PUBLIC_KEY:}

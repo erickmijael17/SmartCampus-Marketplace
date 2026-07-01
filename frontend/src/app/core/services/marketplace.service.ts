@@ -696,13 +696,6 @@ export class MarketplaceService {
   }
 
   private loadCatalogContext(): Observable<CatalogContext> {
-
-    if (!this.sessionService.isAuthenticated()) {
-
-      return of({ publicaciones: [], mediaFiles: [] });
-
-    }
-
     return forkJoin({
 
       publicaciones: this.loadPublicaciones(),
@@ -714,13 +707,6 @@ export class MarketplaceService {
   }
 
   private loadPublicaciones(): Observable<PublicacionResponse[]> {
-
-    if (!this.sessionService.isAuthenticated()) {
-
-      return of([]);
-
-    }
-
     return this.publicacionApi.findAll().pipe(catchError(() => of([] as PublicacionResponse[])));
 
   }
@@ -899,7 +885,7 @@ export class MarketplaceService {
 
       sellerLabel: `Vendedor #${product.idVendedor}`,
 
-      imageUrl: imageOverride ?? this.resolveImage(product),
+      imageUrl: this.resolveImageUrl(imageOverride),
 
       publishedAt: product.publicadoEn ?? null
 
@@ -907,9 +893,27 @@ export class MarketplaceService {
 
   }
 
-  private resolveImage(_product: ProductResponse): string {
+  private resolveImageUrl(url: string | null): string {
 
-    return '/assets/placeholder-listing.svg';
+    if (!url) {
+
+      return '/assets/placeholder-listing.svg';
+
+    }
+
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+
+      return url;
+
+    }
+
+    if (url.startsWith('/')) {
+
+      return this.gateway.baseUrl() + url;
+
+    }
+
+    return url;
 
   }
 

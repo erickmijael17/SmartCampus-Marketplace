@@ -48,7 +48,7 @@ class ProductoServiceImplTest {
 
         when(productoRepository.save(any(Producto.class))).thenReturn(savedEntity);
 
-        ProductoResponse response = productoService.create(request);
+        ProductoResponse response = productoService.create(request, "mock-token");
 
         assertThat(response.getId()).isEqualTo(1);
         assertThat(response.getTitulo()).isEqualTo("Laptop");

@@ -49,6 +49,18 @@ export const routes: Routes = [
 		component: PaymentResultComponent
 	},
 	{
+		path: 'pago/exito',
+		component: PaymentResultComponent
+	},
+	{
+		path: 'pago/error',
+		component: PaymentResultComponent
+	},
+	{
+		path: 'pago/pendiente',
+		component: PaymentResultComponent
+	},
+	{
 		path: 'publicar',
 		redirectTo: 'publish'
 	},
