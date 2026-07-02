@@ -1,50 +1,55 @@
 # SmartCampus Marketplace
 
-Plataforma de mercado digital universitario basada en microservicios. El backend usa Spring Boot, Spring Cloud Config, Eureka, Spring Cloud Gateway, Keycloak, PostgreSQL, Flyway, Kafka y un stack de observabilidad con Prometheus, Loki, Promtail y Grafana.
+SmartCampus Marketplace es una plataforma de mercado digital universitario para la UPeU, orientada a compra, venta, favoritos, ordenes, pagos, chat, publicaciones y gestion de productos dentro de un entorno academico.
 
-El despliegue documentado del proyecto se realiza con Docker Compose. El API Gateway es el punto unico de entrada HTTP para los microservicios.
+Arquitectura de microservicios con Spring Boot, Spring Cloud Config, Eureka, Spring Cloud Gateway, PostgreSQL, Kafka, observabilidad y Keycloak como proveedor de identidad del realm `smartcampus`.
 
-## Arquitectura
+Documentacion en linea: [erickmijael17.github.io/SmartCampus-Marketplace](https://erickmijael17.github.io/SmartCampus-Marketplace/)
 
-1. **Identidad y seguridad**
-   - Keycloak emite tokens JWT para el realm `smartcampus`.
-   - `auth-ms` conserva la ruta de login `/auth/login` y delega la autenticacion a Keycloak.
-   - Los microservicios validan JWT con `issuer-uri` y `jwk-set-uri`.
+---
 
-2. **Infraestructura**
-   - `infra/config`: Config Server.
-   - `infra/eureka`: Service discovery.
-   - `infra/gateway`: Gateway HTTP unico, con rutas `lb://...` hacia Eureka.
-   - `keycloak`: compose e import del realm `smartcampus`.
+## Documentacion
 
-3. **Microservicios**
-   - `auth-ms`, `producto-ms`, `catalogo-ms`, `categoria-ms`, `carrito-ms`, `orden-ms`, `pago-ms`, `inventario-ms`, `favoritos-ms`, `chat-ms`, `notification-ms`, `media-ms`, `calificacion-ms`, `persona-ms`, `publicacion-ms` y `search-ms`.
-
-4. **Eventos y observabilidad**
-   - Kafka para mensajeria asincrona.
-   - Prometheus, Loki, Promtail y Grafana para metricas y logs.
-
-## Requisitos
-
-- Java 17
-- Maven 3.8+
-- Docker Desktop o Docker Engine
-- Make opcional para usar los atajos del `Makefile`
-
-## Puertos principales
-
-| Servicio | URL |
+| Documento | Contenido |
 |---|---|
-| Gateway | `http://localhost:28082` |
-| Config Server | `http://localhost:28888` |
-| Eureka | `http://localhost:28761` |
-| Keycloak | `http://localhost:8080` |
-| Kafka UI | `http://localhost:28085` |
-| Grafana | `http://localhost:23000` |
+| [Sitio MkDocs](https://erickmijael17.github.io/SmartCampus-Marketplace/) | Documentacion renderizada en GitHub Pages |
+| [Producto del curso](docs/producto-curso.md) | Definicion U1/U2/U3, evaluaciones y stack |
+| [Arquitectura](docs/arquitectura.md) | Diagramas, componentes y flujos del sistema |
+| [Desarrollo DEV](docs/desarrollo.md) | Arranque local paso a paso |
+| [Produccion PROD](docs/produccion.md) | Despliegue con Docker Compose |
+| [Seguridad](docs/seguridad.md) | Keycloak, JWT, roles y rutas protegidas |
+| [Observabilidad](docs/observabilidad.md) | Actuator, Prometheus, Loki, Promtail y Grafana |
+| [Kafka y eventos](docs/kafka-eventos.md) | Topicos, productores, consumidores y evidencias |
+| [Dominio de negocio](docs/dominio-negocio.md) | Marketplace universitario, usuarios y reglas |
+| [Referencia de puertos](docs/puertos.md) | Puertos DEV/PROD y endpoints de salud |
+| [Manual de usuario](docs/manual-usuario.md) | Flujos por rol: estudiante, vendedor y administrador |
+| [Sesiones del curso](docs/sesiones/indice.md) | Evidencias S01-S16 con formato academico |
 
-Los microservicios no deben publicarse directamente al host por HTTP. En Docker Compose quedan accesibles por red interna y se consumen a traves del Gateway.
+Libro digital MkDocs: carpeta [docs/](docs/).
 
-## Inicio rapido
+### Publicar documentacion en GitHub Pages
+
+Workflow: [.github/workflows/docs.yml](.github/workflows/docs.yml), construye MkDocs y publica el sitio en la rama `gh-pages`.
+
+Pasos una sola vez:
+
+1. Subir estos cambios a `main` o `frontend_Smart`.
+2. Esperar que GitHub Actions termine en verde: `Actions -> Publicar documentacion`.
+3. Ir a `Settings -> Pages`.
+4. En `Source`, elegir `Deploy from a branch`.
+5. En `Branch`, elegir `gh-pages` y carpeta `/ (root)`.
+6. Guardar.
+7. En `About -> Website`, colocar `https://erickmijael17.github.io/SmartCampus-Marketplace/`.
+
+URL final:
+
+```text
+https://erickmijael17.github.io/SmartCampus-Marketplace/
+```
+
+---
+
+## Inicio rapido DEV
 
 ```bash
 make compose-infra
@@ -65,32 +70,115 @@ Para levantar un microservicio especifico:
 make compose-ms MS=auth-ms
 ```
 
-## Verificaciones utiles
+---
+
+## Ver documentacion local
 
 ```bash
-curl http://localhost:28082/actuator/health
-curl http://localhost:28761
-curl http://127.0.0.1:8080/realms/smartcampus/.well-known/openid-configuration
-curl http://127.0.0.1:8080/realms/smartcampus/protocol/openid-connect/certs
+python -m pip install -r requirements-docs.txt
+python -m mkdocs serve -a 127.0.0.1:8000
 ```
 
-## Login por Gateway
+Abrir:
 
-`auth-ms` debe estar registrado en Eureka como `AUTH-MS`. El cliente externo usa siempre Gateway:
-
-```http
-POST http://localhost:28082/auth/login
-Content-Type: application/json
-
-{
-  "username": "usuario",
-  "password": "clave"
-}
+```text
+http://127.0.0.1:8000/SmartCampus-Marketplace/
 ```
 
-## Documentacion relacionada
+Build de verificacion:
 
-- [Guia del estudiante](GUIA_ESTUDIANTE.md)
-- [Infraestructura](infra/README.md)
-- [Gateway](infra/gateway/README.md)
-- [Auth MS](servicio/auth-ms/README.md)
+```bash
+python -m mkdocs build --strict
+```
+
+---
+
+## Stack tecnologico
+
+| Capa | Tecnologia |
+|---|---|
+| Backend | Java 17, Spring Boot 3.x, Spring Cloud |
+| Configuracion | Spring Cloud Config Server |
+| Registro | Eureka Server |
+| Gateway | Spring Cloud Gateway |
+| Seguridad | Keycloak, JWT RS256, OAuth2 Resource Server |
+| Datos | PostgreSQL, Flyway |
+| Mensajeria | Apache Kafka, Kafka UI |
+| Observabilidad | Prometheus, Loki, Promtail, Grafana |
+| Despliegue | Docker Compose |
+| Documentacion | MkDocs Material, GitHub Pages |
+
+---
+
+## Estructura del repositorio
+
+```text
+SmartCampus-Marketplace/
+├── infra/           Config Server, Eureka, Gateway y config-repo
+├── keycloak/        Realm smartcampus e import de identidad
+├── kafka/           Broker, Kafka UI y exporter
+├── obs/             Prometheus, Loki, Promtail y Grafana
+├── servicio/        Microservicios de dominio y soporte
+├── docs/            Libro digital MkDocs
+├── mkdocs.yml       Navegacion y tema de la documentacion
+└── Makefile         Atajos de build y despliegue
+```
+
+---
+
+## Microservicios
+
+| Servicio | Responsabilidad |
+|---|---|
+| `auth-ms` | Login y delegacion de autenticacion a Keycloak |
+| `producto-ms` | Gestion de productos |
+| `catalogo-ms` | Consulta de catalogo |
+| `categoria-ms` | Gestion de categorias |
+| `carrito-ms` | Carrito de compra |
+| `orden-ms` | Ordenes de compra |
+| `pago-ms` | Registro y procesamiento de pagos |
+| `inventario-ms` | Control de stock |
+| `favoritos-ms` | Productos favoritos por usuario |
+| `chat-ms` | Mensajeria entre usuarios |
+| `notification-ms` | Notificaciones del sistema |
+| `media-ms` | Gestion de archivos e imagenes |
+| `calificacion-ms` | Resenas y calificaciones |
+| `persona-ms` | Perfiles de usuarios |
+| `publicacion-ms` | Publicaciones del marketplace |
+| `search-ms` | Busqueda de productos |
+
+---
+
+## Puertos principales
+
+| Servicio | URL |
+|---|---|
+| Gateway | `http://localhost:28082` |
+| Config Server | `http://localhost:28888` |
+| Eureka | `http://localhost:28761` |
+| Keycloak | `http://localhost:8080` |
+| Kafka UI | `http://localhost:28085` |
+| Grafana | `http://localhost:23000` |
+
+Los microservicios no deben publicarse directamente al host por HTTP. En Docker Compose quedan accesibles por red interna y se consumen a traves del Gateway.
+
+---
+
+## Estado funcional documentado
+
+| Capacidad | DEV | PROD local |
+|---|---|---|
+| Config Server | Si | Si |
+| Eureka | Si | Si |
+| Gateway | Si | Si |
+| Keycloak realm `smartcampus` | Si | Si |
+| Microservicios por Docker Compose | Si | Si |
+| Kafka y eventos | Si | Si |
+| Observabilidad | Si | Si |
+| Libro digital MkDocs | Si | Si |
+
+---
+
+## Licencia y uso
+
+Proyecto educativo - UPeU / Desarrollo de Aplicaciones Distribuidas.

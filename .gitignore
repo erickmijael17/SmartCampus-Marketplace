@@ -33,6 +33,10 @@ dist/
 build/
 .angular/cache/
 
+# MkDocs generated site
+site/
+.cache/
+
 # Environment files with local secrets
 .env
 .env.*

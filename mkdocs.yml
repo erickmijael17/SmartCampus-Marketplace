@@ -1,0 +1,99 @@
+site_name: SmartCampus Marketplace — Sistemas Distribuidos
+site_description: Marketplace universitario UPeU con microservicios, Keycloak, Kafka y observabilidad
+site_author: Erick Mijael
+site_url: https://erickmijael17.github.io/SmartCampus-Marketplace/
+repo_url: https://github.com/erickmijael17/SmartCampus-Marketplace
+repo_name: erickmijael17/SmartCampus-Marketplace
+edit_uri: edit/main/docs/
+
+docs_dir: docs
+use_directory_urls: true
+
+nav:
+  - Inicio: index.md
+  - Producto del curso: producto-curso.md
+  - Contenido del curso:
+      - Índice de sesiones: sesiones/indice.md
+      - U1 — S1 Servicio base REST: sesiones/s01-servicio-base-rest.md
+      - U1 — S2 Configuración centralizada: sesiones/s02-configuracion-centralizada.md
+      - U1 — S3 Eureka y concurrencia: sesiones/s03-eureka-descubrimiento.md
+      - U1 — S4 Gateway y tráfico: sesiones/s04-gateway-trafico.md
+      - U1 — S5 Evaluación U1: sesiones/s05-evaluacion-u1.md
+      - U2 — S6 Feign y resiliencia: sesiones/s06-feign-circuit-breaker.md
+      - U2 — S7 Seguridad Keycloak: sesiones/s07-seguridad-keycloak-jwt.md
+      - U2 — S8 Kafka eventos: sesiones/s08-kafka-eventos.md
+      - U2 — S9 Consistencia distribuida: sesiones/s09-consistencia-distribuida.md
+      - U2 — S10 Observabilidad: sesiones/s10-observabilidad.md
+      - U2 — S11 Frontend Angular: sesiones/s11-frontend-angular.md
+      - U2 — S12 Evaluación U2: sesiones/s12-evaluacion-u2.md
+      - U3 — S13 Validación end-to-end: sesiones/s13-validacion-end-to-end.md
+      - U3 — S14 Estabilización: sesiones/s14-estabilizacion.md
+      - U3 — S15 Defensa técnica: sesiones/s15-defensa-tecnica.md
+      - U3 — S16 Evaluación final: sesiones/s16-evaluacion-final.md
+  - Guía del proyecto:
+      - Arquitectura: arquitectura.md
+      - Dominio de negocio: dominio-negocio.md
+      - Desarrollo DEV: desarrollo.md
+      - Producción PROD: produccion.md
+      - Seguridad Keycloak: seguridad.md
+      - Kafka y eventos: kafka-eventos.md
+      - Observabilidad: observabilidad.md
+      - Puertos: puertos.md
+      - Manual de usuario: manual-usuario.md
+  - Evaluación:
+      - Rúbrica: rubrica-evaluacion.md
+  - Laboratorios:
+      - Índice labs: labs/README.md
+
+theme:
+  name: material
+  language: es
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: teal
+      toggle:
+        icon: material/brightness-7
+        name: Modo oscuro
+    - scheme: slate
+      primary: indigo
+      accent: teal
+      toggle:
+        icon: material/brightness-4
+        name: Modo claro
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.top
+    - navigation.sections
+    - navigation.expand
+    - toc.follow
+    - content.code.copy
+    - search.suggest
+    - search.highlight
+
+markdown_extensions:
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - admonition
+  - pymdownx.details
+  - tables
+  - attr_list
+  - md_in_html
+
+plugins:
+  - search
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/erickmijael17/SmartCampus-Marketplace
+
+extra_javascript:
+  - https://unpkg.com/mermaid@10/dist/mermaid.min.js
+  - javascripts/mermaid.js
