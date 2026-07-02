@@ -1,6 +1,6 @@
 # S08 — Mensajería asíncrona entre servicios con Kafka
 
-> Esta sesión desacopla procesos mediante eventos. Órdenes, pagos y notificaciones pueden reaccionar sin bloquear el flujo principal.
+> Esta sesión desacopla procesos mediante eventos. Órdenes, pagos y chat pueden reaccionar sin bloquear el flujo principal.
 
 ---
 
@@ -14,10 +14,10 @@ Implementar mensajería asíncrona con Kafka entre servicios de negocio.
 El estudiante publica y consume eventos entre microservicios desacoplados.
 
 ### 1.3 Producto de sesión
-`orden-ms` publica `EventoOrden` y `pago-ms` consume/procesa eventos relacionados.
+`orden-ms` publica `EventoOrden`, `pago-ms` consume la orden y publica `pago.aprobado`; `chat-ms` consume el pago aprobado para crear evidencia en la conversación.
 
 ### 1.4 Motivación de la sesión
-Cuando un estudiante crea una orden, el pago y la notificación pueden procesarse como eventos. Esto evita acoplar todo en una sola transacción HTTP.
+Cuando un estudiante crea una orden, el pago y el comprobante de chat pueden procesarse como eventos. Esto evita acoplar todo en una sola transacción HTTP.
 
 ### 1.5 Ubicación en el curso
 - Unidad: U2 — Sistema distribuido robusto.
@@ -48,7 +48,9 @@ flowchart LR
     Orden["orden-ms Maven"]
     Kafka["Kafka localhost:41092"]
     Pago["pago-ms Maven"]
+    Chat["chat-ms Maven"]
     Orden -->|"orden.creada"| Kafka --> Pago
+    Pago -->|"pago.aprobado"| Kafka --> Chat
 ```
 
 #### 2.2.2 Entorno PROD local (Docker Compose)
@@ -59,14 +61,16 @@ flowchart LR
         Orden["orden-ms"]
         Kafka["kafka:9092"]
         Pago["pago-ms"]
+        Chat["chat-ms"]
         UI["Kafka UI :28085"]
     end
     Orden --> Kafka --> Pago
+    Pago --> Kafka --> Chat
     UI --> Kafka
 ```
 
 ### 2.3 Observabilidad y diagnóstico
-Usar Kafka UI, logs de `orden-ms`, logs de `pago-ms` y métricas de Kafka exporter si está activo.
+Usar Kafka UI, logs de `orden-ms`, logs de `pago-ms`, logs de `chat-ms` y métricas de Kafka exporter si está activo.
 
 ---
 
@@ -95,11 +99,11 @@ curl http://localhost:28085
 ### 3.3 Ubicar productores y consumidores
 
 ```bash
-grep -R "KafkaTemplate\\|@KafkaListener" -n servicio/orden-ms servicio/pago-ms
+grep -R "KafkaTemplate\\|@KafkaListener" -n servicio/orden-ms servicio/pago-ms servicio/chat-ms
 ```
 
 ```powershell
-Select-String -Path servicio/orden-ms/**/*.java,servicio/pago-ms/**/*.java -Pattern "KafkaTemplate","@KafkaListener"
+Select-String -Path servicio/orden-ms/**/*.java,servicio/pago-ms/**/*.java,servicio/chat-ms/**/*.java -Pattern "KafkaTemplate","@KafkaListener"
 ```
 
 ### 3.4 Tabla de archivos trabajados
@@ -110,13 +114,15 @@ Select-String -Path servicio/orden-ms/**/*.java,servicio/pago-ms/**/*.java -Patt
 | `servicio/orden-ms/src/main/java/com/upeu/ordenes/service/ProductorOrden.java` | Productor |
 | `servicio/pago-ms/src/main/java/com/upeu/pagos/service/ConsumidorPago.java` | Consumidor |
 | `servicio/pago-ms/src/main/java/com/upeu/pagos/service/ProductorPago.java` | Evento de pago |
+| `servicio/chat-ms/src/main/java/com/upeu/chat/service/ConsumidorPagoAprobado.java` | Consumidor de pago aprobado |
+| `servicio/chat-ms/src/main/java/com/upeu/chat/config/KafkaConfiguracion.java` | Configuración Kafka de chat |
 | `infra/config/config-repo/orden-ms-prod.yml` | Bootstrap Kafka |
 
 ---
 
 ## 4. Crea — Actividad autónoma
 
-Diseña un evento `producto.publicado` para que `search-ms` indexe publicaciones nuevas.
+Documenta el payload mínimo de `pago.aprobado` necesario para que `chat-ms` cree un mensaje de venta validada.
 
 ---
 
@@ -127,7 +133,8 @@ Diseña un evento `producto.publicado` para que `search-ms` indexe publicaciones
 - [ ] Existe productor.
 - [ ] Existe consumidor.
 - [ ] El topic se observa en Kafka UI.
-- [ ] El evento contiene datos mínimos de negocio.
+- [ ] `chat-ms` reacciona a `pago.aprobado`.
+- [ ] El evento contiene datos mínimos de negocio: orden, pago, comprador, vendedor y publicación.
 
 ### Pregunta de defensa
-¿Por qué un evento Kafka ayuda a desacoplar `orden-ms` de `pago-ms`?
+¿Por qué `chat-ms` debe consumir `pago.aprobado` en lugar de ser llamado siempre de forma síncrona desde `orden-ms`?

@@ -25,7 +25,8 @@ SmartCampus Marketplace cumple ese objetivo mediante:
 - Registro y descubrimiento con Eureka.
 - Gateway como punto único de acceso.
 - Keycloak como autoridad de identidad.
-- Kafka para eventos de órdenes, pagos y notificaciones.
+- Kafka para eventos de órdenes, pagos y mensajes de chat.
+- Frontend Angular 20 integrado por Gateway.
 - Observabilidad con Prometheus, Loki, Promtail y Grafana.
 - Despliegue reproducible con Docker Compose.
 
@@ -62,6 +63,7 @@ SmartCampus Marketplace cumple ese objetivo mediante:
 | Keycloak | `keycloak/compose.yml` |
 | Kafka | `kafka/compose.yml` |
 | Observabilidad | `obs/compose.yml` |
+| Frontend Angular | `frontend/` en rama `frontend_Smart` |
 | Microservicios | `servicio/*` |
 | Build y despliegue | `Makefile`, `compose.yml`, `Dockerfile` |
 | Documentación | `docs/`, `mkdocs.yml`, `.github/workflows/docs.yml` |

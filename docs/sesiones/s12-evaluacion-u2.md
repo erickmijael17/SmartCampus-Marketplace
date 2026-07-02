@@ -14,7 +14,7 @@ Consolidar y demostrar los componentes robustos de U2.
 El estudiante defiende un sistema seguro, resiliente, observable y parcialmente desacoplado por eventos.
 
 ### 1.3 Producto de sesión
-Flujo autenticado con Gateway, Feign, Kafka y observabilidad.
+Flujo autenticado con Gateway, Feign, Kafka, Mercado Pago, chat y observabilidad.
 
 ### 1.4 Motivación de la sesión
 El marketplace no solo debe responder: debe resistir fallos, proteger datos y permitir diagnóstico.
@@ -35,10 +35,10 @@ El marketplace no solo debe responder: debe resistir fallos, proteger datos y pe
 |---|---|
 | Resiliencia | Feign y fallback |
 | Seguridad | Keycloak + JWT |
-| Kafka | Eventos orden/pago |
-| Consistencia | Estados y compensación |
+| Kafka | Eventos orden/pago/chat |
+| Consistencia | Estados, validación Mercado Pago e idempotencia |
 | Observabilidad | Grafana, Prometheus, Loki |
-| Frontend | Consumo por Gateway |
+| Frontend | Angular 20 consumiendo Gateway |
 
 ### 2.2 Arquitectura del sistema en esta sesión
 
@@ -50,11 +50,15 @@ flowchart TB
     GW["Gateway"]
     KC["Keycloak"]
     MS["Servicios"]
+    PAY["Mercado Pago"]
+    CHAT["Chat"]
     K["Kafka"]
     OBS["Observabilidad"]
     FE --> GW --> MS
     FE --> KC
+    MS --> PAY
     MS --> K
+    K --> CHAT
     MS --> OBS
 ```
 
@@ -96,6 +100,7 @@ make compose-all
 ```bash
 make compose-ms MS=auth-ms
 make compose-ms MS=producto-ms
+make compose-ms MS=chat-ms
 make compose-ms MS=orden-ms
 make compose-ms MS=pago-ms
 ```
@@ -103,6 +108,7 @@ make compose-ms MS=pago-ms
 ```powershell
 make compose-ms MS=auth-ms
 make compose-ms MS=producto-ms
+make compose-ms MS=chat-ms
 make compose-ms MS=orden-ms
 make compose-ms MS=pago-ms
 ```
@@ -114,6 +120,9 @@ make compose-ms MS=pago-ms
 | `infra/gateway/src/main/java/com/upeu/gateway/config/SecurityConfig.java` | Seguridad |
 | `servicio/orden-ms/src/main/java/com/upeu/ordenes/service/ProductorOrden.java` | Kafka |
 | `servicio/pago-ms/src/main/java/com/upeu/pagos/service/ConsumidorPago.java` | Kafka |
+| `servicio/pago-ms/src/main/java/com/upeu/pagos/service/impl/MercadoPagoCheckoutServiceImpl.java` | Mercado Pago |
+| `servicio/chat-ms/src/main/java/com/upeu/chat/service/ConsumidorPagoAprobado.java` | Chat por evento |
+| `frontend/src/app/core/services/pago-api.service.ts` | Checkout Angular |
 | `obs/prometheus/prometheus.yml` | Métricas |
 | `docs/seguridad.md` | Documentación técnica |
 
@@ -131,8 +140,10 @@ Prepara una matriz de evidencias U2 con comando, resultado esperado y captura o 
 - [ ] Login funciona.
 - [ ] Endpoint protegido valida JWT.
 - [ ] Feign comunica servicios.
-- [ ] Kafka procesa evento.
+- [ ] Kafka procesa `orden.creada` y `pago.aprobado`.
+- [ ] Mercado Pago puede crear o validar una transacción.
+- [ ] Chat recibe evidencia de venta validada.
 - [ ] Grafana muestra señales.
 
 ### Pregunta de defensa
-¿Qué componente revisarías primero si un pago no aparece después de crear una orden?
+¿Qué componente revisarías primero si un pago no se registra después de crear una orden?

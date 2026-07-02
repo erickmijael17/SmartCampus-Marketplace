@@ -12,6 +12,7 @@ Estos puertos corresponden al despliegue con Docker Compose, que es el flujo rec
 | Keycloak | 8080 | `http://localhost:8080` |
 | Kafka UI | 28085 | `http://localhost:28085` |
 | Grafana | 23000 | `http://localhost:23000` |
+| Frontend Angular | 4200 | `http://localhost:4200` |
 
 !!! note
     El README local usa `28888` para Config Server. Si tienes apuntes con `2888`, usa el valor real de `infra/compose.yml`.
@@ -38,6 +39,7 @@ Cuando se ejecutan los módulos de infraestructura directamente con Maven, se us
 | Eureka dashboard | `http://localhost:28761` |
 | Keycloak realm | `http://localhost:8080/realms/smartcampus` |
 | JWKS | `http://localhost:8080/realms/smartcampus/protocol/openid-connect/certs` |
+| Frontend | `http://localhost:4200` |
 
 ---
 

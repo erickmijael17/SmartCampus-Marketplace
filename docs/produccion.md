@@ -14,10 +14,13 @@ make compose-keycloak
 make compose-kafka
 make compose-obs
 make compose-ms MS=auth-ms
-make compose-ms MS=catalogo-ms
+make compose-ms MS=categoria-ms
 make compose-ms MS=producto-ms
-make compose-ms MS=carrito-ms
-make compose-ms MS=inventario-ms
+make compose-ms MS=publicacion-ms
+make compose-ms MS=media-ms
+make compose-ms MS=favoritos-ms
+make compose-ms MS=calificacion-ms
+make compose-ms MS=chat-ms
 make compose-ms MS=orden-ms
 make compose-ms MS=pago-ms
 ```
@@ -28,10 +31,13 @@ make compose-keycloak
 make compose-kafka
 make compose-obs
 make compose-ms MS=auth-ms
-make compose-ms MS=catalogo-ms
+make compose-ms MS=categoria-ms
 make compose-ms MS=producto-ms
-make compose-ms MS=carrito-ms
-make compose-ms MS=inventario-ms
+make compose-ms MS=publicacion-ms
+make compose-ms MS=media-ms
+make compose-ms MS=favoritos-ms
+make compose-ms MS=calificacion-ms
+make compose-ms MS=chat-ms
 make compose-ms MS=orden-ms
 make compose-ms MS=pago-ms
 ```
@@ -77,6 +83,8 @@ curl http://localhost:28082/actuator/health
 | `KEYCLOAK_URL` | Emisor OAuth2 del realm `smartcampus` |
 | `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASS` | Conexión PostgreSQL por servicio |
 | `KAFKA_BOOTSTRAP_SERVERS` | Broker Kafka para eventos |
+| `FRONTEND_URL` | URL usada por `pago-ms` para retornos Mercado Pago |
+| `MP_ACCESS_TOKEN`, `MP_PUBLIC_KEY` | Credenciales Mercado Pago por variable de entorno |
 
 !!! danger "Seguridad"
     No subas archivos `.env` con secretos reales. Usa `.env.example` para documentar nombres de variables y valores de demostración.

@@ -2,7 +2,7 @@
 
 ## Propósito
 
-Kafka desacopla procesos que no deben bloquear el flujo principal del usuario, como pagos, notificaciones, auditoría o consistencia eventual entre órdenes y pagos.
+Kafka desacopla procesos que no deben bloquear el flujo principal del usuario, como pagos, evidencia en chat, auditoría o consistencia eventual entre órdenes y pagos.
 
 ---
 
@@ -13,12 +13,12 @@ sequenceDiagram
     participant Orden as orden-ms
     participant Kafka as Kafka
     participant Pago as pago-ms
-    participant Noti as notification-ms
+    participant Chat as chat-ms
 
     Orden->>Kafka: orden.creada
     Kafka->>Pago: consumir orden.creada
-    Pago->>Kafka: pago.aprobado / pago.rechazado
-    Kafka->>Noti: consumir evento de pago
+    Pago->>Kafka: pago.aprobado
+    Kafka->>Chat: crear comprobante / venta validada
 ```
 
 ---
@@ -29,7 +29,7 @@ sequenceDiagram
 |---|---|---|
 | `orden-ms` | Productor de `EventoOrden` | `KafkaConfiguracion.java`, `ProductorOrden.java` |
 | `pago-ms` | Consumidor de orden y productor de pago | `ConsumidorPago.java`, `ProductorPago.java` |
-| `notification-ms` | Consumidor esperado de eventos | `notification-ms` |
+| `chat-ms` | Consumidor de `pago.aprobado` | `ConsumidorPagoAprobado.java`, `KafkaConfiguracion.java` |
 
 ---
 
@@ -71,7 +71,16 @@ curl http://localhost:28085
 
 | Evento | Productor | Consumidor | Uso |
 |---|---|---|---|
-| `orden.creada` | `orden-ms` | `pago-ms`, `notification-ms` | Iniciar pago/notificación |
-| `pago.aprobado` | `pago-ms` | `orden-ms`, `notification-ms` | Confirmar compra |
-| `pago.rechazado` | `pago-ms` | `orden-ms`, `notification-ms` | Compensar orden |
-| `producto.publicado` | `publicacion-ms` | `search-ms` | Indexar búsqueda |
+| `orden.creada` | `orden-ms` | `pago-ms` | Iniciar pago o dejar Mercado Pago pendiente |
+| `pago.aprobado` | `pago-ms` | `chat-ms` | Crear comprobante y mensaje de venta validada |
+
+---
+
+## Idempotencia
+
+`chat-ms` usa índices únicos para no duplicar mensajes de confirmación:
+
+| Índice | Propósito |
+|---|---|
+| `ux_mensajes_confirmacion_pago` | Un comprobante por conversación, orden y tipo de mensaje |
+| `ux_mensajes_venta_validada` | Una venta validada por conversación, orden, pago y `mp_payment_id` |

@@ -14,7 +14,7 @@ Implementar y comprobar un microservicio REST persistente usando Spring Boot, Po
 El estudiante construye un servicio REST independiente, observable y preparado para integrarse en una arquitectura distribuida.
 
 ### 1.3 Producto de sesión
-`catalogo-ms` y `producto-ms` funcionando con CRUD, validación, Swagger, Actuator y persistencia PostgreSQL.
+`categoria-ms` y `producto-ms` funcionando con CRUD, validación, Swagger, Actuator y persistencia PostgreSQL.
 
 ### 1.4 Motivación de la sesión
 Un estudiante necesita publicar o buscar productos dentro de la UPeU. Antes de implementar compras, pagos o chat, el sistema debe tener servicios base capaces de gestionar categorías y productos de forma confiable.
@@ -48,13 +48,13 @@ Un estudiante necesita publicar o buscar productos dentro de la UPeU. Antes de i
 flowchart LR
     Client["Swagger / curl"]
     Producto["producto-ms<br/>Maven"]
-    Catalogo["catalogo-ms<br/>Maven"]
+    Categoria["categoria-ms<br/>Maven"]
     DB1[("PostgreSQL producto")]
-    DB2[("PostgreSQL catalogo")]
+    DB2[("PostgreSQL categoria")]
     Client --> Producto
-    Client --> Catalogo
+    Client --> Categoria
     Producto --> DB1
-    Catalogo --> DB2
+    Categoria --> DB2
 ```
 
 #### 2.2.2 Entorno PROD local (Docker Compose)
@@ -63,13 +63,13 @@ flowchart LR
 flowchart LR
     GW["Gateway :28082"]
     Producto["producto-ms<br/>Docker"]
-    Catalogo["catalogo-ms<br/>Docker"]
+    Categoria["categoria-ms<br/>Docker"]
     DB1[("postgres-producto")]
-    DB2[("postgres-catalogo")]
+    DB2[("postgres-categoria")]
     GW --> Producto
-    GW --> Catalogo
+    GW --> Categoria
     Producto --> DB1
-    Catalogo --> DB2
+    Categoria --> DB2
 ```
 
 ### 2.3 Observabilidad y diagnóstico
@@ -95,11 +95,13 @@ Resultado esperado: compilación sin errores.
 
 ```bash
 make compose-infra
+make compose-ms MS=categoria-ms
 make compose-ms MS=producto-ms
 ```
 
 ```powershell
 make compose-infra
+make compose-ms MS=categoria-ms
 make compose-ms MS=producto-ms
 ```
 

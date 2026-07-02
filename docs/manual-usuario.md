@@ -4,8 +4,8 @@
 
 | Rol | Pantallas esperadas | Acciones |
 |---|---|---|
-| Estudiante | Productos, favoritos, carrito, órdenes, chat | Comprar, guardar favoritos, comunicarse |
-| Vendedor | Publicaciones, productos, inventario, chat | Publicar, editar, responder |
+| Estudiante | Home, detalle, favoritos, pagos, chat | Comprar, guardar favoritos, conversar |
+| Vendedor | Publicar, perfil, chat, ventas | Publicar, revisar ventas, responder |
 | Administrador | Categorías, usuarios, publicaciones, métricas | Moderar y administrar |
 
 ---
@@ -24,10 +24,13 @@
 
 1. Abrir catálogo.
 2. Seleccionar un producto.
-3. Agregar al carrito.
-4. Confirmar orden.
-5. Registrar pago.
-6. Revisar estado de orden.
+3. Presionar compra desde el detalle.
+4. Crear orden con método `MERCADO_PAGO`.
+5. Generar preferencia de pago.
+6. Completar checkout en Mercado Pago.
+7. Volver a la pantalla de resultado.
+8. Validar la transacción si el pago queda pendiente.
+9. Revisar el chat con el vendedor para coordinar entrega.
 
 ---
 
@@ -36,8 +39,18 @@
 1. Ingresar como vendedor.
 2. Crear publicación con nombre, descripción, categoría y precio.
 3. Asociar imágenes mediante `media-ms`.
-4. Verificar stock en `inventario-ms`.
-5. Publicar.
+4. Publicar producto asociado a `producto-ms` y `publicacion-ms`.
+5. Revisar mensajes de compradores en chat.
+
+---
+
+## Validar pago Mercado Pago
+
+1. Entrar a la pantalla de resultado de pago.
+2. Revisar `pagoId`, `idOrden` y estado.
+3. Ingresar el número de transacción `paymentId` si el sistema solicita validación.
+4. El backend verifica `external_reference = ORDEN-{idOrden}`.
+5. Si el pago está aprobado, se crea un mensaje automático en `chat-ms`.
 
 ---
 
@@ -48,4 +61,6 @@
 | No inicia sesión | Keycloak y `auth-ms` activos |
 | Token inválido | `issuer-uri` y `jwk-set-uri` correctos |
 | No carga productos | Gateway, Eureka y `producto-ms` |
+| Pago queda pendiente | Revisar `paymentId`, `MP_ACCESS_TOKEN` y endpoint de validación |
+| No aparece mensaje en chat | Revisar `chat-ms`, Kafka y evento `pago.aprobado` |
 | No aparecen métricas | Prometheus y `/actuator/prometheus` |

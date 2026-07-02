@@ -14,7 +14,7 @@ Configurar Spring Cloud Gateway para enrutar solicitudes a microservicios regist
 El estudiante diseña rutas centralizadas, verifica balanceo y entiende el rol del Gateway en seguridad y CORS.
 
 ### 1.3 Producto de sesión
-`infra/gateway` operativo con rutas a `auth-ms`, `catalogo-ms`, `producto-ms`, `carrito-ms`, `inventario-ms`, `orden-ms` y `pago-ms`.
+`infra/gateway` operativo con rutas a `auth-ms`, `categoria-ms`, `producto-ms`, `publicacion-ms`, `media-ms`, `favoritos-ms`, `calificacion-ms`, `chat-ms`, `orden-ms` y `pago-ms`.
 
 ### 1.4 Motivación de la sesión
 El frontend universitario debe usar una sola URL. Si cada microservicio expusiera su puerto, el cliente sería frágil e inseguro.
@@ -49,11 +49,13 @@ flowchart LR
     GW["Gateway :18080"]
     EU["Eureka :18761"]
     PROD["producto-ms"]
-    CART["carrito-ms"]
+    PAY["pago-ms"]
+    CHAT["chat-ms"]
     Client --> GW
     GW -. consulta .-> EU
     GW --> PROD
-    GW --> CART
+    GW --> PAY
+    GW --> CHAT
 ```
 
 #### 2.2.2 Entorno PROD local (Docker Compose)
@@ -112,6 +114,7 @@ curl http://localhost:28082/api/v1/productos
 | `infra/gateway/src/main/java/com/upeu/gateway/config/CorsGlobalConfig.java` | CORS |
 | `infra/config/config-repo/gateway-dev.yml` | Rutas DEV |
 | `infra/config/config-repo/gateway-prod.yml` | Rutas PROD |
+| `frontend/src/app/core/config/api.config.ts` | Endpoints consumidos por Angular |
 
 ---
 

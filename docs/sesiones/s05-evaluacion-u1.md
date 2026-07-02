@@ -14,7 +14,7 @@ Validar que la base distribuida de SmartCampus Marketplace funciona de extremo a
 El estudiante demuestra un sistema base configurable, registrable y consumible por Gateway.
 
 ### 1.3 Producto de sesión
-Infraestructura U1 ejecutándose con al menos `catalogo-ms`, `producto-ms` y Gateway.
+Infraestructura U1 ejecutándose con al menos `categoria-ms`, `producto-ms` y Gateway.
 
 ### 1.4 Motivación de la sesión
 Antes de agregar seguridad, Kafka y observabilidad avanzada, el marketplace debe tener un núcleo estable y reproducible.
@@ -48,7 +48,7 @@ flowchart TB
     CFG["Config"]
     EU["Eureka"]
     GW["Gateway"]
-    CAT["catalogo-ms"]
+    CAT["categoria-ms"]
     PROD["producto-ms"]
     GW --> CAT & PROD
     CAT & PROD --> EU
@@ -63,7 +63,7 @@ flowchart TB
         CFG["config"]
         EU["eureka"]
         GW["gateway"]
-        CAT["catalogo-ms"]
+        CAT["categoria-ms"]
         PROD["producto-ms"]
     end
     GW --> CAT & PROD
@@ -89,12 +89,12 @@ make compose-infra
 ### 3.2 Ejecutar servicios base
 
 ```bash
-make compose-ms MS=catalogo-ms
+make compose-ms MS=categoria-ms
 make compose-ms MS=producto-ms
 ```
 
 ```powershell
-make compose-ms MS=catalogo-ms
+make compose-ms MS=categoria-ms
 make compose-ms MS=producto-ms
 ```
 

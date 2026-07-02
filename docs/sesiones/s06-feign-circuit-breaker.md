@@ -14,10 +14,10 @@ Implementar y documentar comunicación síncrona entre microservicios con fallba
 El estudiante consume otro microservicio por nombre Eureka y maneja errores sin tumbar el flujo principal.
 
 ### 1.3 Producto de sesión
-Clientes Feign activos en `producto-ms`, `inventario-ms`, `carrito-ms`, `orden-ms` y `pago-ms`.
+Clientes Feign activos en el flujo de checkout: `pago-ms` llama a `orden-ms` y `chat-ms` para actualizar estado y registrar comprobantes.
 
 ### 1.4 Motivación de la sesión
-Una orden necesita validar productos y stock. Si `producto-ms` falla, el sistema debe responder de forma controlada y no colapsar toda la compra.
+Una confirmación de pago necesita actualizar la orden y registrar comprobante en chat. Si `chat-ms` falla, el pago no debe perderse ni colapsar toda la compra.
 
 ### 1.5 Ubicación en el curso
 - Unidad: U2 — Sistema distribuido robusto.
@@ -45,11 +45,11 @@ Una orden necesita validar productos y stock. Si `producto-ms` falla, el sistema
 
 ```mermaid
 flowchart LR
+    Pago["pago-ms"]
     Orden["orden-ms"]
-    Producto["producto-ms"]
-    Inventario["inventario-ms"]
-    Orden -->|"Feign producto-ms"| Producto
-    Inventario -->|"Feign producto-ms"| Producto
+    Chat["chat-ms"]
+    Pago -->|"Feign orden-ms"| Orden
+    Pago -->|"Feign chat-ms"| Chat
 ```
 
 #### 2.2.2 Entorno PROD local (Docker Compose)
@@ -57,12 +57,14 @@ flowchart LR
 ```mermaid
 flowchart LR
     subgraph Net["Red Docker compartida"]
+        Pago["pago-ms"]
         Orden["orden-ms"]
-        Producto["producto-ms"]
+        Chat["chat-ms"]
         Eureka["eureka"]
     end
-    Orden -. descubre .-> Eureka
-    Orden -->|"lb://producto-ms"| Producto
+    Pago -. descubre .-> Eureka
+    Pago -->|"lb://ORDEN-MS"| Orden
+    Pago -->|"lb://CHAT-MS"| Chat
 ```
 
 ### 2.3 Observabilidad y diagnóstico
@@ -85,29 +87,29 @@ Select-String -Path servicio/**/*.java -Pattern "@FeignClient"
 ### 3.2 Compilar servicios integrados
 
 ```bash
-mvn -f servicio/orden-ms/pom.xml -DskipTests compile
-mvn -f servicio/producto-ms/pom.xml -DskipTests compile
+mvn -f servicio/pago-ms/pom.xml -DskipTests compile
+mvn -f servicio/chat-ms/pom.xml -DskipTests compile
 ```
 
 ```powershell
-mvn -f servicio/orden-ms/pom.xml -DskipTests compile
-mvn -f servicio/producto-ms/pom.xml -DskipTests compile
+mvn -f servicio/pago-ms/pom.xml -DskipTests compile
+mvn -f servicio/chat-ms/pom.xml -DskipTests compile
 ```
 
 ### 3.3 Tabla de archivos trabajados
 
 | Archivo | Uso |
 |---|---|
-| `servicio/orden-ms/src/main/java/com/upeu/ordenes/client/ProductoClient.java` | Feign hacia producto |
-| `servicio/inventario-ms/src/main/java/com/upeu/inventario/client/ProductoClient.java` | Feign hacia producto |
-| `servicio/producto-ms/src/main/java/com/upeu/producto/client/CatalogoClient.java` | Feign hacia catálogo |
+| `servicio/pago-ms/src/main/java/com/upeu/pagos/client/OrdenClient.java` | Feign hacia orden |
+| `servicio/pago-ms/src/main/java/com/upeu/pagos/client/ChatClient.java` | Feign hacia chat |
+| `servicio/pago-ms/src/main/java/com/upeu/pagos/client/MercadoPagoClient.java` | Cliente HTTP hacia Mercado Pago |
 | `servicio/*/config/FeignTraceConfig.java` | Propagación de trazas |
 
 ---
 
 ## 4. Crea — Actividad autónoma
 
-Describe un escenario de fallo de `producto-ms` y qué debería responder `orden-ms`.
+Describe un escenario de fallo de `chat-ms` durante la confirmación de pago y qué debería responder `pago-ms`.
 
 ---
 

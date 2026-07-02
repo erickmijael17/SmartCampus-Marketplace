@@ -15,9 +15,11 @@ Documentacion en linea: [erickmijael17.github.io/SmartCampus-Marketplace](https:
 | [Sitio MkDocs](https://erickmijael17.github.io/SmartCampus-Marketplace/) | Documentacion renderizada en GitHub Pages |
 | [Producto del curso](docs/producto-curso.md) | Definicion U1/U2/U3, evaluaciones y stack |
 | [Arquitectura](docs/arquitectura.md) | Diagramas, componentes y flujos del sistema |
+| [Frontend Angular](docs/frontend-angular.md) | SPA Angular 20, rutas, guards, servicios y Gateway |
 | [Desarrollo DEV](docs/desarrollo.md) | Arranque local paso a paso |
 | [Produccion PROD](docs/produccion.md) | Despliegue con Docker Compose |
 | [Seguridad](docs/seguridad.md) | Keycloak, JWT, roles y rutas protegidas |
+| [Pagos Mercado Pago](docs/pagos-mercadopago.md) | Checkout, validacion manual, webhook y chat |
 | [Observabilidad](docs/observabilidad.md) | Actuator, Prometheus, Loki, Promtail y Grafana |
 | [Kafka y eventos](docs/kafka-eventos.md) | Topicos, productores, consumidores y evidencias |
 | [Dominio de negocio](docs/dominio-negocio.md) | Marketplace universitario, usuarios y reglas |
@@ -104,6 +106,7 @@ python -m mkdocs build --strict
 | Seguridad | Keycloak, JWT RS256, OAuth2 Resource Server |
 | Datos | PostgreSQL, Flyway |
 | Mensajeria | Apache Kafka, Kafka UI |
+| Frontend | Angular 20, TypeScript, RxJS, Karma, Playwright |
 | Observabilidad | Prometheus, Loki, Promtail, Grafana |
 | Despliegue | Docker Compose |
 | Documentacion | MkDocs Material, GitHub Pages |
@@ -119,6 +122,7 @@ SmartCampus-Marketplace/
 ├── kafka/           Broker, Kafka UI y exporter
 ├── obs/             Prometheus, Loki, Promtail y Grafana
 ├── servicio/        Microservicios de dominio y soporte
+├── frontend/        SPA Angular en la rama frontend_Smart
 ├── docs/            Libro digital MkDocs
 ├── mkdocs.yml       Navegacion y tema de la documentacion
 └── Makefile         Atajos de build y despliegue
@@ -132,20 +136,14 @@ SmartCampus-Marketplace/
 |---|---|
 | `auth-ms` | Login y delegacion de autenticacion a Keycloak |
 | `producto-ms` | Gestion de productos |
-| `catalogo-ms` | Consulta de catalogo |
 | `categoria-ms` | Gestion de categorias |
-| `carrito-ms` | Carrito de compra |
 | `orden-ms` | Ordenes de compra |
-| `pago-ms` | Registro y procesamiento de pagos |
-| `inventario-ms` | Control de stock |
+| `pago-ms` | Mercado Pago, confirmacion y validacion de pagos |
 | `favoritos-ms` | Productos favoritos por usuario |
-| `chat-ms` | Mensajeria entre usuarios |
-| `notification-ms` | Notificaciones del sistema |
+| `chat-ms` | Mensajeria y comprobantes de venta validada |
 | `media-ms` | Gestion de archivos e imagenes |
 | `calificacion-ms` | Resenas y calificaciones |
-| `persona-ms` | Perfiles de usuarios |
 | `publicacion-ms` | Publicaciones del marketplace |
-| `search-ms` | Busqueda de productos |
 
 ---
 
@@ -175,6 +173,8 @@ Los microservicios no deben publicarse directamente al host por HTTP. En Docker 
 | Microservicios por Docker Compose | Si | Si |
 | Kafka y eventos | Si | Si |
 | Observabilidad | Si | Si |
+| Frontend Angular | Si, rama `frontend_Smart` | Build de producción |
+| Mercado Pago | Si, con variables `MP_*` | Si, con variables de entorno |
 | Libro digital MkDocs | Si | Si |
 
 ---

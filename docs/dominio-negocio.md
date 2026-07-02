@@ -2,7 +2,7 @@
 
 ## Contexto
 
-SmartCampus Marketplace resuelve necesidades de compra, venta y comunicación dentro de la comunidad universitaria UPeU. El sistema permite que estudiantes publiquen productos, compradores creen órdenes, vendedores gestionen inventario y administradores controlen el ecosistema.
+SmartCampus Marketplace resuelve necesidades de compra, venta y comunicación dentro de la comunidad universitaria UPeU. El sistema permite que estudiantes publiquen productos, compradores creen órdenes, paguen con Mercado Pago, conversen con vendedores y registren evidencia de venta validada.
 
 ---
 
@@ -21,14 +21,12 @@ SmartCampus Marketplace resuelve necesidades de compra, venta y comunicación de
 | Capacidad | Servicios involucrados |
 |---|---|
 | Autenticación | `auth-ms`, Keycloak, Gateway |
-| Catálogo y categorías | `catalogo-ms`, `categoria-ms` |
+| Catálogo y categorías | `categoria-ms`, `producto-ms` |
 | Publicación de productos | `producto-ms`, `publicacion-ms`, `media-ms` |
-| Stock | `inventario-ms`, `producto-ms` |
-| Compra | `carrito-ms`, `orden-ms`, `pago-ms` |
-| Comunicación | `chat-ms`, `notification-ms` |
+| Compra | `orden-ms`, `pago-ms`, Mercado Pago |
+| Comunicación | `chat-ms` |
 | Reputación | `calificacion-ms` |
-| Búsqueda | `search-ms` |
-| Perfil universitario | `persona-ms` |
+| Perfil universitario | `auth-ms` |
 
 ---
 
@@ -40,12 +38,11 @@ SmartCampus Marketplace resuelve necesidades de compra, venta y comunicación de
 | Persona | Perfil UPeU del usuario |
 | Producto | Artículo o servicio publicado |
 | Categoría | Clasificación de productos |
-| Inventario | Stock disponible |
-| Carrito | Selección temporal de compra |
 | Orden | Intención de compra confirmada |
-| Pago | Resultado de transacción |
+| Pago | Transacción Mercado Pago o validación manual |
 | Publicación | Anuncio visible del marketplace |
 | Calificación | Reseña posterior a la compra |
+| Conversación | Chat entre comprador y vendedor |
 
 ---
 
@@ -53,8 +50,9 @@ SmartCampus Marketplace resuelve necesidades de compra, venta y comunicación de
 
 1. El estudiante inicia sesión con su cuenta UPeU.
 2. Busca un producto de segunda mano.
-3. Agrega el producto al carrito.
-4. Crea una orden.
-5. Registra el pago.
-6. El vendedor recibe notificación.
-7. El comprador califica la experiencia.
+3. Crea una orden desde el detalle.
+4. Genera preferencia de pago con Mercado Pago.
+5. Confirma o valida el número de transacción.
+6. `pago-ms` publica `pago.aprobado`.
+7. `chat-ms` registra un mensaje de venta validada.
+8. El comprador y vendedor coordinan entrega por chat.

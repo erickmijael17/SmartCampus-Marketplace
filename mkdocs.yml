@@ -33,9 +33,11 @@ nav:
   - Guía del proyecto:
       - Arquitectura: arquitectura.md
       - Dominio de negocio: dominio-negocio.md
+      - Frontend Angular: frontend-angular.md
       - Desarrollo DEV: desarrollo.md
       - Producción PROD: produccion.md
       - Seguridad Keycloak: seguridad.md
+      - Pagos Mercado Pago: pagos-mercadopago.md
       - Kafka y eventos: kafka-eventos.md
       - Observabilidad: observabilidad.md
       - Puertos: puertos.md

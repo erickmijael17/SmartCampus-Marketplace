@@ -56,9 +56,26 @@ spring:
 | Ruta | Estado esperado |
 |---|---|
 | `/auth/login` | Pública |
+| `/auth/register` | Pública |
 | `/actuator/health` | Pública |
+| Lectura de productos, categorías, publicaciones y media | Pública o con Bearer opcional |
 | Swagger | Pública o restringida según ambiente |
 | Escritura, borrado, pagos y administración | Protegidas por rol |
+
+---
+
+## Seguridad en frontend
+
+El cliente Angular de `frontend_Smart` usa:
+
+| Archivo | Responsabilidad |
+|---|---|
+| `frontend/src/app/guards/auth.guard.ts` | Protege `/publish`, `/profile` y `/chat` |
+| `frontend/src/app/guards/guest.guard.ts` | Evita login/registro cuando ya existe sesión |
+| `frontend/src/app/core/interceptors/auth-token.interceptor.ts` | Adjunta `Authorization: Bearer <token>` |
+| `frontend/src/app/core/services/session.service.ts` | Persiste sesión y controla expiración |
+
+El interceptor evita adjuntar token a login/registro y a lecturas públicas de catálogo, pero lo agrega a operaciones privadas como publicar, favoritos, chat, órdenes y pagos.
 
 ---
 

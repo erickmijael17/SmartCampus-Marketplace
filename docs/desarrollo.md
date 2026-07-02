@@ -7,6 +7,7 @@
 | Java 17 | Ejecutar Spring Boot |
 | Maven 3.8+ | Compilar y probar módulos |
 | Docker Desktop | PostgreSQL, Keycloak, Kafka y observabilidad |
+| Node.js 20+ | Ejecutar frontend Angular |
 | PowerShell o bash | Comandos de verificación |
 | Git | Control de versiones |
 
@@ -42,7 +43,25 @@ make compose-ms MS=auth-ms
 make compose-ms MS=producto-ms
 ```
 
-### 3. Ejecución Maven local
+### 3. Frontend Angular
+
+En la rama `frontend_Smart`:
+
+```powershell
+cd frontend
+npm install
+npm start
+```
+
+```bash
+cd frontend
+npm install
+npm start
+```
+
+El cliente queda disponible en `http://localhost:4200` y consume el Gateway.
+
+### 4. Ejecución Maven local
 
 ```powershell
 mvn -f infra/config/pom.xml spring-boot:run

@@ -14,7 +14,7 @@ Registrar infraestructura y microservicios en Eureka para permitir descubrimient
 El estudiante ejecuta varias instancias de servicios y entiende cómo Gateway y Feign las descubren.
 
 ### 1.3 Producto de sesión
-Eureka en `infra/eureka` mostrando `gateway`, `auth-ms`, `producto-ms`, `catalogo-ms` y otros servicios activos.
+Eureka en `infra/eureka` mostrando `gateway`, `auth-ms`, `producto-ms`, `categoria-ms`, `pago-ms`, `chat-ms` y otros servicios activos.
 
 ### 1.4 Motivación de la sesión
 Si en campaña universitaria muchos estudiantes consultan productos a la vez, el sistema debe permitir múltiples instancias y balanceo sin cambiar el cliente.

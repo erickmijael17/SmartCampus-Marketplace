@@ -2,12 +2,12 @@
 
 ## Visión general
 
-SmartCampus Marketplace implementa un marketplace universitario mediante microservicios. El cliente consume un **API Gateway**; los servicios se registran en **Eureka**, cargan configuración desde **Config Server**, validan identidad con **Keycloak** y se comunican mediante HTTP síncrono y eventos Kafka.
+SmartCampus Marketplace implementa un marketplace universitario mediante microservicios. El cliente Angular consume un **API Gateway**; los servicios se registran en **Eureka**, cargan configuración desde **Config Server**, validan identidad con **Keycloak** y se comunican mediante HTTP síncrono y eventos Kafka.
 
 ```mermaid
 flowchart TB
     User["Usuario UPeU<br/>estudiante, vendedor, admin"]
-    Front["Frontend Angular<br/>rama frontend_Smart"]
+    Front["Frontend Angular 20<br/>rama frontend_Smart"]
     KC["Keycloak<br/>realm smartcampus"]
     GW["Gateway<br/>:28082"]
     CFG["Config Server<br/>:28888"]
@@ -15,20 +15,15 @@ flowchart TB
 
     subgraph Servicios["Microservicios de negocio"]
         AUTH["auth-ms"]
-        CAT["catalogo-ms / categoria-ms"]
+        CAT["categoria-ms"]
         PROD["producto-ms"]
-        INV["inventario-ms"]
-        CART["carrito-ms"]
         ORD["orden-ms"]
         PAY["pago-ms"]
-        PER["persona-ms"]
         PUB["publicacion-ms"]
         FAV["favoritos-ms"]
         CHAT["chat-ms"]
         MEDIA["media-ms"]
         CAL["calificacion-ms"]
-        NOTI["notification-ms"]
-        SEARCH["search-ms"]
     end
 
     subgraph Eventos["Mensajería"]
@@ -47,14 +42,14 @@ flowchart TB
     Front -->|"POST /auth/login"| GW
     Front -->|"Bearer JWT"| GW
     AUTH --> KC
-    GW --> AUTH & CAT & PROD & INV & CART & ORD & PAY & PER & PUB & FAV & CHAT & MEDIA & CAL & NOTI & SEARCH
+    GW --> AUTH & CAT & PROD & ORD & PAY & PUB & FAV & CHAT & MEDIA & CAL
     GW -. rutas lb:// .-> EU
-    AUTH & CAT & PROD & INV & CART & ORD & PAY & PER & PUB & FAV & CHAT & MEDIA & CAL & NOTI & SEARCH -. registro .-> EU
-    AUTH & CAT & PROD & INV & CART & ORD & PAY & PER & PUB & FAV & CHAT & MEDIA & CAL & NOTI & SEARCH -. config .-> CFG
+    AUTH & CAT & PROD & ORD & PAY & PUB & FAV & CHAT & MEDIA & CAL -. registro .-> EU
+    AUTH & CAT & PROD & ORD & PAY & PUB & FAV & CHAT & MEDIA & CAL -. config .-> CFG
     ORD -->|"orden.creada"| KAFKA
     KAFKA --> PAY
-    PAY -->|"pago.*"| KAFKA
-    KAFKA --> NOTI
+    PAY -->|"pago.aprobado"| KAFKA
+    KAFKA --> CHAT
     PROM --> GW
     PROMTAIL --> LOKI --> GRAF
 ```
@@ -104,21 +99,23 @@ sequenceDiagram
     participant E as Estudiante
     participant GW as Gateway
     participant PROD as producto-ms
-    participant CART as carrito-ms
     participant ORD as orden-ms
     participant PAY as pago-ms
+    participant MP as Mercado Pago
+    participant CHAT as chat-ms
     participant K as Kafka
 
     E->>GW: GET /api/v1/productos
     GW->>PROD: Consulta productos
-    E->>GW: POST /api/v1/carritos
-    GW->>CART: Agrega producto al carrito
     E->>GW: POST /api/v1/ordenes
     GW->>ORD: Crea orden
     ORD->>K: Publica orden.creada
-    E->>GW: POST /api/v1/pagos
-    GW->>PAY: Registra pago
-    PAY->>K: Publica pago.aprobado o pago.rechazado
+    E->>GW: POST /api/v1/pagos/mercadopago/preference
+    GW->>PAY: Genera preferencia
+    PAY->>MP: Checkout externo
+    MP-->>PAY: Webhook / confirmación
+    PAY->>K: Publica pago.aprobado
+    K->>CHAT: Crea mensaje de venta validada
 ```
 
 ---
@@ -130,12 +127,13 @@ Las rutas se centralizan en `infra/config/config-repo/gateway-dev.yml` y `gatewa
 | Ruta | Servicio |
 |---|---|
 | `/auth/**` | `auth-ms` |
-| `/api/v1/categorias/**` | `catalogo-ms` |
+| `/api/v1/personas/**` | `auth-ms` |
+| `/api/v1/categorias/**` | `categoria-ms` |
 | `/api/v1/productos/**` | `producto-ms` |
-| `/api/v1/carritos/**` | `carrito-ms` |
-| `/api/v1/inventarios/**` | `inventario-ms` |
+| `/api/v1/publicaciones/**` | `publicacion-ms` |
+| `/api/v1/media/**` | `media-ms` |
+| `/api/v1/favoritos/**` | `favoritos-ms` |
+| `/api/v1/calificaciones/**` | `calificacion-ms` |
+| `/api/v1/chats/**` | `chat-ms` |
 | `/api/v1/ordenes/**` | `orden-ms` |
 | `/api/v1/pagos/**` | `pago-ms` |
-
-!!! warning "Servicios extendidos"
-    El repositorio también contiene `persona-ms`, `publicacion-ms`, `favoritos-ms`, `chat-ms`, `media-ms`, `calificacion-ms`, `notification-ms` y `search-ms`. Si se exponen por Gateway, sus rutas deben añadirse explícitamente al `config-repo` y documentarse en esta página.
