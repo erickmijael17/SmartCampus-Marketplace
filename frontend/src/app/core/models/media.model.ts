@@ -9,6 +9,11 @@ export interface MediaFileRequest {
 export interface MediaFileResponse {
   id: number;
   url: string;
+  originalUrl?: string | null;
+  urlOriginal?: string | null;
+  enlace?: string | null;
+  ruta?: string | null;
+  uri?: string | null;
   tipoMime?: string | null;
   tamanoBytes?: number | null;
   idUploader: number;

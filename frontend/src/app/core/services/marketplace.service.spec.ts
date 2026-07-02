@@ -146,6 +146,7 @@ describe('MarketplaceService public catalog images', () => {
   });
 
   afterEach(() => {
+    localStorage.removeItem('smartcampus.listingImageCache.v1');
     http.verify();
   });
 
@@ -184,6 +185,42 @@ describe('MarketplaceService public catalog images', () => {
     productsRequest.flush([
       {
         id: 99,
+        titulo: 'Polera UPeU',
+        descripcion: 'Talla L en buen estado',
+        precio: 20,
+        moneda: 'PEN',
+        estado: 'PUBLICADO',
+        idCategoria: 5,
+        idVendedor: 2
+      }
+    ]);
+  });
+
+  it('keeps image URL fallback from local cache when media is unavailable', () => {
+    localStorage.setItem(
+      'smartcampus.listingImageCache.v1',
+      JSON.stringify([
+        {
+          productId: 91,
+          sellerId: 2,
+          categoryId: 5,
+          title: 'Polera UPeU',
+          imageUrl: 'https://images.example.com/polera-campus.jpg'
+        }
+      ])
+    );
+    publicacionApi.findAll.and.returnValue(of([]));
+    mediaApi.findAll.and.returnValue(of([]));
+
+    service.getListings().subscribe((listings) => {
+      expect(listings[0].imageUrl).toBe('https://images.example.com/polera-campus.jpg');
+    });
+
+    const productsRequest = http.expectOne('http://localhost:18080/api/v1/productos');
+    expect(productsRequest.request.method).toBe('GET');
+    productsRequest.flush([
+      {
+        id: 91,
         titulo: 'Polera UPeU',
         descripcion: 'Talla L en buen estado',
         precio: 20,

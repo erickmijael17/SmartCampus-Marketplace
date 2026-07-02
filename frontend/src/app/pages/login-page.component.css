@@ -1,11 +1,12 @@
 .auth-card {
   max-width: 520px;
-  margin: 2rem auto;
-  background: #ffffff;
+  margin: 2.2rem auto;
+  background: var(--surface-strong);
   border: 1px solid var(--border);
   border-radius: 18px;
-  padding: 1.6rem;
+  padding: 1.8rem;
   box-shadow: var(--shadow);
+  backdrop-filter: blur(14px);
 }
 
 .eyebrow {
@@ -34,13 +35,7 @@ label {
 }
 
 button[type='submit'] {
-  border: none;
-  border-radius: 12px;
-  background: #0f172a;
-  color: #ffffff;
-  padding: 0.85rem 1rem;
-  font-weight: 700;
-  cursor: pointer;
+  width: 100%;
 }
 
 button:disabled {

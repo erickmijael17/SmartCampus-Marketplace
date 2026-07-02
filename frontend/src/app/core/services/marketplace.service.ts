@@ -98,9 +98,19 @@ interface CatalogContext {
 
 }
 
+interface ListingImageCacheItem {
+  productId: number;
+  sellerId: number;
+  categoryId: number;
+  title: string;
+  imageUrl: string;
+}
+
 @Injectable({ providedIn: 'root' })
 
 export class MarketplaceService {
+
+  private readonly listingImageCacheKey = 'smartcampus.listingImageCache.v1';
 
   private readonly http = inject(HttpClient);
 
@@ -219,6 +229,7 @@ export class MarketplaceService {
           idVendedor: userId
 
         };
+        const providedImageUrl = payload.imageUrl?.trim() ?? '';
 
         return this.http
 
@@ -227,8 +238,7 @@ export class MarketplaceService {
           .pipe(
 
             switchMap((product) => {
-
-              if (!payload.imageUrl?.trim()) {
+              if (!providedImageUrl) {
 
                 return of(this.toListing(product, publicacion.id, null));
 
@@ -238,7 +248,7 @@ export class MarketplaceService {
 
                 .create({
 
-                  url: payload.imageUrl.trim(),
+                  url: providedImageUrl,
 
                   tipoMime: 'image/jpeg',
 
@@ -250,9 +260,9 @@ export class MarketplaceService {
 
                 .pipe(
 
-                  map((media) => this.toListing(product, publicacion.id, media.url)),
+                  map(() => this.toListing(product, publicacion.id, providedImageUrl)),
 
-                  catchError(() => of(this.toListing(product, publicacion.id, payload.imageUrl?.trim() ?? null)))
+                  catchError(() => of(this.toListing(product, publicacion.id, providedImageUrl)))
 
                 );
 
@@ -286,7 +296,7 @@ export class MarketplaceService {
 
                   publicacion.id,
 
-                  payload.imageUrl?.trim() ?? null
+                  providedImageUrl || null
 
                 )
 
@@ -302,6 +312,8 @@ export class MarketplaceService {
 
       })
 
+    ).pipe(
+      tap((listing) => this.rememberListingImage(listing))
     );
 
   }
@@ -752,10 +764,11 @@ export class MarketplaceService {
     const mediaByPublication = new Map<number, string>();
 
     for (const media of context.mediaFiles) {
+      const mediaUrl = this.extractMediaUrl(media);
 
-      if (media.idPublicacion) {
+      if (media.idPublicacion && mediaUrl) {
 
-        mediaByPublication.set(media.idPublicacion, media.url);
+        mediaByPublication.set(media.idPublicacion, mediaUrl);
 
       }
 
@@ -768,8 +781,11 @@ export class MarketplaceService {
         publicationByKey.get(this.publicationKey(product.idVendedor, product.titulo, product.idCategoria)) ?? null;
 
       const mediaUrl = publication ? mediaByPublication.get(publication.id) ?? null : null;
+      const rememberedImageUrl = this.findRememberedImage(product);
+      const productImageUrl = this.extractProductImageUrl(product);
+      const resolvedImage = mediaUrl ?? productImageUrl ?? rememberedImageUrl;
 
-      return this.toListing(product, publication?.id ?? null, mediaUrl);
+      return this.toListing(product, publication?.id ?? null, resolvedImage);
 
     });
 
@@ -947,6 +963,112 @@ export class MarketplaceService {
 
     return url;
 
+  }
+
+  private extractProductImageUrl(product: ProductResponse): string | null {
+    const candidates = [product.imageUrl, product.imagenUrl, product.fotoUrl]
+      .map((value) => (typeof value === 'string' ? value.trim() : ''))
+      .filter(Boolean);
+
+    if (!candidates.length) {
+      return null;
+    }
+
+    return candidates[0];
+  }
+
+  private extractMediaUrl(media: MediaFileResponse): string | null {
+    const candidates = [media.url, media.originalUrl, media.urlOriginal, media.enlace, media.ruta, media.uri]
+      .map((value) => (typeof value === 'string' ? value.trim() : ''))
+      .filter(Boolean);
+
+    if (!candidates.length) {
+      return null;
+    }
+
+    return candidates[0];
+  }
+
+  private rememberListingImage(listing: MarketplaceListing): void {
+    if (!listing.imageUrl || listing.imageUrl.startsWith('/assets/')) {
+      return;
+    }
+
+    const current = this.readListingImageCache();
+    const key = `${listing.id}|${listing.sellerId}|${listing.categoryId}|${listing.title.trim().toLowerCase()}`;
+    const filtered = current.filter(
+      (item) => `${item.productId}|${item.sellerId}|${item.categoryId}|${item.title.trim().toLowerCase()}` !== key
+    );
+
+    filtered.unshift({
+      productId: listing.id,
+      sellerId: listing.sellerId,
+      categoryId: listing.categoryId,
+      title: listing.title,
+      imageUrl: listing.imageUrl
+    });
+
+    this.writeListingImageCache(filtered.slice(0, 600));
+  }
+
+  private findRememberedImage(product: ProductResponse): string | null {
+    const cache = this.readListingImageCache();
+    const title = product.titulo.trim().toLowerCase();
+
+    const byProductId = cache.find((item) => item.productId === product.id);
+    if (byProductId?.imageUrl) {
+      return byProductId.imageUrl;
+    }
+
+    const byComposite = cache.find(
+      (item) =>
+        item.sellerId === product.idVendedor &&
+        item.categoryId === product.idCategoria &&
+        item.title.trim().toLowerCase() === title
+    );
+
+    return byComposite?.imageUrl ?? null;
+  }
+
+  private readListingImageCache(): ListingImageCacheItem[] {
+    if (typeof localStorage === 'undefined') {
+      return [];
+    }
+
+    try {
+      const raw = localStorage.getItem(this.listingImageCacheKey);
+      if (!raw) {
+        return [];
+      }
+
+      const parsed = JSON.parse(raw) as ListingImageCacheItem[];
+      if (!Array.isArray(parsed)) {
+        return [];
+      }
+
+      return parsed.filter(
+        (item) =>
+          typeof item?.productId === 'number' &&
+          typeof item?.sellerId === 'number' &&
+          typeof item?.categoryId === 'number' &&
+          typeof item?.title === 'string' &&
+          typeof item?.imageUrl === 'string'
+      );
+    } catch {
+      return [];
+    }
+  }
+
+  private writeListingImageCache(items: ListingImageCacheItem[]): void {
+    if (typeof localStorage === 'undefined') {
+      return;
+    }
+
+    try {
+      localStorage.setItem(this.listingImageCacheKey, JSON.stringify(items));
+    } catch {
+      // Ignore storage quota errors and keep app flow uninterrupted.
+    }
   }
 
   private url(path: string): string {

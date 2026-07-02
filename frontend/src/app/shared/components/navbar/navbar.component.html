@@ -3,10 +3,12 @@
     <a routerLink="/" class="brand" aria-label="SmartCampus Marketplace" (click)="closeMenu()">
       <span class="brand-mark">SC</span>
       <span class="brand-text">Smart<span>Campus</span></span>
+      <span class="brand-sub">Marketplace</span>
     </a>
 
     <nav class="links" [class.open]="menuOpen" aria-label="Navegacion principal">
       <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="closeMenu()">Inicio</a>
+      <a routerLink="/" fragment="about" (click)="closeMenu()">Acerca de nosotros</a>
       <a routerLink="/publish" routerLinkActive="active" (click)="closeMenu()">Publicar</a>
       <a routerLink="/chat" routerLinkActive="active" (click)="closeMenu()">Chat</a>
       <a routerLink="/profile" routerLinkActive="active" (click)="closeMenu()">Perfil</a>

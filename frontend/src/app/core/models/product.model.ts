@@ -23,6 +23,9 @@ export interface ProductResponse {
   publicadoEn?: string | null;
   actualizadoEn?: string | null;
   categoria?: CategoriaDto | null;
+  imageUrl?: string | null;
+  imagenUrl?: string | null;
+  fotoUrl?: string | null;
 }
 
 export interface ProductRequest {

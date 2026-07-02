@@ -1,14 +1,21 @@
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Space+Grotesk:wght@400;500;700&display=swap');
+
 :root {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Space Grotesk', 'Segoe UI', sans-serif;
   line-height: 1.4;
-  --primary: #2563eb;
-  --secondary: #16a34a;
-  --background: #f8fafc;
-  --text-main: #0f172a;
-  --text-muted: #64748b;
-  --border: #e2e8f0;
-  --danger: #b91c1c;
-  --shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+  --primary: #35d4ff;
+  --primary-strong: #17b2dd;
+  --secondary: #22c55e;
+  --background: #061425;
+  --background-soft: #0c1f36;
+  --surface: rgba(12, 31, 54, 0.72);
+  --surface-strong: rgba(17, 36, 61, 0.92);
+  --text-main: #e5f0ff;
+  --text-muted: #8ea4c2;
+  --border: rgba(117, 152, 193, 0.26);
+  --danger: #ff6b7f;
+  --radius: 16px;
+  --shadow: 0 16px 45px rgba(2, 8, 23, 0.35);
 }
 
 * {
@@ -17,8 +24,24 @@
 
 body {
   margin: 0;
-  background: linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%);
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 12% 12%, rgba(53, 212, 255, 0.16), transparent 34%),
+    radial-gradient(circle at 88% 18%, rgba(37, 99, 235, 0.18), transparent 38%),
+    linear-gradient(160deg, #03101e 0%, #08192d 52%, #061425 100%);
   color: var(--text-main);
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.28;
+  background-image:
+    linear-gradient(rgba(101, 132, 168, 0.24) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(101, 132, 168, 0.24) 1px, transparent 1px);
+  background-size: 36px 36px;
 }
 
 h1,
@@ -26,6 +49,13 @@ h2,
 h3,
 p {
   margin-top: 0;
+}
+
+h1,
+h2,
+h3 {
+  font-family: 'Sora', 'Space Grotesk', sans-serif;
+  letter-spacing: -0.02em;
 }
 
 a {
@@ -42,10 +72,11 @@ a {
 }
 
 .panel {
-  background: #fff;
+  background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 16px;
+  border-radius: var(--radius);
   box-shadow: var(--shadow);
+  backdrop-filter: blur(14px);
 }
 
 .muted {
@@ -57,10 +88,11 @@ a {
   align-items: center;
   padding: 0.35rem 0.75rem;
   border-radius: 999px;
-  background: #eff6ff;
+  background: rgba(53, 212, 255, 0.14);
   color: var(--primary);
   font-size: 0.82rem;
   font-weight: 800;
+  border: 1px solid rgba(53, 212, 255, 0.34);
 }
 
 .btn {
@@ -77,12 +109,13 @@ a {
 }
 
 .btn-primary {
-  background: var(--primary);
-  color: #fff;
+  background: linear-gradient(135deg, var(--primary), #5ae7ff);
+  color: #02263a;
+  box-shadow: 0 8px 20px rgba(53, 212, 255, 0.26);
 }
 
 .btn-ghost {
-  background: #fff;
+  background: rgba(6, 20, 37, 0.5);
   color: var(--text-main);
   border: 1px solid var(--border);
 }
@@ -93,7 +126,12 @@ a {
   border-radius: 10px;
   padding: 0.75rem 0.85rem;
   font: inherit;
-  background: #fff;
+  background: rgba(12, 31, 54, 0.86);
+  color: var(--text-main);
+}
+
+.field::placeholder {
+  color: #6f88a8;
 }
 
 .field.invalid {
@@ -111,16 +149,18 @@ a {
   margin: 0;
   padding: 0.75rem 0.9rem;
   border-radius: 10px;
-  background: #fef2f2;
+  background: rgba(185, 28, 28, 0.16);
   color: var(--danger);
   font-weight: 600;
+  border: 1px solid rgba(255, 107, 127, 0.32);
 }
 
 .status-error {
   margin: 0;
   padding: 0.75rem 0.9rem;
   border-radius: 10px;
-  background: #fef2f2;
+  background: rgba(185, 28, 28, 0.16);
   color: var(--danger);
   font-weight: 600;
+  border: 1px solid rgba(255, 107, 127, 0.32);
 }

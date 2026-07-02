@@ -1,21 +1,23 @@
 .card {
   overflow: hidden;
-  background: #fff;
+  background: rgba(12, 31, 54, 0.76);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   transition: transform 180ms ease, box-shadow 180ms ease;
+  backdrop-filter: blur(10px);
 }
 
 .card:hover {
   transform: translateY(-3px);
   box-shadow: var(--shadow);
+  border-color: rgba(53, 212, 255, 0.42);
 }
 
 .image-wrap {
   position: relative;
   display: block;
   aspect-ratio: 1 / 1;
-  background: #eef2ff;
+  background: #132d48;
 }
 
 img {
@@ -35,18 +37,18 @@ img {
 }
 
 .nuevo {
-  background: #dcfce7;
-  color: #047857;
+  background: rgba(34, 197, 94, 0.2);
+  color: #5df3a0;
 }
 
 .usado {
-  background: #fef3c7;
-  color: #b45309;
+  background: rgba(251, 191, 36, 0.2);
+  color: #f8d267;
 }
 
 .servicio {
-  background: #dbeafe;
-  color: #1d4ed8;
+  background: rgba(53, 212, 255, 0.2);
+  color: #90eeff;
 }
 
 .body {
@@ -66,6 +68,7 @@ h3 {
   margin: 0.55rem 0;
   font-size: 1rem;
   line-height: 1.25;
+  color: #e5f0ff;
 }
 
 p {

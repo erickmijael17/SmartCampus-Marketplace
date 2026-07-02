@@ -323,10 +323,18 @@ public class AuthService {
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setBearerAuth(adminToken);
 
+        String fullName = request.getFullName() != null && !request.getFullName().isBlank()
+            ? request.getFullName().trim()
+            : username;
+        String[] nameParts = fullName.split("\\s+", 2);
+        String firstName = nameParts[0];
+        String lastName = nameParts.length > 1 ? nameParts[1] : "-";
+
         Map<String, Object> userRepresentation = new HashMap<>();
         userRepresentation.put("username", username);
         userRepresentation.put("email", request.getEmail());
-        userRepresentation.put("firstName", request.getFullName());
+        userRepresentation.put("firstName", firstName);
+        userRepresentation.put("lastName", lastName);
         userRepresentation.put("enabled", true);
         userRepresentation.put("emailVerified", true);
 

@@ -14,7 +14,7 @@ import { NavbarComponent } from '../../components/navbar/navbar.component';
   `,
   styles: [`
     .app-main {
-      padding-top: 66px;
+      padding-top: 74px;
       min-height: 100vh;
     }
   `]

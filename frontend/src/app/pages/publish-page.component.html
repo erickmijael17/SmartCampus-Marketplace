@@ -59,6 +59,7 @@
           (input)="onImageUrlInput()"
         />
         <small class="muted">Las URL web se guardan en media-ms y vuelven a mostrarse al iniciar la app.</small>
+        <small class="muted">Tip: usa una URL directa de imagen (JPG/PNG/WEBP) para evitar bloqueos de vista previa.</small>
         @if (fieldError('imageUrl'); as message) {
           <p class="field-error">{{ message }}</p>
         }
