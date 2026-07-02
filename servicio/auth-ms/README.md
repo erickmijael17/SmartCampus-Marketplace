@@ -48,6 +48,13 @@ Links:
 ## Endpoints
 
 - `POST /auth/login`
+- `POST /auth/register`
+- `GET /auth/me`
+- `GET /auth/profile`
+- `PUT /auth/profile`
+- `GET /auth/user-info`
+- `GET /auth/users`
+- `DELETE /auth/users/{userId}`
 - `GET /actuator/health`
 
 ## Keycloak

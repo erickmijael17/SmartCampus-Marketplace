@@ -14,10 +14,14 @@ Microservicio para registrar y consultar pagos de ordenes en CampusMarket.
 - GET /api/v1/pagos
 - GET /api/v1/pagos/{id}
 - GET /api/v1/pagos/usuario/{idComprador}
+- GET /api/v1/pagos/vendedor/{idVendedor}/resumen
 - PUT /api/v1/pagos/{id}
+- POST /api/v1/pagos/{id}/validar-transaccion
 - DELETE /api/v1/pagos/{id}
+- GET /api/v1/pagos/instancia
 - POST /api/v1/pagos/mercadopago/preference
 - GET /api/v1/pagos/mercadopago/return
+- GET /api/v1/pagos/mercadopago/confirmar
 - POST /api/v1/pagos/mercadopago/webhook
 
 ## Mercado Pago

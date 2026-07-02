@@ -134,11 +134,11 @@ export class PagoApiService {
   validarTransaccion(pagoId: number, paymentId: string): Observable<ValidarTransaccionMercadoPagoResponse> {
     return this.http.post<ValidarTransaccionMercadoPagoResponse>(
       this.url(API_CONFIG.endpoints.marketplace.mercadoPagoValidateTransaction(pagoId)),
-      { paymentId: paymentId.trim() }
+      { transactionId: paymentId.trim() }
     );
   }
 
   private url(path: string): string {
-    return this.gateway.baseUrl() + path;
+    return path.startsWith('http://') || path.startsWith('https://') ? path : this.gateway.baseUrl() + path;
   }
 }

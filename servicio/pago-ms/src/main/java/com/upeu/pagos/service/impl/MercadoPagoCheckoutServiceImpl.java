@@ -32,6 +32,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -163,50 +164,23 @@ public class MercadoPagoCheckoutServiceImpl implements MercadoPagoCheckoutServic
                 .build();
 
         if (ESTADO_APROBADO.equals(pago.getEstado())) {
-            try {
-                if (!alreadyApproved) {
-                    ordenClient.updateEstado(pago.getIdOrden(), new ActualizarEstadoOrdenRequest("PAGADA"));
+            if (!pago.isEventoPagoAprobadoPublicado()) {
+                try {
+                    productorPago.enviarEventoPago(buildPagoAprobadoEvent(pago, "mercado-pago-confirmacion"));
+                    pago.setEventoPagoAprobadoPublicado(true);
+                } catch (Exception e) {
+                    log.error("No se pudo publicar evento pago.aprobado para pagoId={}", pago.getId(), e);
+                    pago.setEventoPagoAprobadoPublicado(false);
                 }
-                response.setEstadoOrden("PAGADA");
-            } catch (Exception e) {
-                log.error("Error al actualizar la orden en orden-ms", e);
-                response.setEstadoOrden("ERROR_ACTUALIZACION");
+                pago.setFechaConfirmacion(LocalDateTime.now());
+                pago.setUpdatedAt(LocalDateTime.now());
+                pago = pagoRepository.save(pago);
+                response.setMensaje("Pago confirmado y evento de pago aprobado publicado.");
+            } else {
+                response.setMensaje("Pago ya confirmado previamente.");
             }
-
-            try {
-                if (!alreadyApproved) {
-                    ComprobantePagoRequest chatReq = ComprobantePagoRequest.builder()
-                            .ordenId(pago.getIdOrden())
-                            .idComprador(pago.getIdComprador())
-                            .idVendedor(pago.getIdVendedor())
-                            .publicacionId(pago.getPublicacionId())
-                            .tituloProducto(pago.getTituloProducto())
-                            .monto(pago.getMonto())
-                            .moneda(pago.getMoneda())
-                            .estadoPago(pago.getEstado())
-                            .metodoPago(pago.getMetodoPago())
-                            .paymentId(pago.getMpPaymentId())
-                            .fechaPago(LocalDateTime.now())
-                            .build();
-
-                    ComprobantePagoResponse chatResp = chatClient.createReceipt(chatReq);
-                    pago.setChatId(chatResp.getChatId());
-                    pago.setUpdatedAt(LocalDateTime.now());
-                    pagoRepository.save(pago);
-                    response.setChatId(pago.getChatId());
-                    response.setConversacionId(pago.getChatId());
-                    response.setMensaje("Pago confirmado y comprobante enviado al chat.");
-                    response.setMensajeComprobanteEnviado(chatResp.isMensajeComprobanteEnviado());
-                } else {
-                    // Si ya estaba aprobado, no reenviamos al chat.
-                    response.setMensaje("Pago ya confirmado previamente.");
-                    response.setMensajeComprobanteEnviado(true);
-                }
-            } catch (Exception e) {
-                log.error("Error al crear comprobante en chat-ms", e);
-                response.setMensaje("Pago confirmado, pero no se pudo crear el comprobante en chat.");
-                response.setMensajeComprobanteEnviado(false);
-            }
+            response.setEstadoOrden("PAGADA");
+            response.setMensajeComprobanteEnviado(false);
         }
         
         return response;
@@ -226,8 +200,18 @@ public class MercadoPagoCheckoutServiceImpl implements MercadoPagoCheckoutServic
                     pago.getIdOrden(),
                     normalizedPaymentId
             );
-            boolean chatMessageCreated = createValidatedSaleMessageSafely(pago);
-            return buildValidationResponse(pago, approvedBuyerMessage(pago), chatMessageCreated);
+            if (!pago.isEventoPagoAprobadoPublicado()) {
+                try {
+                    productorPago.enviarEventoPago(buildPagoAprobadoEvent(pago, "mercado-pago-validacion-manual"));
+                    pago.setEventoPagoAprobadoPublicado(true);
+                } catch (Exception e) {
+                    log.error("No se pudo publicar evento pago.aprobado para pagoId={}", pago.getId(), e);
+                    pago.setEventoPagoAprobadoPublicado(false);
+                }
+                pago.setUpdatedAt(LocalDateTime.now());
+                pagoRepository.save(pago);
+            }
+            return buildValidationResponse(pago, approvedBuyerMessage(pago), false);
         }
         if (ESTADO_APROBADO.equals(pago.getEstado())) {
             throw new ConflictException("El pago ya fue aprobado con otra transaccion");
@@ -240,7 +224,7 @@ public class MercadoPagoCheckoutServiceImpl implements MercadoPagoCheckoutServic
                     throw new ConflictException("El numero de transaccion ya fue usado por otro pago");
                 });
 
-        MercadoPagoPaymentResult payment = fetchPayment(normalizedPaymentId);
+        MercadoPagoPaymentResult payment = fetchPayment(normalizedPaymentId, pago.getExternalReference());
         String mpStatus = firstNonBlank(payment.status(), "unknown");
         log.info(
                 "MP validar transaccion pagoId={}, idOrden={}, paymentId={}, status={}, external_reference={}, transaction_amount={}",
@@ -265,22 +249,13 @@ public class MercadoPagoCheckoutServiceImpl implements MercadoPagoCheckoutServic
         if (ESTADO_APROBADO.equals(mappedStatus)) {
             pago.setFechaConfirmacion(LocalDateTime.now());
             if (!pago.isEventoPagoAprobadoPublicado()) {
-                productorPago.enviarEventoPago(EventoPago.builder()
-                        .tipoEvento("pago.aprobado")
-                        .pagoId(pago.getId())
-                        .ordenId(pago.getIdOrden())
-                        .idComprador(pago.getIdComprador())
-                        .idVendedor(pago.getIdVendedor())
-                        .publicacionId(pago.getPublicacionId())
-                        .tituloProducto(pago.getTituloProducto())
-                        .monto(pago.getMonto() == null ? null : pago.getMonto().doubleValue())
-                        .moneda(pago.getMoneda())
-                        .mpPaymentId(pago.getMpPaymentId())
-                        .estado(ESTADO_APROBADO)
-                        .origen("mercado-pago-validacion-manual")
-                        .timestamp(System.currentTimeMillis())
-                        .build());
-                pago.setEventoPagoAprobadoPublicado(true);
+                try {
+                    productorPago.enviarEventoPago(buildPagoAprobadoEvent(pago, "mercado-pago-validacion-manual"));
+                    pago.setEventoPagoAprobadoPublicado(true);
+                } catch (Exception e) {
+                    log.error("No se pudo publicar evento pago.aprobado para pagoId={}", pago.getId(), e);
+                    pago.setEventoPagoAprobadoPublicado(false);
+                }
             } else {
                 log.info(
                         "service=pago-ms component=payment-validation pagoId={} idOrden={} paymentId={} eventType=pago.aprobado status=already_published",
@@ -289,7 +264,6 @@ public class MercadoPagoCheckoutServiceImpl implements MercadoPagoCheckoutServic
                         pago.getMpPaymentId()
                 );
             }
-            chatMessageCreated = createValidatedSaleMessageSafely(pago);
             mensaje = approvedBuyerMessage(pago);
         }
 
@@ -337,15 +311,22 @@ public class MercadoPagoCheckoutServiceImpl implements MercadoPagoCheckoutServic
         return normalized;
     }
 
-    private MercadoPagoPaymentResult fetchPayment(String paymentId) {
+    private MercadoPagoPaymentResult fetchPayment(String paymentId, String externalReference) {
         try {
             MercadoPagoPaymentResult payment = mercadoPagoClient.obtenerPagoPorId(paymentId);
             if (payment == null) {
-                throw new ResourceNotFoundException("Mercado Pago no encontro la transaccion " + paymentId);
+                payment = mercadoPagoClient.searchPaymentByExternalReference(externalReference);
+                if (payment == null) {
+                    throw new ResourceNotFoundException("Mercado Pago no encontro la transaccion " + paymentId);
+                }
             }
             return payment;
         } catch (RestClientResponseException e) {
-            if (HttpStatus.NOT_FOUND.value() == e.getStatusCode().value()) {
+            if (HttpStatus.NOT_FOUND.value() == e.getStatusCode().value() || HttpStatus.BAD_REQUEST.value() == e.getStatusCode().value()) {
+                MercadoPagoPaymentResult payment = mercadoPagoClient.searchPaymentByExternalReference(externalReference);
+                if (payment != null) {
+                    return payment;
+                }
                 throw new ResourceNotFoundException("Mercado Pago no encontro la transaccion " + paymentId);
             }
             log.error(
@@ -418,50 +399,6 @@ public class MercadoPagoCheckoutServiceImpl implements MercadoPagoCheckoutServic
                 .build();
     }
 
-    private boolean createValidatedSaleMessageSafely(Pago pago) {
-        try {
-            MensajeVentaValidadaResponse response = chatClient.createValidatedSaleMessage(MensajeVentaValidadaRequest.builder()
-                    .idComprador(pago.getIdComprador())
-                    .idVendedor(pago.getIdVendedor())
-                    .publicacionId(pago.getPublicacionId())
-                    .idOrden(pago.getIdOrden())
-                    .pagoId(pago.getId())
-                    .tituloProducto(pago.getTituloProducto())
-                    .monto(pago.getMonto())
-                    .moneda(pago.getMoneda())
-                    .mpPaymentId(pago.getMpPaymentId())
-                    .build());
-            if (response == null) {
-                log.warn(
-                        "chat-ms devolvio respuesta vacia al crear mensaje automatico de venta validada pagoId={}, ordenId={}",
-                        pago.getId(),
-                        pago.getIdOrden()
-                );
-                return false;
-            }
-            log.info(
-                    "Mensaje automatico de venta validada creado en chat-ms pagoId={}, ordenId={}, chatId={}, mensajeId={}, creado={}",
-                    pago.getId(),
-                    pago.getIdOrden(),
-                    response.getChatId(),
-                    response.getMensajeId(),
-                    response.isCreado()
-            );
-            return response.isCreado();
-        } catch (Exception e) {
-            log.error(
-                    "No se pudo crear mensaje automatico de venta validada en chat-ms pagoId={}, ordenId={}, compradorId={}, vendedorId={}, publicacionId={}: {}",
-                    pago.getId(),
-                    pago.getIdOrden(),
-                    pago.getIdComprador(),
-                    pago.getIdVendedor(),
-                    pago.getPublicacionId(),
-                    e.getMessage()
-            );
-            return false;
-        }
-    }
-
     private String approvedBuyerMessage(Pago pago) {
         String titulo = firstNonBlank(pago.getTituloProducto(), "producto");
         String monto = pago.getMonto() == null ? "0.00" : normalizeAmount(pago.getMonto()).toPlainString();
@@ -525,5 +462,28 @@ public class MercadoPagoCheckoutServiceImpl implements MercadoPagoCheckoutServic
             throw new IllegalStateException("frontendUrl no configurado para Mercado Pago");
         }
         return normalized;
+    }
+
+    private EventoPago buildPagoAprobadoEvent(Pago pago, String origen) {
+        return EventoPago.builder()
+                .eventId(UUID.randomUUID().toString())
+                .tipoEvento("pago.aprobado")
+                .pagoId(pago.getId())
+                .ordenId(pago.getIdOrden())
+                .idComprador(pago.getIdComprador())
+                .compradorId(pago.getIdComprador())
+                .idVendedor(pago.getIdVendedor())
+                .vendedorId(pago.getIdVendedor())
+                .productoId(pago.getPublicacionId())
+                .publicacionId(pago.getPublicacionId())
+                .tituloProducto(pago.getTituloProducto())
+                .monto(pago.getMonto() == null ? null : pago.getMonto().doubleValue())
+                .moneda(pago.getMoneda())
+                .mpPaymentId(pago.getMpPaymentId())
+                .estado(ESTADO_APROBADO)
+                .estadoPago(ESTADO_APROBADO)
+                .origen(origen)
+                .timestamp(System.currentTimeMillis())
+                .build();
     }
 }

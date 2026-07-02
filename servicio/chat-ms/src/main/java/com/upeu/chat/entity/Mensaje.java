@@ -34,6 +34,9 @@ public class Mensaje {
     @Column(name = "id_remitente")
     private Long idRemitente;
 
+    @Column(name = "receptor_id")
+    private Long receptorId;
+
     @Column(name = "contenido")
     private String contenido;
 

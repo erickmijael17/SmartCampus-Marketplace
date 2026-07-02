@@ -13,4 +13,10 @@ public class ConversacionResponse {
     private String tipoChat;
     private LocalDateTime creadoEn;
     private LocalDateTime actualizadoEn;
+
+    private Long otroUsuarioId;
+    private String nombreOtroUsuario;
+    private String ultimoMensaje;
+    private String tipoUltimoMensaje;
+    private LocalDateTime ultimoMensajeFecha;
 }

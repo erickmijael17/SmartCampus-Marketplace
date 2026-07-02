@@ -35,18 +35,17 @@ export class ChatService {
             this.getMessages(conversation.id).pipe(map((messages) => this.toThread(conversation, messages)))
           )
         );
-      })
+      }),
+      map(threads => threads.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()))
     );
   }
 
   getConversation(id: number): Observable<ChatThread> {
-    return this.http
-      .get<ConversacionResponse>(this.url(API_CONFIG.endpoints.chats.detail(id)))
-      .pipe(
-        switchMap((conversation) =>
-          this.getMessages(id).pipe(map((messages) => this.toThread(conversation, messages)))
-        )
-      );
+    return this.http.get<ConversacionResponse>(this.url(API_CONFIG.endpoints.chats.detail(id))).pipe(
+      switchMap((conversation) =>
+        this.getMessages(id).pipe(map((messages) => this.toThread(conversation, messages)))
+      )
+    );
   }
 
   getOrCreateConversation(otherUserId: number, publicacionId?: number | null): Observable<ChatThread> {
@@ -79,9 +78,9 @@ export class ChatService {
   }
 
   getMessages(conversationId: number): Observable<ChatMessage[]> {
-    return this.http
-      .get<MensajeResponse[]>(this.url(API_CONFIG.endpoints.chats.messages(conversationId)))
-      .pipe(map((items) => items.map((item) => this.toChatMessage(item))));
+    return this.http.get<MensajeResponse[]>(this.url(API_CONFIG.endpoints.chats.messages(conversationId))).pipe(
+      map((items) => items.map((item) => this.toChatMessage(item)))
+    );
   }
 
   sendMessage(conversationId: number, text: string): Observable<ChatMessage> {
@@ -92,25 +91,28 @@ export class ChatService {
       leido: false
     };
 
-    return this.http
-      .post<MensajeResponse>(this.url(API_CONFIG.endpoints.chats.messages(conversationId)), request)
-      .pipe(map((item) => this.toChatMessage(item)));
+    return this.http.post<MensajeResponse>(this.url(API_CONFIG.endpoints.chats.messages(conversationId)), request).pipe(
+      map((item) => this.toChatMessage(item))
+    );
   }
 
   private toThreadSummary(conversation: ConversacionResponse): ChatThread {
     const currentUserId = this.sessionService.personaId();
-    const otherUserId =
-      currentUserId !== null && conversation.idUsuario1 === currentUserId ? conversation.idUsuario2 : conversation.idUsuario1;
+    const otherUserId = conversation.otroUsuarioId || (
+      currentUserId !== null && conversation.idUsuario1 === currentUserId ? conversation.idUsuario2 : conversation.idUsuario1
+    );
+    
+    const otherUserName = conversation.nombreOtroUsuario || (otherUserId ? `Usuario #${otherUserId}` : 'Sistema');
 
     return {
       id: conversation.id,
       idUsuario1: conversation.idUsuario1,
       idUsuario2: conversation.idUsuario2,
-      name: `Usuario #${otherUserId}`,
+      name: otherUserName,
       avatar: `/assets/avatar-placeholder.svg`,
       subject: conversation.idOrden ? `Venta #${conversation.idOrden}` : `Conversacion #${conversation.id}`,
-      lastMsg: 'Sin mensajes aun',
-      time: conversation.actualizadoEn ?? conversation.creadoEn ?? '',
+      lastMsg: conversation.ultimoMensaje || 'Sin mensajes aun',
+      time: conversation.ultimoMensajeFecha ?? conversation.actualizadoEn ?? conversation.creadoEn ?? '',
       unread: 0,
       messages: [],
       publicacionId: conversation.publicacionId,
@@ -132,14 +134,28 @@ export class ChatService {
 
   private toChatMessage(message: MensajeResponse): ChatMessage {
     const currentUserId = this.sessionService.personaId();
-    const isSystem = message.tipoRemitente === 'SISTEMA' || message.tipoMensaje?.startsWith('SISTEMA');
+    const isSystem =
+      message.tipoRemitente === 'SISTEMA' ||
+      message.tipoMensaje?.startsWith('SISTEMA') ||
+      message.tipoMensaje?.startsWith('VENTA_CONFIRMADA');
     const fromMe = currentUserId !== null && message.idRemitente === currentUserId;
+
+    let authorName = message.nombreRemitente || 'Sistema';
+    if (!isSystem && !message.nombreRemitente) {
+      if (fromMe) {
+        authorName = this.sessionService.username() || 'Yo';
+      } else if (message.idRemitente) {
+        authorName = `Usuario #${message.idRemitente}`;
+      } else {
+        authorName = 'Usuario Desconocido';
+      }
+    }
 
     return {
       from: isSystem ? 'system' : fromMe ? 'me' : 'them',
       text: message.contenido,
       time: message.creadoEn ?? new Date().toISOString(),
-      author: isSystem ? 'Sistema' : fromMe ? this.sessionService.username() || 'Yo' : `Usuario #${message.idRemitente}`,
+      author: authorName,
       createdAt: message.creadoEn ?? new Date().toISOString()
     };
   }
@@ -154,6 +170,6 @@ export class ChatService {
   }
 
   private url(path: string): string {
-    return this.gateway.baseUrl() + path;
+    return path.startsWith('http://') || path.startsWith('https://') ? path : this.gateway.baseUrl() + path;
   }
 }

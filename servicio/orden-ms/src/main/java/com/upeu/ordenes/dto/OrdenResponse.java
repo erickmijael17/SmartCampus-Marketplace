@@ -23,6 +23,9 @@ public class OrdenResponse {
     private BigDecimal precioUnitario;
     private String estado;
     private String metodoPago;
+    private Long pagoId;
+    private LocalDateTime fechaVenta;
+    private boolean ventaConfirmadaPublicada;
     private LocalDateTime createdAt;
 }
 

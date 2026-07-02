@@ -1,8 +1,10 @@
 package com.upeu.pagos.client;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.math.BigDecimal;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public record MercadoPagoPaymentResult(
         String id,
         String status,

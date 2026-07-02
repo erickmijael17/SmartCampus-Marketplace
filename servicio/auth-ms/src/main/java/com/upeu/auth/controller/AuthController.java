@@ -59,6 +59,11 @@ public class AuthController {
         return ResponseEntity.ok(authService.updateProfile(accessToken, body));
     }
 
+    @GetMapping("/public-profile/{userId}")
+    public ResponseEntity<Map<String, Object>> getPublicProfile(@PathVariable Long userId) {
+        return ResponseEntity.ok(authService.getPublicProfile(userId));
+    }
+
     @GetMapping("/user-info")
     public ResponseEntity<Map<String, Object>> getUserInfo(HttpServletRequest request) {
         String authHeader = request.getHeader("Authorization");

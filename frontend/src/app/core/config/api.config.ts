@@ -1,49 +1,54 @@
+const GATEWAY_URL = 'http://localhost:18080';
+const gatewayUrl = (path: string): string => `${GATEWAY_URL}${path}`;
+
 export const API_CONFIG = {
+  gatewayUrl: GATEWAY_URL,
   endpoints: {
     auth: {
-      login: '/auth/login',
-      register: '/auth/register',
-      me: '/auth/me',
-      profile: '/auth/profile'
+      login: gatewayUrl('/auth/login'),
+      register: gatewayUrl('/auth/register'),
+      me: gatewayUrl('/auth/me'),
+      profile: gatewayUrl('/auth/profile')
     },
     marketplace: {
-      products: '/api/v1/productos',
-      productDetail: (id: number) => `/api/v1/productos/detalle/${id}`,
-      categories: '/api/v1/categorias',
-      orders: '/api/v1/ordenes',
-      payments: '/api/v1/pagos',
-      mercadoPagoPreference: '/api/v1/pagos/mercadopago/preference',
-      mercadoPagoConfirm: '/api/v1/pagos/mercadopago/confirmar',
-      mercadoPagoValidateTransaction: (pagoId: number) => `/api/v1/pagos/${pagoId}/validar-transaccion`
+      products: gatewayUrl('/api/v1/productos'),
+      productDetail: (id: number) => gatewayUrl(`/api/v1/productos/detalle/${id}`),
+      categories: gatewayUrl('/api/v1/categorias'),
+      orders: gatewayUrl('/api/v1/ordenes'),
+      payments: gatewayUrl('/api/v1/pagos'),
+      mercadoPagoPreference: gatewayUrl('/api/v1/pagos/mercadopago/preference'),
+      mercadoPagoConfirm: gatewayUrl('/api/v1/pagos/mercadopago/confirmar'),
+      mercadoPagoValidateTransaction: (pagoId: number) =>
+        gatewayUrl(`/api/v1/pagos/${pagoId}/validar-transaccion`)
     },
     personas: {
-      base: '/auth/profile',
-      me: '/auth/profile',
-      detail: (_id: number) => '/auth/profile'
+      base: gatewayUrl('/auth/profile'),
+      me: gatewayUrl('/auth/profile'),
+      detail: (_id: number) => gatewayUrl('/auth/profile')
     },
     chats: {
-      base: '/api/v1/chats',
-      detail: (id: number) => `/api/v1/chats/${id}`,
-      messages: (id: number) => `/api/v1/chats/${id}/mensajes`
+      base: gatewayUrl('/api/v1/chats'),
+      detail: (id: number) => gatewayUrl(`/api/v1/chats/${id}`),
+      messages: (id: number) => gatewayUrl(`/api/v1/chats/${id}/mensajes`)
     },
     payments: {
-      sellerSummary: (idVendedor: number) => `/api/v1/pagos/vendedor/${idVendedor}/resumen`
+      sellerSummary: (idVendedor: number) => gatewayUrl(`/api/v1/pagos/vendedor/${idVendedor}/resumen`)
     },
     media: {
-      base: '/api/v1/media',
-      detail: (id: number) => `/api/v1/media/${id}`
+      base: gatewayUrl('/api/v1/media'),
+      detail: (id: number) => gatewayUrl(`/api/v1/media/${id}`)
     },
     favoritos: {
-      base: '/api/v1/favoritos',
-      detail: (id: number) => `/api/v1/favoritos/${id}`
+      base: gatewayUrl('/api/v1/favoritos'),
+      detail: (id: number) => gatewayUrl(`/api/v1/favoritos/${id}`)
     },
     calificaciones: {
-      base: '/api/v1/calificaciones',
-      detail: (id: number) => `/api/v1/calificaciones/${id}`
+      base: gatewayUrl('/api/v1/calificaciones'),
+      detail: (id: number) => gatewayUrl(`/api/v1/calificaciones/${id}`)
     },
     publicaciones: {
-      base: '/api/v1/publicaciones',
-      detail: (id: number) => `/api/v1/publicaciones/${id}`
+      base: gatewayUrl('/api/v1/publicaciones'),
+      detail: (id: number) => gatewayUrl(`/api/v1/publicaciones/${id}`)
     }
   }
 } as const;

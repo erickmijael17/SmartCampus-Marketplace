@@ -13,6 +13,13 @@ public interface MensajeRepository extends JpaRepository<Mensaje, Long> {
 
     boolean existsByIdConversacionAndIdOrdenAndTipoMensaje(Long idConversacion, Long idOrden, String tipoMensaje);
 
+    boolean existsByIdConversacionAndIdOrdenAndPagoIdAndTipoMensaje(
+            Long idConversacion,
+            Long idOrden,
+            Long pagoId,
+            String tipoMensaje
+    );
+
     Optional<Mensaje> findFirstByIdConversacionAndIdOrdenAndPagoIdAndMpPaymentIdAndTipoMensaje(
             Long idConversacion,
             Long idOrden,

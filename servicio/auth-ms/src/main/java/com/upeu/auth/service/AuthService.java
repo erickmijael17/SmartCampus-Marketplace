@@ -170,6 +170,17 @@ public class AuthService {
         return personaService.update(userId, request);
     }
 
+    public Map<String, Object> getPublicProfile(Long personaId) {
+        PersonaDto.Response persona = personaService.findById(personaId);
+        Map<String, Object> publicProfile = new HashMap<>();
+        publicProfile.put("id", persona.getId());
+        publicProfile.put("nombre", persona.getNombres());
+        publicProfile.put("apellido", persona.getApellidos());
+        publicProfile.put("email", persona.getEmail());
+        publicProfile.put("fotoPerfilUrl", persona.getFotoPerfilUrl());
+        return publicProfile;
+    }
+
     @SuppressWarnings("unchecked")
     public Map<String, Object> getUserInfo(String accessToken) {
         try {
@@ -289,6 +300,19 @@ public class AuthService {
                         .roles(extractRoles(claims))
                         .build();
             }
+        } catch (RestClientResponseException e) {
+            if (e.getStatusCode() == HttpStatus.UNAUTHORIZED) {
+                throw new ResponseStatusException(
+                        HttpStatus.UNAUTHORIZED,
+                        "Usuario o contrasena incorrectos en Keycloak.",
+                        e
+                );
+            }
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_GATEWAY,
+                    "Keycloak rechazo el inicio de sesion: " + e.getStatusText(),
+                    e
+            );
         } catch (Exception e) {
             throw new RuntimeException("Autenticación fallida con Keycloak: " + e.getMessage(), e);
         }

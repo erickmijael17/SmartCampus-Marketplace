@@ -18,6 +18,7 @@ public class MensajeServiceImpl implements MensajeService {
 
     private final MensajeRepository mensajeRepository;
     private final ConversacionRepository conversacionRepository;
+    private final com.upeu.chat.client.AuthClient authClient;
 
     @Override
     @Transactional(readOnly = true)
@@ -55,6 +56,7 @@ public class MensajeServiceImpl implements MensajeService {
         response.setId(entity.getId());
         response.setIdConversacion(entity.getIdConversacion());
         response.setIdRemitente(entity.getIdRemitente());
+        response.setReceptorId(entity.getReceptorId());
         response.setContenido(entity.getContenido());
         response.setTipoRemitente(entity.getTipoRemitente());
         response.setTipoMensaje(entity.getTipoMensaje());
@@ -64,6 +66,28 @@ public class MensajeServiceImpl implements MensajeService {
         response.setLeido(entity.getLeido());
         response.setCreadoEn(entity.getCreadoEn());
         response.setActualizadoEn(entity.getActualizadoEn());
+
+        if ("SISTEMA".equalsIgnoreCase(entity.getTipoRemitente()) || entity.getIdRemitente() == null) {
+            response.setNombreRemitente("Sistema");
+        } else {
+            response.setNombreRemitente(resolveName(entity.getIdRemitente()));
+        }
+
         return response;
+    }
+
+    private String resolveName(Long userId) {
+        if (userId == null) return null;
+        try {
+            java.util.Map<String, Object> profile = authClient.getPublicProfile(userId);
+            if (profile != null && profile.get("nombre") != null) {
+                String nombre = (String) profile.get("nombre");
+                String apellido = (String) profile.getOrDefault("apellido", "");
+                return (nombre + " " + apellido).trim();
+            }
+        } catch (Exception e) {
+            // Log omitted
+        }
+        return "Usuario #" + userId;
     }
 }

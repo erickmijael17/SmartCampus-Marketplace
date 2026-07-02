@@ -28,6 +28,6 @@ export class MediaApiService {
   }
 
   private url(path: string): string {
-    return this.gateway.baseUrl() + path;
+    return path.startsWith('http://') || path.startsWith('https://') ? path : this.gateway.baseUrl() + path;
   }
 }

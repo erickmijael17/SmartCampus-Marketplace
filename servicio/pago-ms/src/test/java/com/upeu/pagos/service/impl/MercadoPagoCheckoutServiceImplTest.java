@@ -275,7 +275,7 @@ class MercadoPagoCheckoutServiceImplTest {
     }
 
     @Test
-    void confirmedApprovedPaymentUpdatesOrderAndCreatesChatReceipt() {
+    void confirmedApprovedPaymentPublishesApprovedPaymentEventWithoutCallingChat() {
         PagoRepository repository = mock(PagoRepository.class);
         MercadoPagoClient client = mock(MercadoPagoClient.class);
         OrdenClient ordenClient = mock(OrdenClient.class);
@@ -300,10 +300,6 @@ class MercadoPagoCheckoutServiceImplTest {
         );
         when(repository.findByExternalReference("ORDEN-47")).thenReturn(Optional.of(pago));
         when(repository.save(any(Pago.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        when(ordenClient.updateEstado(any(), any())).thenReturn(new Object());
-        when(chatClient.createReceipt(any(ComprobantePagoRequest.class))).thenReturn(
-                new ComprobantePagoResponse(10L, 99L, true)
-        );
         MercadoPagoCheckoutServiceImpl service = new MercadoPagoCheckoutServiceImpl(
                 repository,
                 client,
@@ -322,18 +318,30 @@ class MercadoPagoCheckoutServiceImplTest {
         assertThat(response.getEstado()).isEqualTo("APROBADO");
         assertThat(response.getEstadoPago()).isEqualTo("APROBADO");
         assertThat(response.getEstadoOrden()).isEqualTo("PAGADA");
-        assertThat(response.getChatId()).isEqualTo(10L);
-        assertThat(response.getConversacionId()).isEqualTo(10L);
-        assertThat(response.getMensaje()).contains("comprobante");
-        assertThat(response.isMensajeComprobanteEnviado()).isTrue();
+        assertThat(response.getChatId()).isNull();
+        assertThat(response.getConversacionId()).isNull();
+        assertThat(response.getMensaje()).contains("evento de pago aprobado");
+        assertThat(response.isMensajeComprobanteEnviado()).isFalse();
         assertThat(pago.getEstado()).isEqualTo("APROBADO");
         assertThat(pago.getMpPaymentId()).isEqualTo("123456789");
 
-        ArgumentCaptor<ComprobantePagoRequest> comprobanteCaptor = ArgumentCaptor.forClass(ComprobantePagoRequest.class);
-        verify(chatClient).createReceipt(comprobanteCaptor.capture());
-        assertThat(comprobanteCaptor.getValue().getIdComprador()).isEqualTo(2L);
-        assertThat(comprobanteCaptor.getValue().getIdVendedor()).isEqualTo(5L);
-        assertThat(comprobanteCaptor.getValue().getTituloProducto()).isEqualTo("polera");
+        ArgumentCaptor<EventoPago> eventoCaptor = ArgumentCaptor.forClass(EventoPago.class);
+        verify(productorPago).enviarEventoPago(eventoCaptor.capture());
+        assertThat(eventoCaptor.getValue().getEventId()).isNotBlank();
+        assertThat(eventoCaptor.getValue().getTipoEvento()).isEqualTo("pago.aprobado");
+        assertThat(eventoCaptor.getValue().getEventType()).isEqualTo("pago.aprobado");
+        assertThat(eventoCaptor.getValue().getPagoId()).isEqualTo(44L);
+        assertThat(eventoCaptor.getValue().getOrdenId()).isEqualTo(47L);
+        assertThat(eventoCaptor.getValue().getIdComprador()).isEqualTo(2L);
+        assertThat(eventoCaptor.getValue().getCompradorId()).isEqualTo(2L);
+        assertThat(eventoCaptor.getValue().getIdVendedor()).isEqualTo(5L);
+        assertThat(eventoCaptor.getValue().getVendedorId()).isEqualTo(5L);
+        assertThat(eventoCaptor.getValue().getProductoId()).isEqualTo(7L);
+        assertThat(eventoCaptor.getValue().getPublicacionId()).isEqualTo(7L);
+        assertThat(eventoCaptor.getValue().getTituloProducto()).isEqualTo("polera");
+        assertThat(eventoCaptor.getValue().getEstadoPago()).isEqualTo("APROBADO");
+        verify(ordenClient, never()).updateEstado(any(), any());
+        verify(chatClient, never()).createReceipt(any(ComprobantePagoRequest.class));
     }
 
     @Test
@@ -352,6 +360,7 @@ class MercadoPagoCheckoutServiceImplTest {
                 .externalReference("ORDEN-47")
                 .mpPaymentId("123456789")
                 .chatId(10L)
+                .eventoPagoAprobadoPublicado(true)
                 .build();
         when(client.getPayment("123456789")).thenReturn(
                 new MercadoPagoPaymentResult("123456789", "approved", "ORDEN-47")
@@ -373,6 +382,7 @@ class MercadoPagoCheckoutServiceImplTest {
         assertThat(response.getChatId()).isEqualTo(10L);
         assertThat(response.getConversacionId()).isEqualTo(10L);
         assertThat(response.getMensaje()).contains("previamente");
+        verify(productorPago, never()).enviarEventoPago(any(EventoPago.class));
         verify(chatClient, never()).createReceipt(any(ComprobantePagoRequest.class));
     }
 
@@ -402,9 +412,6 @@ class MercadoPagoCheckoutServiceImplTest {
         when(client.obtenerPagoPorId("166617913516")).thenReturn(
                 new MercadoPagoPaymentResult("166617913516", "approved", "ORDEN-83", BigDecimal.valueOf(100).setScale(2), "PEN")
         );
-        when(chatClient.createValidatedSaleMessage(any(MensajeVentaValidadaRequest.class))).thenReturn(
-                new MensajeVentaValidadaResponse(15L, 120L, "Hola, compre tu producto", true)
-        );
         when(repository.save(any(Pago.class))).thenAnswer(invocation -> invocation.getArgument(0));
         MercadoPagoCheckoutServiceImpl service = new MercadoPagoCheckoutServiceImpl(
                 repository, client, defaultProperties(), defaultAppProperties(), new PagoMapper(), ordenClient, chatClient, productorPago
@@ -424,7 +431,7 @@ class MercadoPagoCheckoutServiceImplTest {
         assertThat(response.getMoneda()).isEqualTo("PEN");
         assertThat(response.getMensaje()).contains("numero de venta #83");
         assertThat(response.getMensaje()).contains("S/ 100.00");
-        assertThat(response.getChatMessageCreated()).isTrue();
+        assertThat(response.getChatMessageCreated()).isFalse();
         assertThat(pago.getMpPaymentId()).isEqualTo("166617913516");
         assertThat(pago.getMpStatus()).isEqualTo("approved");
         assertThat(pago.getFechaConfirmacion()).isNotNull();
@@ -432,27 +439,23 @@ class MercadoPagoCheckoutServiceImplTest {
         ArgumentCaptor<EventoPago> eventoCaptor = ArgumentCaptor.forClass(EventoPago.class);
         verify(productorPago).enviarEventoPago(eventoCaptor.capture());
         assertThat(eventoCaptor.getValue().getPagoId()).isEqualTo(25L);
+        assertThat(eventoCaptor.getValue().getEventId()).isNotBlank();
+        assertThat(eventoCaptor.getValue().getEventType()).isEqualTo("pago.aprobado");
         assertThat(eventoCaptor.getValue().getOrdenId()).isEqualTo(83L);
         assertThat(eventoCaptor.getValue().getIdComprador()).isEqualTo(8L);
+        assertThat(eventoCaptor.getValue().getCompradorId()).isEqualTo(8L);
         assertThat(eventoCaptor.getValue().getIdVendedor()).isEqualTo(2L);
+        assertThat(eventoCaptor.getValue().getVendedorId()).isEqualTo(2L);
+        assertThat(eventoCaptor.getValue().getProductoId()).isEqualTo(77L);
         assertThat(eventoCaptor.getValue().getPublicacionId()).isEqualTo(77L);
         assertThat(eventoCaptor.getValue().getTituloProducto()).isEqualTo("polera");
         assertThat(eventoCaptor.getValue().getMoneda()).isEqualTo("PEN");
         assertThat(eventoCaptor.getValue().getMpPaymentId()).isEqualTo("166617913516");
-
-        ArgumentCaptor<MensajeVentaValidadaRequest> chatRequestCaptor = ArgumentCaptor.forClass(MensajeVentaValidadaRequest.class);
-        verify(chatClient).createValidatedSaleMessage(chatRequestCaptor.capture());
-        assertThat(chatRequestCaptor.getValue().getIdComprador()).isEqualTo(8L);
-        assertThat(chatRequestCaptor.getValue().getIdVendedor()).isEqualTo(2L);
-        assertThat(chatRequestCaptor.getValue().getPublicacionId()).isEqualTo(77L);
-        assertThat(chatRequestCaptor.getValue().getIdOrden()).isEqualTo(83L);
-        assertThat(chatRequestCaptor.getValue().getPagoId()).isEqualTo(25L);
-        assertThat(chatRequestCaptor.getValue().getTituloProducto()).isEqualTo("polera");
-        assertThat(chatRequestCaptor.getValue().getMpPaymentId()).isEqualTo("166617913516");
+        verify(chatClient, never()).createValidatedSaleMessage(any(MensajeVentaValidadaRequest.class));
     }
 
     @Test
-    void validarTransaccionApprovedKeepsPagoApprovedWhenChatMessageFails() {
+    void validarTransaccionApprovedKeepsPagoApprovedWithoutDependingOnChat() {
         PagoRepository repository = mock(PagoRepository.class);
         MercadoPagoClient client = mock(MercadoPagoClient.class);
         OrdenClient ordenClient = mock(OrdenClient.class);
@@ -476,7 +479,6 @@ class MercadoPagoCheckoutServiceImplTest {
         when(client.obtenerPagoPorId("166617913516")).thenReturn(
                 new MercadoPagoPaymentResult("166617913516", "approved", "ORDEN-83", BigDecimal.valueOf(100).setScale(2), "PEN")
         );
-        when(chatClient.createValidatedSaleMessage(any(MensajeVentaValidadaRequest.class))).thenThrow(new RuntimeException("chat down"));
         when(repository.save(any(Pago.class))).thenAnswer(invocation -> invocation.getArgument(0));
         MercadoPagoCheckoutServiceImpl service = new MercadoPagoCheckoutServiceImpl(
                 repository, client, defaultProperties(), defaultAppProperties(), new PagoMapper(), ordenClient, chatClient, productorPago
@@ -488,6 +490,7 @@ class MercadoPagoCheckoutServiceImplTest {
         assertThat(response.getChatMessageCreated()).isFalse();
         assertThat(pago.getEstado()).isEqualTo("APROBADO");
         verify(productorPago).enviarEventoPago(any(EventoPago.class));
+        verify(chatClient, never()).createValidatedSaleMessage(any(MensajeVentaValidadaRequest.class));
     }
 
     @Test

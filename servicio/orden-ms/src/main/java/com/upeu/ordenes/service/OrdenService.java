@@ -3,6 +3,7 @@ package com.upeu.ordenes.service;
 import com.upeu.ordenes.dto.ActualizarEstadoRequest;
 import com.upeu.ordenes.dto.OrdenRequest;
 import com.upeu.ordenes.dto.OrdenResponse;
+import com.upeu.ordenes.evento.EventoPagoAprobado;
 import java.util.List;
 
 public interface OrdenService {
@@ -18,6 +19,8 @@ public interface OrdenService {
     OrdenResponse update(Long id, OrdenRequest request);
 
     OrdenResponse updateEstado(Long id, ActualizarEstadoRequest request);
+
+    void confirmarVentaDesdePago(EventoPagoAprobado evento);
 
     void delete(Long id);
 }

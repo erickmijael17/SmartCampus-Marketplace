@@ -2,12 +2,13 @@ import { Injectable, signal, computed } from '@angular/core';
 import { Observable, ReplaySubject } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { GatewayLabel } from '../../../environments/environment.model';
+import { API_CONFIG } from '../config/api.config';
 
 const HEALTH_TIMEOUT_MS = 3_000;
 
 @Injectable({ providedIn: 'root' })
 export class GatewayService {
-  private readonly baseUrlSignal = signal<string>('');
+  private readonly baseUrlSignal = signal<string>(environment.gatewayUrl || API_CONFIG.gatewayUrl);
   private readonly labelSignal = signal<GatewayLabel>('NONE');
   private readonly availableSignal = signal<boolean>(false);
 
@@ -57,7 +58,7 @@ export class GatewayService {
     candidate: (typeof environment.gatewayCandidates)[number] | undefined,
     available: boolean
   ): void {
-    this.baseUrlSignal.set(candidate?.url ?? environment.gatewayUrl ?? '');
+    this.baseUrlSignal.set(candidate?.url ?? environment.gatewayUrl ?? API_CONFIG.gatewayUrl);
     this.labelSignal.set((candidate?.label as GatewayLabel) ?? 'NONE');
     this.availableSignal.set(available);
   }

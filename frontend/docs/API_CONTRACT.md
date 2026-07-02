@@ -92,14 +92,13 @@ Tras login/register el frontend enriquece la sesión:
 
 ---
 
-## Personas (`persona-ms` → `/api/v1/personas/**`)
+## Personas (Fusionado en `auth-ms` → `/auth/profile`)
 
 | Método | Ruta | Auth | Uso frontend |
 |--------|------|------|--------------|
-| GET | `/api/v1/personas/me` | Bearer | Perfil propio, enriquecimiento post-login |
-| GET | `/api/v1/personas/{id}` | Bearer | Datos de vendedor/comprador |
-| POST | `/api/v1/personas` | Bearer | Alta de persona |
-| PUT | `/api/v1/personas/{id}` | Bearer | Actualizar perfil |
+| GET | `/auth/profile` | Bearer | Perfil propio, enriquecimiento post-login |
+| PUT | `/auth/profile` | Bearer | Actualizar perfil |
+| GET | `/auth/users/{id}`| Bearer | Datos de vendedor/comprador (backend API) |
 
 ### PersonaResponse
 

@@ -2,6 +2,7 @@ export interface MensajeResponse {
   id: number;
   idConversacion: number;
   idRemitente: number | null;
+  receptorId?: number | null;
   contenido: string;
   tipoRemitente?: string | null;
   tipoMensaje?: string | null;
@@ -11,6 +12,7 @@ export interface MensajeResponse {
   leido?: boolean | null;
   creadoEn?: string | null;
   actualizadoEn?: string | null;
+  nombreRemitente?: string | null;
 }
 
 export interface MensajeRequest {
@@ -36,6 +38,12 @@ export interface ConversacionResponse {
   tipoChat?: string | null;
   creadoEn?: string | null;
   actualizadoEn?: string | null;
+  
+  otroUsuarioId?: number | null;
+  nombreOtroUsuario?: string | null;
+  ultimoMensaje?: string | null;
+  tipoUltimoMensaje?: string | null;
+  ultimoMensajeFecha?: string | null;
 }
 
 export interface ChatMessage {

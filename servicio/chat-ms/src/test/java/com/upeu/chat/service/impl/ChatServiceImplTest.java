@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 import com.upeu.chat.dto.ComprobantePagoRequest;
 import com.upeu.chat.dto.ComprobantePagoResponse;
 import com.upeu.chat.dto.EventoPago;
+import com.upeu.chat.dto.EventoVentaConfirmada;
 import com.upeu.chat.dto.MensajeVentaValidadaRequest;
 import com.upeu.chat.dto.MensajeVentaValidadaResponse;
 import com.upeu.chat.entity.Conversacion;
@@ -248,6 +249,109 @@ class ChatServiceImplTest {
         assertThat(response.getMensajeId()).isEqualTo(120L);
         assertThat(response.isCreado()).isFalse();
         verify(conversacionRepository, never()).save(any(Conversacion.class));
+        verify(mensajeRepository, never()).save(any(Mensaje.class));
+    }
+
+    @Test
+    void confirmedSaleEventCreatesSystemMessagesForSellerAndBuyer() {
+        ConversacionRepository conversacionRepository = mock(ConversacionRepository.class);
+        MensajeRepository mensajeRepository = mock(MensajeRepository.class);
+        ChatServiceImpl service = new ChatServiceImpl(conversacionRepository, mensajeRepository);
+        when(conversacionRepository.findByIdOrden(83L)).thenReturn(Optional.empty());
+        when(conversacionRepository.findByPublicacionAndUsers(77L, 8L, 2L)).thenReturn(Optional.empty());
+        when(conversacionRepository.findBetweenUsers(8L, 2L)).thenReturn(Optional.empty());
+        when(conversacionRepository.save(any(Conversacion.class))).thenAnswer(invocation -> {
+            Conversacion conversacion = invocation.getArgument(0);
+            conversacion.setId(15L);
+            return conversacion;
+        });
+        when(mensajeRepository.existsByIdConversacionAndIdOrdenAndPagoIdAndTipoMensaje(
+                15L, 83L, 25L, "VENTA_CONFIRMADA_VENDEDOR"
+        )).thenReturn(false);
+        when(mensajeRepository.existsByIdConversacionAndIdOrdenAndPagoIdAndTipoMensaje(
+                15L, 83L, 25L, "VENTA_CONFIRMADA_COMPRADOR"
+        )).thenReturn(false);
+        when(mensajeRepository.save(any(Mensaje.class))).thenAnswer(invocation -> {
+            Mensaje mensaje = invocation.getArgument(0);
+            if (mensaje.getId() == null) {
+                mensaje.setId("VENTA_CONFIRMADA_VENDEDOR".equals(mensaje.getTipoMensaje()) ? 101L : 102L);
+            }
+            return mensaje;
+        });
+
+        service.crearMensajesVentaConfirmada(EventoVentaConfirmada.builder()
+                .eventId("evt-venta-1")
+                .eventType("venta.confirmada")
+                .ordenId(83L)
+                .pagoId(25L)
+                .productoId(77L)
+                .publicacionId(77L)
+                .tituloProducto("polera")
+                .compradorId(8L)
+                .vendedorId(2L)
+                .precio(BigDecimal.valueOf(100))
+                .moneda("PEN")
+                .estadoPago("APROBADO")
+                .build());
+
+        ArgumentCaptor<Conversacion> conversacionCaptor = ArgumentCaptor.forClass(Conversacion.class);
+        verify(conversacionRepository).save(conversacionCaptor.capture());
+        assertThat(conversacionCaptor.getValue().getIdUsuario1()).isEqualTo(8L);
+        assertThat(conversacionCaptor.getValue().getIdUsuario2()).isEqualTo(2L);
+        assertThat(conversacionCaptor.getValue().getPublicacionId()).isEqualTo(77L);
+        assertThat(conversacionCaptor.getValue().getIdOrden()).isEqualTo(83L);
+
+        ArgumentCaptor<Mensaje> mensajeCaptor = ArgumentCaptor.forClass(Mensaje.class);
+        verify(mensajeRepository, org.mockito.Mockito.times(2)).save(mensajeCaptor.capture());
+        assertThat(mensajeCaptor.getAllValues()).extracting(Mensaje::getTipoMensaje)
+                .containsExactly("VENTA_CONFIRMADA_VENDEDOR", "VENTA_CONFIRMADA_COMPRADOR");
+        assertThat(mensajeCaptor.getAllValues()).allSatisfy(mensaje -> {
+            assertThat(mensaje.getTipoRemitente()).isEqualTo("SISTEMA");
+            assertThat(mensaje.getIdRemitente()).isNull();
+            assertThat(mensaje.getIdOrden()).isEqualTo(83L);
+            assertThat(mensaje.getPagoId()).isEqualTo(25L);
+            assertThat(mensaje.getLeido()).isFalse();
+        });
+        assertThat(mensajeCaptor.getAllValues().get(0).getReceptorId()).isEqualTo(2L);
+        assertThat(mensajeCaptor.getAllValues().get(0).getContenido())
+                .isEqualTo("Tu producto polera ha sido vendido. Comunícate de inmediato con el comprador para coordinar la entrega.");
+        assertThat(mensajeCaptor.getAllValues().get(1).getReceptorId()).isEqualTo(8L);
+        assertThat(mensajeCaptor.getAllValues().get(1).getContenido())
+                .isEqualTo("Tu compra de polera fue aprobada. Puedes comunicarte con el vendedor para coordinar la entrega.");
+    }
+
+    @Test
+    void confirmedSaleEventDoesNotDuplicateSystemMessages() {
+        ConversacionRepository conversacionRepository = mock(ConversacionRepository.class);
+        MensajeRepository mensajeRepository = mock(MensajeRepository.class);
+        ChatServiceImpl service = new ChatServiceImpl(conversacionRepository, mensajeRepository);
+        Conversacion existing = Conversacion.builder()
+                .id(15L)
+                .idUsuario1(8L)
+                .idUsuario2(2L)
+                .publicacionId(77L)
+                .idOrden(83L)
+                .tipoChat("VENTA")
+                .build();
+        when(conversacionRepository.findByIdOrden(83L)).thenReturn(Optional.of(existing));
+        when(mensajeRepository.existsByIdConversacionAndIdOrdenAndPagoIdAndTipoMensaje(
+                15L, 83L, 25L, "VENTA_CONFIRMADA_VENDEDOR"
+        )).thenReturn(true);
+        when(mensajeRepository.existsByIdConversacionAndIdOrdenAndPagoIdAndTipoMensaje(
+                15L, 83L, 25L, "VENTA_CONFIRMADA_COMPRADOR"
+        )).thenReturn(true);
+
+        service.crearMensajesVentaConfirmada(EventoVentaConfirmada.builder()
+                .eventType("venta.confirmada")
+                .ordenId(83L)
+                .pagoId(25L)
+                .productoId(77L)
+                .publicacionId(77L)
+                .tituloProducto("polera")
+                .compradorId(8L)
+                .vendedorId(2L)
+                .build());
+
         verify(mensajeRepository, never()).save(any(Mensaje.class));
     }
 }

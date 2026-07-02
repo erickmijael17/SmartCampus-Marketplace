@@ -3,7 +3,6 @@ package com.upeu.chat.service;
 import com.upeu.chat.dto.EventoPago;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -15,7 +14,7 @@ public class ConsumidorPagoAprobado {
 
     private final ChatService chatService;
 
-    @KafkaListener(
+    @org.springframework.kafka.annotation.KafkaListener(
             topics = "${app.kafka.topic.pagos:pagos-topic}",
             groupId = "${app.kafka.group-id.chat:chat-group}",
             containerFactory = "kafkaListenerContainerFactory"

@@ -17,7 +17,7 @@ spring:
       hibernate:
         format_sql: true
   kafka:
-    bootstrap-servers: localhost:19092
+    bootstrap-servers: localhost:41092
 
 app:
   kafka:

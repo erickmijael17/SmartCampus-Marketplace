@@ -4,6 +4,13 @@ server:
 spring:
   kafka:
     bootstrap-servers: localhost:41092
+    consumer:
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+        spring.json.value.default.type: com.upeu.ordenes.evento.EventoPagoAprobado
+        spring.json.use.type.headers: false
   datasource:
     url: jdbc:postgresql://localhost:15436/orden_db
     username: ecom
@@ -58,6 +65,9 @@ app:
   kafka:
     topic:
       ordenes: ordenes-topic
+      pagos: pagos-topic
+    group-id:
+      orden: orden-ms-group
 
 jwt:
   secret: 1s3alJJATsWK91vf5zrODYlQa+LauM/9udaLZlQhHlpu46g/KzmSS5c3CGy6xF9kzAqBhvjmKBuZO/pSL7tfOg==

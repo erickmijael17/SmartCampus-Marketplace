@@ -62,6 +62,28 @@ public class MercadoPagoClient {
                 .body(MercadoPagoPaymentResult.class);
     }
 
+    public MercadoPagoPaymentResult searchPaymentByExternalReference(String externalReference) {
+        try {
+            MercadoPagoSearchResponse response = restClient
+                    .get()
+                    .uri(builder -> builder
+                            .path("/v1/payments/search")
+                            .queryParam("external_reference", externalReference)
+                            .queryParam("status", "approved")
+                            .build())
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + properties.getAccessToken())
+                    .retrieve()
+                    .body(MercadoPagoSearchResponse.class);
+            
+            if (response != null && response.results() != null && !response.results().isEmpty()) {
+                return response.results().get(0);
+            }
+        } catch (Exception e) {
+            log.warn("Error buscando pago en MP por external_reference: {}", externalReference, e);
+        }
+        return null;
+    }
+
     private String serializePayload(MercadoPagoPreferencePayload payload) {
         try {
             return objectMapper.writeValueAsString(payload);

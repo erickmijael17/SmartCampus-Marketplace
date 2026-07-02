@@ -30,6 +30,9 @@ public class OrdenMapper {
                 .precioUnitario(entity.getPrecioUnitario())
                 .estado(entity.getEstado())
                 .metodoPago(entity.getMetodoPago())
+                .pagoId(entity.getPagoId())
+                .fechaVenta(entity.getFechaVenta())
+                .ventaConfirmadaPublicada(entity.isVentaConfirmadaPublicada())
                 .createdAt(entity.getCreatedAt())
                 .build();
     }

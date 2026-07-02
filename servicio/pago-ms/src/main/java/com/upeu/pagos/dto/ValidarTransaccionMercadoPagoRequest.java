@@ -10,6 +10,6 @@ import lombok.Setter;
 public class ValidarTransaccionMercadoPagoRequest {
 
     @NotBlank(message = "paymentId es obligatorio")
-    @JsonAlias("numeroTransaccion")
+    @JsonAlias({"numeroTransaccion", "transactionId"})
     private String paymentId;
 }

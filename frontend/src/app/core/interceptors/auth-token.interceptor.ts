@@ -39,7 +39,14 @@ export const authTokenInterceptor: HttpInterceptorFn = (request, next) => {
       }
 
       const msg = describeHttpError(error, 'la solicitud', gatewayService.gatewayAvailable());
-      console.warn(`[HTTP Error] ${request.method} ${request.url}: ${msg}`);
+      console.warn(`[HTTP Error] ${request.method} ${request.url}: ${msg}`, {
+        url: request.urlWithParams,
+        method: request.method,
+        status: error.status,
+        statusText: error.statusText,
+        message: error.message,
+        error: error.error
+      });
       return throwError(() => error);
     })
   );

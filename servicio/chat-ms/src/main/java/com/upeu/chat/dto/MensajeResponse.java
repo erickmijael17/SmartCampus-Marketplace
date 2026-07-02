@@ -8,6 +8,7 @@ public class MensajeResponse {
     private Long id;
     private Long idConversacion;
     private Long idRemitente;
+    private Long receptorId;
     private String contenido;
     private String tipoRemitente;
     private String tipoMensaje;
@@ -17,4 +18,6 @@ public class MensajeResponse {
     private Boolean leido;
     private LocalDateTime creadoEn;
     private LocalDateTime actualizadoEn;
+    
+    private String nombreRemitente;
 }

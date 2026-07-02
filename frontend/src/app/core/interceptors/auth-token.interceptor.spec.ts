@@ -68,6 +68,38 @@ describe('authTokenInterceptor', () => {
     req.flush({});
   });
 
+  it('does not attach bearer token to public category reads', () => {
+    sessionService.authHeaderValue.and.returnValue('Bearer token-123');
+
+    http.get('http://localhost:18080/api/v1/categorias').subscribe();
+
+    const req = httpMock.expectOne('http://localhost:18080/api/v1/categorias');
+    expect(req.request.headers.has('Authorization')).toBeFalse();
+    req.flush([]);
+  });
+
+  it('logs structured diagnostics when Angular cannot process a 200 response', () => {
+    sessionService.authHeaderValue.and.returnValue(null);
+    spyOn(console, 'warn');
+
+    http.get('http://localhost:18080/api/v1/categorias').subscribe({
+      error: () => undefined
+    });
+
+    const req = httpMock.expectOne('http://localhost:18080/api/v1/categorias');
+    req.flush('texto no json', { status: 200, statusText: 'OK' });
+
+    expect(console.warn).toHaveBeenCalledWith(
+      jasmine.stringContaining('El Gateway respondio HTTP 200'),
+      jasmine.objectContaining({
+        url: 'http://localhost:18080/api/v1/categorias',
+        method: 'GET',
+        status: 200,
+        statusText: 'OK'
+      })
+    );
+  });
+
   it('clears session and redirects on 401 for protected requests', () => {
     sessionService.authHeaderValue.and.returnValue('Bearer expired-token');
 

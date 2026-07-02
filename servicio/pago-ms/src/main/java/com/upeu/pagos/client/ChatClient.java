@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 @FeignClient(name = "CHAT-MS", path = "/api/v1/chats")
+@Deprecated(forRemoval = false)
 public interface ChatClient {
 
     @PostMapping("/comprobantes")

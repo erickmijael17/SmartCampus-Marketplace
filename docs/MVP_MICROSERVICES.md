@@ -6,8 +6,8 @@ Documento de referencia para agentes, frontend y backend. Basado en auditoria fr
 
 | Tier | Cantidad | Descripcion |
 |------|----------|-------------|
-| **MVP activo** | 11 | Consumidos por Angular o criticos para checkout |
-| **Eliminados** | 5 | Removidos del repo, Config Repo y Gateway para reducir complejidad |
+| **MVP activo** | 10 | Consumidos por Angular o criticos para checkout |
+| **Eliminados** | 6 | Removidos del repo, Config Repo y Gateway para reducir complejidad |
 
 Contrato API frontend: [`frontend/docs/API_CONTRACT.md`](../frontend/docs/API_CONTRACT.md).
 

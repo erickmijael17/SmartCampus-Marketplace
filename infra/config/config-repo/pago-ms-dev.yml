@@ -4,6 +4,11 @@ server:
 spring:
   kafka:
     bootstrap-servers: localhost:41092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.add.type.headers: false
   datasource:
     url: jdbc:postgresql://localhost:15435/pago_db
     username: ecom

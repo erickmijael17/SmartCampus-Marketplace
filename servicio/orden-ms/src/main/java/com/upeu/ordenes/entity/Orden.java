@@ -49,6 +49,15 @@ public class Orden {
     @Column(name = "metodo_pago", length = 30)
     private String metodoPago;
 
+    @Column(name = "pago_id")
+    private Long pagoId;
+
+    @Column(name = "fecha_venta")
+    private LocalDateTime fechaVenta;
+
+    @Column(name = "venta_confirmada_publicada", nullable = false)
+    private boolean ventaConfirmadaPublicada;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

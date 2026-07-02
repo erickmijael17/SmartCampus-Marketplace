@@ -941,7 +941,7 @@ export class MarketplaceService {
 
     if (url.startsWith('/')) {
 
-      return this.gateway.baseUrl() + url;
+      return this.url(url);
 
     }
 
@@ -951,7 +951,7 @@ export class MarketplaceService {
 
   private url(path: string): string {
 
-    return this.gateway.baseUrl() + path;
+    return path.startsWith('http://') || path.startsWith('https://') ? path : this.gateway.baseUrl() + path;
 
   }
 

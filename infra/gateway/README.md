@@ -15,10 +15,13 @@ Las rutas del Gateway se configuran en `infra/config/config-repo/gateway-dev.yml
 
 Ejemplos:
 
-- `/auth/**` -> `lb://AUTH-MS`
-- `/api/v1/productos/**` -> `lb://PRODUCTO-MS`
+- `/auth/**` y `/api/v1/personas/**` -> `lb://AUTH-MS`
+- `/api/v1/productos/**` y `/api/v1/producto/instancia` -> `lb://PRODUCTO-MS`
 - `/api/v1/categorias/**` -> `lb://CATEGORIA-MS`
 - `/api/v1/publicaciones/**` -> `lb://PUBLICACION-MS`
+- `/api/v1/media/**` -> `lb://MEDIA-MS`
+- `/api/v1/favoritos/**` -> `lb://FAVORITOS-MS`
+- `/api/v1/calificaciones/**` -> `lb://CALIFICACION-MS`
 - `/api/v1/chats/**` -> `lb://CHAT-MS`
 - `/api/v1/ordenes/**` -> `lb://ORDEN-MS`
 - `/api/v1/pagos/**` -> `lb://PAGO-MS`

@@ -5,6 +5,7 @@ import com.upeu.chat.dto.ComprobantePagoResponse;
 import com.upeu.chat.dto.ConversacionRequest;
 import com.upeu.chat.dto.ConversacionResponse;
 import com.upeu.chat.dto.EventoPago;
+import com.upeu.chat.dto.EventoVentaConfirmada;
 import com.upeu.chat.dto.MensajeVentaValidadaRequest;
 import com.upeu.chat.dto.MensajeVentaValidadaResponse;
 import com.upeu.chat.entity.Conversacion;
@@ -31,9 +32,12 @@ public class ChatServiceImpl implements ChatService {
     private static final String TIPO_REMITENTE_SISTEMA = "SISTEMA";
     private static final String TIPO_MENSAJE_CONFIRMACION_PAGO = "SISTEMA_CONFIRMACION_PAGO";
     private static final String TIPO_MENSAJE_VENTA_VALIDADA = "VENTA_VALIDADA";
+    private static final String TIPO_MENSAJE_VENTA_CONFIRMADA_VENDEDOR = "VENTA_CONFIRMADA_VENDEDOR";
+    private static final String TIPO_MENSAJE_VENTA_CONFIRMADA_COMPRADOR = "VENTA_CONFIRMADA_COMPRADOR";
 
     private final ConversacionRepository conversacionRepository;
     private final MensajeRepository mensajeRepository;
+    private final com.upeu.chat.client.AuthClient authClient;
 
     @Override
     public List<ConversacionResponse> findAll() {
@@ -198,6 +202,75 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     @Transactional
+    public void crearMensajesVentaConfirmada(EventoVentaConfirmada evento) {
+        Long publicacionId = resolvePublicacionId(evento);
+        java.util.Optional<Conversacion> existente = conversacionRepository.findByIdOrden(evento.getOrdenId())
+                .or(() -> findConversationForSale(publicacionId, evento.getCompradorId(), evento.getVendedorId()));
+
+        Conversacion conversacion = existente.orElseGet(() -> {
+            Conversacion nueva = conversacionRepository.save(Conversacion.builder()
+                    .idUsuario1(evento.getCompradorId())
+                    .idUsuario2(evento.getVendedorId())
+                    .publicacionId(publicacionId)
+                    .idOrden(evento.getOrdenId())
+                    .tipoChat(TIPO_CHAT_VENTA)
+                    .build());
+            log.info(
+                    "conversacion creada/reutilizada chatId={} ordenId={} compradorId={} vendedorId={}",
+                    nueva.getId(),
+                    evento.getOrdenId(),
+                    evento.getCompradorId(),
+                    evento.getVendedorId()
+            );
+            return nueva;
+        });
+
+        if (existente.isPresent()) {
+            boolean changed = false;
+            if (conversacion.getIdOrden() == null && evento.getOrdenId() != null) {
+                conversacion.setIdOrden(evento.getOrdenId());
+                changed = true;
+            }
+            if (conversacion.getPublicacionId() == null && publicacionId != null) {
+                conversacion.setPublicacionId(publicacionId);
+                changed = true;
+            }
+            if (conversacion.getTipoChat() == null) {
+                conversacion.setTipoChat(TIPO_CHAT_VENTA);
+                changed = true;
+            }
+            if (changed) {
+                conversacionRepository.save(conversacion);
+            }
+            log.info(
+                    "conversacion creada/reutilizada chatId={} ordenId={} compradorId={} vendedorId={}",
+                    conversacion.getId(),
+                    evento.getOrdenId(),
+                    evento.getCompradorId(),
+                    evento.getVendedorId()
+            );
+        }
+
+        crearMensajeVentaConfirmadaSiFalta(
+                conversacion,
+                evento,
+                TIPO_MENSAJE_VENTA_CONFIRMADA_VENDEDOR,
+                evento.getVendedorId(),
+                "Tu producto " + valueOrDash(evento.getTituloProducto())
+                        + " ha sido vendido. Comunícate de inmediato con el comprador para coordinar la entrega."
+        );
+        crearMensajeVentaConfirmadaSiFalta(
+                conversacion,
+                evento,
+                TIPO_MENSAJE_VENTA_CONFIRMADA_COMPRADOR,
+                evento.getCompradorId(),
+                "Tu compra de " + valueOrDash(evento.getTituloProducto())
+                        + " fue aprobada. Puedes comunicarte con el vendedor para coordinar la entrega."
+        );
+    }
+
+    @Override
+    @Transactional
     public MensajeVentaValidadaResponse crearMensajeVentaValidada(MensajeVentaValidadaRequest request) {
         java.util.Optional<Conversacion> existente = findConversationForSale(
                 request.getPublicacionId(),
@@ -305,7 +378,57 @@ public class ChatServiceImpl implements ChatService {
         response.setTipoChat(entity.getTipoChat());
         response.setCreadoEn(entity.getCreadoEn());
         response.setActualizadoEn(entity.getActualizadoEn());
+
+        // Get current user id from security context
+        Long currentUserId = null;
+        try {
+            String name = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication().getName();
+            currentUserId = Long.parseLong(name);
+        } catch (Exception e) {
+            // Ignored
+        }
+
+        Long otroUsuarioId = null;
+        if (currentUserId != null) {
+            if (currentUserId.equals(entity.getIdUsuario1())) {
+                otroUsuarioId = entity.getIdUsuario2();
+            } else if (currentUserId.equals(entity.getIdUsuario2())) {
+                otroUsuarioId = entity.getIdUsuario1();
+            }
+        } else {
+            otroUsuarioId = entity.getIdUsuario2(); // Default fallback
+        }
+        
+        response.setOtroUsuarioId(otroUsuarioId);
+        if (otroUsuarioId != null) {
+            response.setNombreOtroUsuario(resolveName(otroUsuarioId));
+        }
+        
+        // Find last message
+        mensajeRepository.findByIdConversacionOrderByCreadoEnAsc(entity.getId()).stream()
+                .reduce((first, second) -> second)
+                .ifPresent(lastMsg -> {
+                    response.setUltimoMensaje(lastMsg.getContenido());
+                    response.setTipoUltimoMensaje(lastMsg.getTipoMensaje());
+                    response.setUltimoMensajeFecha(lastMsg.getCreadoEn());
+                });
+
         return response;
+    }
+
+    private String resolveName(Long userId) {
+        if (userId == null) return null;
+        try {
+            java.util.Map<String, Object> profile = authClient.getPublicProfile(userId);
+            if (profile != null && profile.get("nombre") != null) {
+                String nombre = (String) profile.get("nombre");
+                String apellido = (String) profile.getOrDefault("apellido", "");
+                return (nombre + " " + apellido).trim();
+            }
+        } catch (Exception e) {
+            log.warn("No se pudo obtener el nombre para userId {}", userId);
+        }
+        return "Usuario #" + userId;
     }
 
     private String buildComprobanteMessage(ComprobantePagoRequest request) {
@@ -361,5 +484,68 @@ public class ChatServiceImpl implements ChatService {
                     .or(() -> conversacionRepository.findBetweenUsers(compradorId, vendedorId));
         }
         return conversacionRepository.findBetweenUsers(compradorId, vendedorId);
+    }
+
+    private Long resolvePublicacionId(EventoVentaConfirmada evento) {
+        if (evento.getPublicacionId() != null) {
+            return evento.getPublicacionId();
+        }
+        return evento.getProductoId();
+    }
+
+    private void crearMensajeVentaConfirmadaSiFalta(
+            Conversacion conversacion,
+            EventoVentaConfirmada evento,
+            String tipoMensaje,
+            Long receptorId,
+            String contenido
+    ) {
+        if (mensajeRepository.existsByIdConversacionAndIdOrdenAndPagoIdAndTipoMensaje(
+                conversacion.getId(),
+                evento.getOrdenId(),
+                evento.getPagoId(),
+                tipoMensaje
+        )) {
+            log.info(
+                    "evento duplicado ignorado ordenId={} pagoId={} tipoMensaje={}",
+                    evento.getOrdenId(),
+                    evento.getPagoId(),
+                    tipoMensaje
+            );
+            return;
+        }
+
+        Mensaje saved = mensajeRepository.save(Mensaje.builder()
+                .idConversacion(conversacion.getId())
+                .idRemitente(null)
+                .receptorId(receptorId)
+                .contenido(contenido)
+                .tipoRemitente(TIPO_REMITENTE_SISTEMA)
+                .tipoMensaje(tipoMensaje)
+                .idOrden(evento.getOrdenId())
+                .pagoId(evento.getPagoId())
+                .leido(Boolean.FALSE)
+                .build());
+
+        if (TIPO_MENSAJE_VENTA_CONFIRMADA_VENDEDOR.equals(tipoMensaje)) {
+            log.info(
+                    "mensaje sistema vendedor creado vendedorId={} mensajeId={} chatId={} ordenId={} pagoId={}",
+                    receptorId,
+                    saved.getId(),
+                    conversacion.getId(),
+                    evento.getOrdenId(),
+                    evento.getPagoId()
+            );
+            return;
+        }
+
+        log.info(
+                "mensaje sistema comprador creado compradorId={} mensajeId={} chatId={} ordenId={} pagoId={}",
+                receptorId,
+                saved.getId(),
+                conversacion.getId(),
+                evento.getOrdenId(),
+                evento.getPagoId()
+        );
     }
 }
