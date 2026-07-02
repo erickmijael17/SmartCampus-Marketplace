@@ -34,6 +34,9 @@ public class Orden {
     @Column(name = "id_producto", nullable = false)
     private Long idProducto;
 
+    @Column(name = "id_vendedor")
+    private Long idVendedor;
+
     @Column(name = "cantidad", nullable = false)
     private Integer cantidad;
 
@@ -42,6 +45,9 @@ public class Orden {
 
     @Column(name = "estado", nullable = false, length = 20)
     private String estado;
+
+    @Column(name = "metodo_pago", length = 30)
+    private String metodoPago;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

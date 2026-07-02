@@ -1,8 +1,13 @@
 export interface MensajeResponse {
   id: number;
   idConversacion: number;
-  idRemitente: number;
+  idRemitente: number | null;
   contenido: string;
+  tipoRemitente?: string | null;
+  tipoMensaje?: string | null;
+  idOrden?: number | null;
+  pagoId?: number | null;
+  mpPaymentId?: string | null;
   leido?: boolean | null;
   creadoEn?: string | null;
   actualizadoEn?: string | null;
@@ -17,18 +22,24 @@ export interface MensajeRequest {
 export interface ConversacionRequest {
   idUsuario1: number;
   idUsuario2: number;
+  publicacionId?: number | null;
+  idOrden?: number | null;
+  tipoChat?: string | null;
 }
 
 export interface ConversacionResponse {
   id: number;
   idUsuario1: number;
   idUsuario2: number;
+  publicacionId?: number | null;
+  idOrden?: number | null;
+  tipoChat?: string | null;
   creadoEn?: string | null;
   actualizadoEn?: string | null;
 }
 
 export interface ChatMessage {
-  from: 'me' | 'them';
+  from: 'me' | 'them' | 'system';
   text: string;
   time: string;
   author?: string;
@@ -46,4 +57,6 @@ export interface ChatThread {
   time: string;
   unread: number;
   messages: ChatMessage[];
+  publicacionId?: number | null;
+  idOrden?: number | null;
 }

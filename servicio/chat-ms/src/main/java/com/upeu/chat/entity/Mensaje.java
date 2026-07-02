@@ -37,6 +37,21 @@ public class Mensaje {
     @Column(name = "contenido")
     private String contenido;
 
+    @Column(name = "tipo_remitente", length = 30)
+    private String tipoRemitente;
+
+    @Column(name = "tipo_mensaje", length = 50)
+    private String tipoMensaje;
+
+    @Column(name = "id_orden")
+    private Long idOrden;
+
+    @Column(name = "pago_id")
+    private Long pagoId;
+
+    @Column(name = "mp_payment_id", length = 80)
+    private String mpPaymentId;
+
     @Column(name = "leido")
     private Boolean leido;
 

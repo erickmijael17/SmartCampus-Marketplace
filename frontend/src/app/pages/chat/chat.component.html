@@ -47,7 +47,7 @@
 
           <div class="messages">
             @for (msg of messages; track $index) {
-              <div class="bubble-row" [class.mine]="msg.from === 'me'">
+              <div class="bubble-row" [class.mine]="msg.from === 'me'" [class.system]="msg.from === 'system'">
                 <div class="bubble">{{ msg.text }}<small>{{ msg.createdAt | date: 'short' }}</small></div>
               </div>
             } @empty {

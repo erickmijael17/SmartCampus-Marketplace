@@ -1,5 +1,6 @@
 import { DatePipe } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ChatMessage, ChatThread } from '../../core/models/chat.model';
 import { ChatService } from '../../core/services/chat.service';
@@ -18,6 +19,7 @@ import { LoadingComponent } from '../../shared/components/loading/loading.compon
 export class ChatComponent implements OnInit {
   private readonly chatService = inject(ChatService);
   private readonly sessionService = inject(SessionService);
+  private readonly route = inject(ActivatedRoute);
 
   threads: ChatThread[] = [];
   activeThread?: ChatThread;
@@ -39,7 +41,7 @@ export class ChatComponent implements OnInit {
       next: (threads) => {
         this.threads = threads;
         if (threads.length > 0) {
-          this.selectThread(threads[0]);
+          this.selectThread(this.threadFromQueryParam(threads) ?? threads[0]);
         }
         this.loading = false;
       },
@@ -75,5 +77,13 @@ export class ChatComponent implements OnInit {
         this.errorMessage = describeHttpError(error, 'el envio del mensaje');
       }
     });
+  }
+
+  private threadFromQueryParam(threads: ChatThread[]): ChatThread | undefined {
+    const chatId = Number(this.route.snapshot.queryParamMap.get('chatId'));
+    if (!Number.isFinite(chatId) || chatId <= 0) {
+      return undefined;
+    }
+    return threads.find((thread) => thread.id === chatId);
   }
 }

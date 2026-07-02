@@ -8,6 +8,9 @@ public class ConversacionResponse {
     private Long id;
     private Long idUsuario1;
     private Long idUsuario2;
+    private Long publicacionId;
+    private Long idOrden;
+    private String tipoChat;
     private LocalDateTime creadoEn;
     private LocalDateTime actualizadoEn;
 }

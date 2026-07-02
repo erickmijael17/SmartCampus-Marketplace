@@ -53,6 +53,10 @@ export const routes: Routes = [
 		component: PaymentResultComponent
 	},
 	{
+		path: 'pago/fallo',
+		component: PaymentResultComponent
+	},
+	{
 		path: 'pago/error',
 		component: PaymentResultComponent
 	},

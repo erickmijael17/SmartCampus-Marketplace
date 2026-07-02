@@ -58,6 +58,21 @@ class MercadoPagoControllerTest {
         ResponseEntity<Void> response = controller.webhook(Map.of("data", Map.of("id", "9988")), Map.of());
 
         assertThat(response.getStatusCode().value()).isEqualTo(200);
-        verify(service).confirmarPago("9988");
+        verify(service).confirmarPago("9988", null, null);
+    }
+
+    @Test
+    void confirmarPagoUsesCollectionIdAndExternalReferenceWhenPaymentIdIsMissing() {
+        MercadoPagoCheckoutService service = mock(MercadoPagoCheckoutService.class);
+        MercadoPagoController controller = new MercadoPagoController(service);
+
+        ResponseEntity<?> response = controller.confirmarPago(Map.of(
+                "collection_id", "7788",
+                "status", "approved",
+                "external_reference", "ORDEN-12"
+        ));
+
+        assertThat(response.getStatusCode().value()).isEqualTo(200);
+        verify(service).confirmarPago("7788", "approved", "ORDEN-12");
     }
 }

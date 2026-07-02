@@ -16,6 +16,7 @@ public class EventoOrden {
     private Long idComprador;
     private Double total;
     private String estado;
+    private String metodoPago;
     private String origen;
     private Long timestamp;
 }

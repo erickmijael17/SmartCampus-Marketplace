@@ -34,6 +34,15 @@ public class Conversacion {
     @Column(name = "id_usuario2")
     private Long idUsuario2;
 
+    @Column(name = "publicacion_id")
+    private Long publicacionId;
+
+    @Column(name = "id_orden")
+    private Long idOrden;
+
+    @Column(name = "tipo_chat", length = 30)
+    private String tipoChat;
+
     @Column(name = "creado_en", updatable = false)
     private LocalDateTime creadoEn;
 

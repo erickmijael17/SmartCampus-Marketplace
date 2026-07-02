@@ -12,9 +12,11 @@ public class OrdenMapper {
         return Orden.builder()
                 .idComprador(request.getIdComprador())
                 .idProducto(request.getIdProducto())
+                .idVendedor(request.getIdVendedor())
                 .cantidad(request.getCantidad())
                 .precioUnitario(request.getPrecioUnitario())
                 .estado(request.getEstado())
+                .metodoPago(request.getMetodoPago())
                 .build();
     }
 
@@ -23,9 +25,11 @@ public class OrdenMapper {
                 .id(entity.getId())
                 .idComprador(entity.getIdComprador())
                 .idProducto(entity.getIdProducto())
+                .idVendedor(entity.getIdVendedor())
                 .cantidad(entity.getCantidad())
                 .precioUnitario(entity.getPrecioUnitario())
                 .estado(entity.getEstado())
+                .metodoPago(entity.getMetodoPago())
                 .createdAt(entity.getCreatedAt())
                 .build();
     }
@@ -33,9 +37,11 @@ public class OrdenMapper {
     public void updateEntity(Orden entity, OrdenRequest request) {
         entity.setIdComprador(request.getIdComprador());
         entity.setIdProducto(request.getIdProducto());
+        entity.setIdVendedor(request.getIdVendedor());
         entity.setCantidad(request.getCantidad());
         entity.setPrecioUnitario(request.getPrecioUnitario());
         entity.setEstado(request.getEstado());
+        entity.setMetodoPago(request.getMetodoPago());
     }
 }
 

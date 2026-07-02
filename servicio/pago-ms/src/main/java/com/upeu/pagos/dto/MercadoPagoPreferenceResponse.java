@@ -18,4 +18,8 @@ public class MercadoPagoPreferenceResponse {
     private String initPoint;
     private String sandboxInitPoint;
     private String externalReference;
+
+    public String getCheckoutUrl() {
+        return sandboxInitPoint != null ? sandboxInitPoint : initPoint;
+    }
 }

@@ -26,3 +26,7 @@ app:
 mercadopago:
   access-token: ${MP_ACCESS_TOKEN}
   public-key: ${MP_PUBLIC_KEY:}
+  success-url: ${MP_SUCCESS_URL:${FRONTEND_URL:http://localhost:4200}/pago/exito}
+  failure-url: ${MP_FAILURE_URL:${FRONTEND_URL:http://localhost:4200}/pago/fallo}
+  pending-url: ${MP_PENDING_URL:${FRONTEND_URL:http://localhost:4200}/pago/pendiente}
+  auto-return-enabled: ${MP_AUTO_RETURN_ENABLED:false}

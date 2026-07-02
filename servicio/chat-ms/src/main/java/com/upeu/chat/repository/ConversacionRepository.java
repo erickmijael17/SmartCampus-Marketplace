@@ -16,4 +16,18 @@ public interface ConversacionRepository extends JpaRepository<Conversacion, Long
                or (c.idUsuario1 = :usuario2 and c.idUsuario2 = :usuario1)
             """)
     Optional<Conversacion> findBetweenUsers(@Param("usuario1") Long usuario1, @Param("usuario2") Long usuario2);
+
+    Optional<Conversacion> findByIdOrden(Long idOrden);
+
+    @Query("""
+            select c from Conversacion c
+            where c.publicacionId = :publicacionId
+              and ((c.idUsuario1 = :usuario1 and c.idUsuario2 = :usuario2)
+                or (c.idUsuario1 = :usuario2 and c.idUsuario2 = :usuario1))
+            """)
+    Optional<Conversacion> findByPublicacionAndUsers(
+            @Param("publicacionId") Long publicacionId,
+            @Param("usuario1") Long usuario1,
+            @Param("usuario2") Long usuario2
+    );
 }

@@ -11,6 +11,7 @@ export const environment: AppEnvironment = {
   /** En produccion se usa URL fija; no se sondea localhost. */
   gatewayProbeEnabled: false,
   authMode: 'gateway-password',
+  mercadoPagoOpenMode: 'same-tab',
   sessionStorageMode: 'sessionStorage',
   keycloak: {
     enabled: false,

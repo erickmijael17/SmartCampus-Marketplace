@@ -41,7 +41,7 @@ public class MercadoPagoController {
     ) {
         String paymentId = extractPaymentId(body, params);
         if (paymentId != null && !paymentId.isBlank()) {
-            checkoutService.confirmarPago(paymentId);
+            checkoutService.confirmarPago(paymentId, null, null);
         }
         return ResponseEntity.ok().build();
     }
@@ -60,11 +60,13 @@ public class MercadoPagoController {
 
     @GetMapping("/confirmar")
     public ResponseEntity<PagoConfirmacionResponse> confirmarPago(@RequestParam Map<String, String> params) {
-        String paymentId = params.get("payment_id");
+        String paymentId = firstNonBlank(params.get("payment_id"), params.get("collection_id"));
         if (paymentId == null || paymentId.isBlank()) {
             return ResponseEntity.badRequest().build();
         }
-        return ResponseEntity.ok(checkoutService.confirmarPago(paymentId));
+        String status = firstNonBlank(params.get("status"), params.get("collection_status"));
+        String externalReference = params.get("external_reference");
+        return ResponseEntity.ok(checkoutService.confirmarPago(paymentId, status, externalReference));
     }
 
     @SuppressWarnings("unchecked")
@@ -82,6 +84,16 @@ public class MercadoPagoController {
                 return String.valueOf(id);
             }
         }
-        return params.getOrDefault("data.id", params.get("id"));
+        return firstNonBlank(params.get("data.id"), params.get("id"));
+    }
+
+    private String firstNonBlank(String first, String second) {
+        if (first != null && !first.isBlank()) {
+            return first;
+        }
+        if (second != null && !second.isBlank()) {
+            return second;
+        }
+        return null;
     }
 }

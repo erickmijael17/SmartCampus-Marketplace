@@ -2,6 +2,8 @@ export type AuthMode = 'gateway-password' | 'keycloak-oidc';
 
 export type GatewayLabel = 'PROD' | 'DEV' | 'NONE';
 
+export type MercadoPagoOpenMode = 'new-tab' | 'same-tab';
+
 export interface GatewayCandidate {
   label: GatewayLabel;
   url: string;
@@ -23,6 +25,7 @@ export interface AppEnvironment {
   gatewayCandidates: GatewayCandidate[];
   gatewayProbeEnabled: boolean;
   authMode: AuthMode;
+  mercadoPagoOpenMode: MercadoPagoOpenMode;
   sessionStorageMode: 'localStorage' | 'sessionStorage';
   keycloak: KeycloakEnvironmentConfig;
 }

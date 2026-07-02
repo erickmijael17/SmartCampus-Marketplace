@@ -15,6 +15,7 @@ public class ComprobantePagoRequest {
     private Long ordenId;
     private Long idComprador;
     private Long idVendedor;
+    private String nombreComprador;
     private Long publicacionId;
     private String tituloProducto;
     private BigDecimal monto;

@@ -34,6 +34,9 @@ public class OrdenServiceImpl implements OrdenService {
     @Override
     @Transactional
     public OrdenResponse create(OrdenRequest request) {
+        if (request.getIdVendedor() != null && request.getIdComprador().equals(request.getIdVendedor())) {
+            throw new IllegalArgumentException("No puedes comprar tu propio producto.");
+        }
         Orden ordenes = ordenesMapper.toEntity(request);
         ordenes.setEstado("PENDIENTE");
         Orden ordenGuardada = ordenesRepository.save(ordenes);
@@ -46,8 +49,10 @@ public class OrdenServiceImpl implements OrdenService {
                 .tipoEvento("orden.creada")
                 .ordenId(ordenGuardada.getId())
                 .idComprador(ordenGuardada.getIdComprador())
+                .idVendedor(ordenGuardada.getIdVendedor())
                 .total(total)
                 .estado(ordenGuardada.getEstado())
+                .metodoPago(ordenGuardada.getMetodoPago())
                 .origen(applicationName)
                 .timestamp(Instant.now().toEpochMilli())
                 .build();

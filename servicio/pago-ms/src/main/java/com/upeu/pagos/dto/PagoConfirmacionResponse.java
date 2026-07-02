@@ -12,9 +12,13 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PagoConfirmacionResponse {
+    private Long pagoId;
     private Long ordenId;
+    private String estado;
     private String estadoPago;
     private String estadoOrden;
     private Long chatId;
+    private Long conversacionId;
+    private String mensaje;
     private boolean mensajeComprobanteEnviado;
 }

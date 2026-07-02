@@ -37,6 +37,8 @@ public class MensajeServiceImpl implements MensajeService {
                 .idConversacion(conversacionId)
                 .idRemitente(request.getIdRemitente())
                 .contenido(request.getContenido())
+                .tipoRemitente("USUARIO")
+                .tipoMensaje("TEXTO")
                 .leido(request.getLeido() != null ? request.getLeido() : Boolean.FALSE)
                 .build();
 
@@ -54,6 +56,11 @@ public class MensajeServiceImpl implements MensajeService {
         response.setIdConversacion(entity.getIdConversacion());
         response.setIdRemitente(entity.getIdRemitente());
         response.setContenido(entity.getContenido());
+        response.setTipoRemitente(entity.getTipoRemitente());
+        response.setTipoMensaje(entity.getTipoMensaje());
+        response.setIdOrden(entity.getIdOrden());
+        response.setPagoId(entity.getPagoId());
+        response.setMpPaymentId(entity.getMpPaymentId());
         response.setLeido(entity.getLeido());
         response.setCreadoEn(entity.getCreadoEn());
         response.setActualizadoEn(entity.getActualizadoEn());

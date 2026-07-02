@@ -60,8 +60,9 @@ mercadopago:
   base-url: https://api.mercadopago.com
   notification-url: ${MP_NOTIFICATION_URL}
   success-url: ${MP_SUCCESS_URL:${FRONTEND_URL}/pago/exito}
-  failure-url: ${MP_FAILURE_URL:${FRONTEND_URL}/pago/error}
+  failure-url: ${MP_FAILURE_URL:${FRONTEND_URL}/pago/fallo}
   pending-url: ${MP_PENDING_URL:${FRONTEND_URL}/pago/pendiente}
+  auto-return-enabled: ${MP_AUTO_RETURN_ENABLED:true}
 
 jwt:
   secret: 1s3alJJATsWK91vf5zrODYlQa+LauM/9udaLZlQhHlpu46g/KzmSS5c3CGy6xF9kzAqBhvjmKBuZO/pSL7tfOg==

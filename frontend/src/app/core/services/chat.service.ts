@@ -49,16 +49,17 @@ export class ChatService {
       );
   }
 
-  getOrCreateConversation(otherUserId: number): Observable<ChatThread> {
+  getOrCreateConversation(otherUserId: number, publicacionId?: number | null): Observable<ChatThread> {
     const currentUserId = this.requireUserId();
 
     return this.getThreads().pipe(
       switchMap((threads) => {
+        const sameUsers = (thread: ChatThread) =>
+          (thread.idUsuario1 === currentUserId && thread.idUsuario2 === otherUserId) ||
+          (thread.idUsuario1 === otherUserId && thread.idUsuario2 === currentUserId);
         const existing = threads.find(
-          (thread) =>
-            (thread.idUsuario1 === currentUserId && thread.idUsuario2 === otherUserId) ||
-            (thread.idUsuario1 === otherUserId && thread.idUsuario2 === currentUserId)
-        );
+          (thread) => sameUsers(thread) && (publicacionId ? thread.publicacionId === publicacionId : true)
+        ) ?? threads.find((thread) => sameUsers(thread) && !thread.publicacionId);
 
         if (existing) {
           return this.getConversation(existing.id);
@@ -66,7 +67,8 @@ export class ChatService {
 
         const request: ConversacionRequest = {
           idUsuario1: currentUserId,
-          idUsuario2: otherUserId
+          idUsuario2: otherUserId,
+          publicacionId: publicacionId ?? null
         };
 
         return this.http.post<ConversacionResponse>(this.url(API_CONFIG.endpoints.chats.base), request).pipe(
@@ -106,11 +108,13 @@ export class ChatService {
       idUsuario2: conversation.idUsuario2,
       name: `Usuario #${otherUserId}`,
       avatar: `/assets/avatar-placeholder.svg`,
-      subject: `Conversacion #${conversation.id}`,
+      subject: conversation.idOrden ? `Venta #${conversation.idOrden}` : `Conversacion #${conversation.id}`,
       lastMsg: 'Sin mensajes aun',
       time: conversation.actualizadoEn ?? conversation.creadoEn ?? '',
       unread: 0,
-      messages: []
+      messages: [],
+      publicacionId: conversation.publicacionId,
+      idOrden: conversation.idOrden
     };
   }
 
@@ -128,13 +132,14 @@ export class ChatService {
 
   private toChatMessage(message: MensajeResponse): ChatMessage {
     const currentUserId = this.sessionService.personaId();
+    const isSystem = message.tipoRemitente === 'SISTEMA' || message.tipoMensaje?.startsWith('SISTEMA');
     const fromMe = currentUserId !== null && message.idRemitente === currentUserId;
 
     return {
-      from: fromMe ? 'me' : 'them',
+      from: isSystem ? 'system' : fromMe ? 'me' : 'them',
       text: message.contenido,
       time: message.creadoEn ?? new Date().toISOString(),
-      author: fromMe ? this.sessionService.username() || 'Yo' : `Usuario #${message.idRemitente}`,
+      author: isSystem ? 'Sistema' : fromMe ? this.sessionService.username() || 'Yo' : `Usuario #${message.idRemitente}`,
       createdAt: message.creadoEn ?? new Date().toISOString()
     };
   }

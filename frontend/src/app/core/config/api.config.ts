@@ -12,7 +12,9 @@ export const API_CONFIG = {
       categories: '/api/v1/categorias',
       orders: '/api/v1/ordenes',
       payments: '/api/v1/pagos',
-      mercadoPagoPreference: '/api/v1/pagos/mercadopago/preference'
+      mercadoPagoPreference: '/api/v1/pagos/mercadopago/preference',
+      mercadoPagoConfirm: '/api/v1/pagos/mercadopago/confirmar',
+      mercadoPagoValidateTransaction: (pagoId: number) => `/api/v1/pagos/${pagoId}/validar-transaccion`
     },
     personas: {
       base: '/auth/profile',
@@ -23,6 +25,9 @@ export const API_CONFIG = {
       base: '/api/v1/chats',
       detail: (id: number) => `/api/v1/chats/${id}`,
       messages: (id: number) => `/api/v1/chats/${id}/mensajes`
+    },
+    payments: {
+      sellerSummary: (idVendedor: number) => `/api/v1/pagos/vendedor/${idVendedor}/resumen`
     },
     media: {
       base: '/api/v1/media',

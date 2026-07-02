@@ -9,6 +9,7 @@ export const environment: AppEnvironment = {
   ],
   gatewayProbeEnabled: false,
   authMode: 'gateway-password',
+  mercadoPagoOpenMode: 'new-tab',
   sessionStorageMode: 'localStorage',
   keycloak: {
     enabled: false,

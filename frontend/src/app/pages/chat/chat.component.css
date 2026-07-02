@@ -107,6 +107,10 @@ time,
   justify-content: flex-end;
 }
 
+.bubble-row.system {
+  justify-content: center;
+}
+
 .bubble {
   max-width: min(420px, 78%);
   padding: 0.78rem 0.9rem;
@@ -120,6 +124,13 @@ time,
   background: var(--primary);
   color: #fff;
   border-color: var(--primary);
+}
+
+.system .bubble {
+  max-width: min(640px, 100%);
+  background: #f0fdf4;
+  color: #14532d;
+  border-color: #bbf7d0;
 }
 
 .bubble small {

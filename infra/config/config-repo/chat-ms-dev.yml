@@ -16,6 +16,15 @@ spring:
     properties:
       hibernate:
         format_sql: true
+  kafka:
+    bootstrap-servers: localhost:19092
+
+app:
+  kafka:
+    topic:
+      pagos: pagos-topic
+    group-id:
+      chat: chat-group
 
 eureka:
   instance:

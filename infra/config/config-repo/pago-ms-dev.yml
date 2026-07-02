@@ -69,8 +69,9 @@ mercadopago:
   base-url: https://api.mercadopago.com
   notification-url: ${MP_NOTIFICATION_URL:http://localhost:18080/api/v1/pagos/mercadopago/webhook}
   success-url: ${MP_SUCCESS_URL:${FRONTEND_URL:http://localhost:4200}/pago/exito}
-  failure-url: ${MP_FAILURE_URL:${FRONTEND_URL:http://localhost:4200}/pago/error}
+  failure-url: ${MP_FAILURE_URL:${FRONTEND_URL:http://localhost:4200}/pago/fallo}
   pending-url: ${MP_PENDING_URL:${FRONTEND_URL:http://localhost:4200}/pago/pendiente}
+  auto-return-enabled: ${MP_AUTO_RETURN_ENABLED:false}
 
 jwt:
   secret: 1s3alJJATsWK91vf5zrODYlQa+LauM/9udaLZlQhHlpu46g/KzmSS5c3CGy6xF9kzAqBhvjmKBuZO/pSL7tfOg==

@@ -76,6 +76,15 @@ public class Pago {
     @Column(name = "external_reference", length = 120)
     private String externalReference;
 
+    @Column(name = "chat_id")
+    private Long chatId;
+
+    @Column(name = "fecha_confirmacion")
+    private LocalDateTime fechaConfirmacion;
+
+    @Column(name = "evento_pago_aprobado_publicado", nullable = false)
+    private boolean eventoPagoAprobadoPublicado;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

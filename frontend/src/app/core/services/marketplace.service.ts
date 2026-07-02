@@ -80,6 +80,16 @@ interface MercadoPagoPreferenceResponse {
 
 }
 
+interface VendedorVentasResumenResponse {
+
+  idVendedor: number;
+
+  ventas: number;
+
+  montoTotal?: number;
+
+}
+
 interface CatalogContext {
 
   publicaciones: PublicacionResponse[];
@@ -419,13 +429,15 @@ export class MarketplaceService {
 
       favoritos: this.getMyFavoritos().pipe(catchError(() => of([] as FavoritoResponse[]))),
 
-      calificaciones: this.getMyCalificaciones().pipe(catchError(() => of([] as CalificacionResponse[])))
+      calificaciones: this.getMyCalificaciones().pipe(catchError(() => of([] as CalificacionResponse[]))),
+
+      ventas: this.getMySalesCount().pipe(catchError(() => of(0)))
 
     }).pipe(
 
-      map(({ me, listings, favoritos, calificaciones }) =>
+      map(({ me, listings, favoritos, calificaciones, ventas }) =>
 
-        this.toMarketplaceUser(me, listings.length, favoritos.length, calificaciones.length)
+        this.toMarketplaceUser(me, listings.length, favoritos.length, calificaciones.length, ventas)
 
       )
 
@@ -534,6 +546,24 @@ export class MarketplaceService {
       )
 
     );
+
+  }
+
+  getMySalesCount(): Observable<number> {
+
+    const personaId = this.sessionService.personaId();
+
+    if (!this.sessionService.isAuthenticated() || personaId === null) {
+
+      return of(0);
+
+    }
+
+    return this.http
+
+      .get<VendedorVentasResumenResponse>(this.url(API_CONFIG.endpoints.payments.sellerSummary(personaId)))
+
+      .pipe(map((summary) => Number(summary.ventas) || 0));
 
   }
 
@@ -759,7 +789,9 @@ export class MarketplaceService {
 
     favorites: number,
 
-    reviews: number
+    reviews: number,
+
+    sales: number
 
   ): MarketplaceUser {
 
@@ -799,7 +831,7 @@ export class MarketplaceService {
 
       published,
 
-      sales: 0,
+      sales,
 
       favorites
 

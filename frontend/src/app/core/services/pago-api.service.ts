@@ -20,6 +20,7 @@ export interface PreferenciaPagoResponse {
   idOrden?: number;
   estado?: string;
   preferenceId?: string;
+  checkoutUrl?: string;
   initPoint?: string;
   init_point?: string;
   sandboxInitPoint?: string;
@@ -28,11 +29,30 @@ export interface PreferenciaPagoResponse {
 }
 
 export interface ConfirmacionPagoResponse {
+  pagoId?: number;
   ordenId: number;
+  estado?: string;
   estadoPago: string;
   estadoOrden: string;
-  chatId: number;
+  chatId?: number;
+  conversacionId?: number;
+  mensaje?: string;
   mensajeComprobanteEnviado: boolean;
+}
+
+export interface ValidarTransaccionMercadoPagoResponse {
+  pagoId: number;
+  idOrden: number;
+  estado: string;
+  mercadoPagoPaymentId: string;
+  mpPaymentId?: string;
+  tituloProducto?: string;
+  preferenceId?: string;
+  externalReference?: string;
+  monto?: number;
+  moneda?: string;
+  mensaje?: string;
+  chatMessageCreated?: boolean;
 }
 
 interface OrdenResponse {
@@ -65,10 +85,10 @@ export class PagoApiService {
       idProducto,
       cantidad,
       precioUnitario: payload.precio,
-      estado: 'PENDIENTE'
+      estado: 'PENDIENTE',
+      metodoPago: 'MERCADO_PAGO',
+      idVendedor: payload.vendedorId
     };
-
-    console.log('Payload orden:', orderRequest);
 
     return this.http
       .post<OrdenResponse>(this.url(API_CONFIG.endpoints.marketplace.orders), orderRequest)
@@ -86,8 +106,6 @@ export class PagoApiService {
             idVendedor: payload.vendedorId
           };
 
-          console.log('Payload Mercado Pago:', preferenceRequest);
-
           return this.http.post<PreferenciaPagoResponse>(
             this.url(API_CONFIG.endpoints.marketplace.mercadoPagoPreference),
             preferenceRequest
@@ -96,6 +114,7 @@ export class PagoApiService {
         map((response) => ({
           ...response,
           urlPago:
+            response.checkoutUrl ||
             response.sandboxInitPoint ||
             response.sandbox_init_point ||
             response.initPoint ||
@@ -107,8 +126,15 @@ export class PagoApiService {
 
   confirmarPago(params: any): Observable<ConfirmacionPagoResponse> {
     return this.http.get<ConfirmacionPagoResponse>(
-      this.url(API_CONFIG.endpoints.marketplace.mercadoPagoPreference).replace('/preference', '/confirmar'),
+      this.url(API_CONFIG.endpoints.marketplace.mercadoPagoConfirm),
       { params }
+    );
+  }
+
+  validarTransaccion(pagoId: number, paymentId: string): Observable<ValidarTransaccionMercadoPagoResponse> {
+    return this.http.post<ValidarTransaccionMercadoPagoResponse>(
+      this.url(API_CONFIG.endpoints.marketplace.mercadoPagoValidateTransaction(pagoId)),
+      { paymentId: paymentId.trim() }
     );
   }
 

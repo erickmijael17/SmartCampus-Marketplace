@@ -25,15 +25,80 @@
             <p>El pago se completa fuera de SmartCampus en Mercado Pago.</p>
           </div>
 
-          <button type="button" data-testid="buy-now-button" (click)="buyNow()" [disabled]="paymentRedirecting">
-            {{ paymentRedirecting ? 'Redirigiendo a Mercado Pago...' : (canBuy ? 'Comprar ahora' : 'Inicia sesion para comprar') }}
+          <button type="button" data-testid="buy-now-button" (click)="buyNow()" [disabled]="paymentRedirecting || isOwnListing">
+            {{ buyButtonLabel }}
           </button>
         </section>
+        <p class="status" *ngIf="isOwnListing">No puedes comprar tu propio producto.</p>
 
         <button type="button" class="secondary-action" (click)="toggleFavorite()" [disabled]="favoriteBusy">
           {{ favoriteLabel }}
         </button>
         <p class="status" *ngIf="statusMessage">{{ statusMessage }}</p>
+        <a
+          *ngIf="manualCheckoutUrl"
+          data-testid="manual-checkout-link"
+          class="secondary-action"
+          [href]="manualCheckoutUrl"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Abrir Mercado Pago
+        </a>
+
+        <section class="manual-payment-card" *ngIf="showManualPaymentValidation">
+          <label>
+            Numero de transaccion de Mercado Pago
+            <input
+              data-testid="mp-transaction-input"
+              type="text"
+              inputmode="numeric"
+              autocomplete="off"
+              [(ngModel)]="numeroTransaccionMercadoPago"
+              placeholder="Ej. 166617913516"
+            />
+          </label>
+          <button
+            type="button"
+            class="secondary-action"
+            data-testid="validate-payment-button"
+            (click)="validateManualPayment()"
+            [disabled]="validatingPayment"
+          >
+            {{ validatingPayment ? 'Validando pago...' : 'Validar pago' }}
+          </button>
+        </section>
+
+        <section
+          class="payment-success-card"
+          data-testid="payment-success-summary"
+          *ngIf="paymentValidationResult as validatedPayment"
+        >
+          <h3>Pago validado correctamente</h3>
+          <p>{{ statusMessage }}</p>
+          <dl>
+            <div *ngIf="validatedPayment.tituloProducto">
+              <dt>Producto</dt>
+              <dd>Producto: {{ validatedPayment.tituloProducto }}</dd>
+            </div>
+            <div>
+              <dt>N. de venta</dt>
+              <dd>N. de venta: #{{ validatedPayment.idOrden }}</dd>
+            </div>
+            <div *ngIf="validatedPayment.monto !== undefined">
+              <dt>Monto</dt>
+              <dd>Monto: S/ {{ paymentSuccessMonto }}</dd>
+            </div>
+            <div>
+              <dt>N. de transaccion</dt>
+              <dd>N. de transaccion: {{ paymentSuccessTransactionId }}</dd>
+            </div>
+            <div>
+              <dt>Estado</dt>
+              <dd>Estado: {{ validatedPayment.estado }}</dd>
+            </div>
+          </dl>
+        </section>
 
         <section class="review-box" *ngIf="canBuy && listing.publicacionId">
           <h3>Calificar publicacion</h3>
@@ -68,7 +133,7 @@
       </div>
 
       <div class="chat-history">
-        <article *ngFor="let message of messages" class="chat-message">
+        <article *ngFor="let message of messages" class="chat-message" [class.system]="message.from === 'system'">
           <strong>{{ message.author }}</strong>
           <p>{{ message.text }}</p>
           <small>{{ message.createdAt | date: 'short' }}</small>

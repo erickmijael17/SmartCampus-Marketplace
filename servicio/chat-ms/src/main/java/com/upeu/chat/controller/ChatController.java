@@ -6,6 +6,8 @@ import com.upeu.chat.dto.ConversacionRequest;
 import com.upeu.chat.dto.ConversacionResponse;
 import com.upeu.chat.dto.MensajeRequest;
 import com.upeu.chat.dto.MensajeResponse;
+import com.upeu.chat.dto.MensajeVentaValidadaRequest;
+import com.upeu.chat.dto.MensajeVentaValidadaResponse;
 import com.upeu.chat.service.ChatService;
 import com.upeu.chat.service.MensajeService;
 import lombok.RequiredArgsConstructor;
@@ -45,6 +47,12 @@ public class ChatController {
     @PostMapping("/comprobantes")
     public ResponseEntity<ComprobantePagoResponse> createReceipt(@RequestBody ComprobantePagoRequest request) {
         return ResponseEntity.ok(chatService.crearComprobante(request));
+    }
+
+    @PostMapping("/mensaje-venta-validada")
+    public ResponseEntity<MensajeVentaValidadaResponse> createValidatedSaleMessage(
+            @RequestBody MensajeVentaValidadaRequest request) {
+        return ResponseEntity.ok(chatService.crearMensajeVentaValidada(request));
     }
 
     @PutMapping("/{id}")

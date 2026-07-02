@@ -2,6 +2,10 @@ package com.upeu.pagos.controller;
 
 import com.upeu.pagos.dto.PagoRequest;
 import com.upeu.pagos.dto.PagoResponse;
+import com.upeu.pagos.dto.ValidarTransaccionMercadoPagoRequest;
+import com.upeu.pagos.dto.ValidarTransaccionMercadoPagoResponse;
+import com.upeu.pagos.dto.VendedorVentasResumenResponse;
+import com.upeu.pagos.service.MercadoPagoCheckoutService;
 import com.upeu.pagos.service.PagoService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -23,6 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class PagoController {
 
     private final PagoService pagosService;
+    private final MercadoPagoCheckoutService mercadoPagoCheckoutService;
 
     @PostMapping
     public ResponseEntity<PagoResponse> create(@Valid @RequestBody PagoRequest request) {
@@ -42,6 +47,19 @@ public class PagoController {
     @GetMapping("/usuario/{idComprador}")
     public ResponseEntity<List<PagoResponse>> findByComprador(@PathVariable Long idComprador) {
         return ResponseEntity.ok(pagosService.findByComprador(idComprador));
+    }
+
+    @GetMapping("/vendedor/{idVendedor}/resumen")
+    public ResponseEntity<VendedorVentasResumenResponse> getResumenVentasVendedor(@PathVariable Long idVendedor) {
+        return ResponseEntity.ok(pagosService.getResumenVentasVendedor(idVendedor));
+    }
+
+    @PostMapping("/{id}/validar-transaccion")
+    public ResponseEntity<ValidarTransaccionMercadoPagoResponse> validarTransaccion(
+            @PathVariable Long id,
+            @Valid @RequestBody ValidarTransaccionMercadoPagoRequest request
+    ) {
+        return ResponseEntity.ok(mercadoPagoCheckoutService.validarTransaccion(id, request.getPaymentId()));
     }
 
     @PutMapping("/{id}")

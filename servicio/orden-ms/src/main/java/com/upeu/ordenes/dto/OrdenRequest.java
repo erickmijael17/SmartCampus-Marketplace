@@ -24,6 +24,8 @@ public class OrdenRequest {
     @NotNull(message = "idProducto es obligatorio")
     private Long idProducto;
 
+    private Long idVendedor;
+
     @NotNull(message = "cantidad es obligatoria")
     @Min(value = 1, message = "cantidad debe ser mayor o igual a 1")
     private Integer cantidad;
@@ -34,5 +36,7 @@ public class OrdenRequest {
 
     @NotBlank(message = "estado es obligatorio")
     private String estado;
+
+    private String metodoPago;
 }
 

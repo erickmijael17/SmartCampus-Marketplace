@@ -21,29 +21,54 @@ export class PaymentResultComponent implements OnInit {
   
   ngOnInit(): void {
     const params = this.route.snapshot.queryParams;
-    const paymentId = params['payment_id'];
+    const paymentId = params['payment_id'] ?? params['collection_id'];
+    const mercadoPagoStatus = this.normalizeStatus(
+      params['status'] ?? params['collection_status'] ?? this.statusFromPath()
+    );
 
-    if (!paymentId) {
-      this.status = this.normalizeStatus(params['status'] ?? this.statusFromPath());
-      this.title = this.status === 'success' ? 'Pago aprobado' : (this.status === 'failure' ? 'Pago no completado' : 'Pago pendiente');
-      this.message = this.status === 'success' ? 'Pago completado.' : 'El pago no se completo o esta pendiente.';
+    if (mercadoPagoStatus !== 'approved') {
+      this.status = mercadoPagoStatus === 'failure' || mercadoPagoStatus === 'rejected' ? 'failure' : 'pending';
+      this.title = this.status === 'failure' ? 'Pago no completado' : 'Pago pendiente';
+      this.message = this.status === 'failure'
+        ? 'La operacion fue rechazada, cancelada o no pudo completarse.'
+        : 'Mercado Pago todavia esta procesando la operacion. Revisa el estado mas tarde.';
       return;
     }
 
-    this.pagoApiService.confirmarPago(params).subscribe({
+    if (!paymentId) {
+      this.status = 'success';
+      this.title = 'Pago aprobado';
+      this.message = 'Pago aprobado, pero no recibimos el identificador de Mercado Pago para confirmarlo.';
+      return;
+    }
+
+    const confirmationParams: Record<string, string> = {
+      payment_id: String(paymentId),
+      status: mercadoPagoStatus
+    };
+    if (params['external_reference']) {
+      confirmationParams['external_reference'] = String(params['external_reference']);
+    }
+    if (params['preference_id']) {
+      confirmationParams['preference_id'] = String(params['preference_id']);
+    }
+
+    this.pagoApiService.confirmarPago(confirmationParams).subscribe({
       next: (response) => {
-        if (response.estadoPago === 'APROBADO') {
+        const estado = response.estadoPago ?? response.estado;
+        if (estado === 'APROBADO') {
           this.status = 'success';
           this.title = 'Pago aprobado';
-          this.message = 'Tu pago ha sido confirmado exitosamente.';
+          this.message = response.mensaje ?? 'Tu pago ha sido confirmado exitosamente.';
           
-          if (response.chatId) {
+          const chatId = response.chatId ?? response.conversacionId;
+          if (chatId) {
             this.message += ' Redirigiendo al chat con el comprobante...';
             setTimeout(() => {
-              void this.router.navigate(['/chat'], { queryParams: { chatId: response.chatId } });
+              void this.router.navigate(['/chat'], { queryParams: { chatId } });
             }, 2000);
           }
-        } else if (response.estadoPago === 'PENDIENTE') {
+        } else if (estado === 'PENDIENTE') {
           this.status = 'pending';
           this.title = 'Pago pendiente';
           this.message = 'Mercado Pago todavia esta procesando la operacion. Revisa el estado mas tarde.';
@@ -63,15 +88,16 @@ export class PaymentResultComponent implements OnInit {
   }
 
   private normalizeStatus(status: string | null): string {
-    return (status || 'pending').toLowerCase();
+    const normalized = (status || 'pending').toLowerCase();
+    return normalized === 'success' ? 'approved' : normalized;
   }
 
   private statusFromPath(): string {
     const path = this.route.snapshot.routeConfig?.path ?? '';
     if (path.endsWith('/exito')) {
-      return 'success';
+      return 'approved';
     }
-    if (path.endsWith('/error')) {
+    if (path.endsWith('/fallo') || path.endsWith('/error')) {
       return 'failure';
     }
     return 'pending';
