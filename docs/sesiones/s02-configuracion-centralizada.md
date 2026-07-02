@@ -46,7 +46,7 @@ En un marketplace universitario, los servicios no deben tener URLs, credenciales
 ```mermaid
 flowchart LR
     MS["producto-ms<br/>spring-boot:run"]
-    CFG["Config Server<br/>localhost:28888"]
+    CFG["Config Server<br/>localhost:18888"]
     Repo["infra/config/config-repo<br/>producto-ms-dev.yml"]
     MS --> CFG --> Repo
 ```
@@ -56,13 +56,13 @@ flowchart LR
 ```mermaid
 flowchart LR
     MS["producto-ms<br/>container"]
-    CFG["config<br/>ecom-config:8888"]
+    CFG["Config Server<br/>puerto interno 8888"]
     Repo["/config-repo<br/>*-prod.yml"]
     MS --> CFG --> Repo
 ```
 
 ### 2.3 Observabilidad y diagnóstico
-Probar Config Server con `/actuator/health` y consultando un archivo de configuración publicado.
+Probar Config Server con `/actuator/health` y consultando un archivo de configuración publicado. En Maven local usa `18888`; en Docker Compose el puerto host publicado es `28888`.
 
 ---
 

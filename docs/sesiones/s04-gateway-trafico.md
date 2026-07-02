@@ -46,8 +46,8 @@ El frontend universitario debe usar una sola URL. Si cada microservicio expusier
 ```mermaid
 flowchart LR
     Client["curl / Angular"]
-    GW["Gateway :28082"]
-    EU["Eureka :28761"]
+    GW["Gateway :18080"]
+    EU["Eureka :18761"]
     PROD["producto-ms"]
     CART["carrito-ms"]
     Client --> GW

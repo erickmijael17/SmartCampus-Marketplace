@@ -56,9 +56,17 @@ mvn -f infra/eureka/pom.xml spring-boot:run
 mvn -f infra/gateway/pom.xml spring-boot:run
 ```
 
+Puertos esperados en Maven local:
+
+| Componente | URL |
+|---|---|
+| Config Server | `http://localhost:18888/actuator/health` |
+| Eureka | `http://localhost:18761` |
+| Gateway | `http://localhost:18080/actuator/health` |
+
 ---
 
-## Verificaciones rápidas
+## Verificaciones rápidas con Docker Compose
 
 ```powershell
 curl http://localhost:28082/actuator/health

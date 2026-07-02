@@ -55,7 +55,7 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-    subgraph Net["ecom-prod-net"]
+    subgraph Net["Red Docker compartida"]
         Orden["orden-ms"]
         Kafka["kafka:9092"]
         Pago["pago-ms"]

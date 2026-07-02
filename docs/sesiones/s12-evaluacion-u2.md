@@ -62,7 +62,7 @@ flowchart TB
 
 ```mermaid
 flowchart TB
-    subgraph Docker["ecom-prod-net"]
+    subgraph Docker["Red Docker compartida"]
         GW["gateway"]
         KC["keycloak"]
         K["kafka"]

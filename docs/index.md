@@ -2,10 +2,7 @@
 
 **SmartCampus Marketplace** es una plataforma distribuida para compra, venta y gestión de productos o servicios dentro del entorno universitario UPeU. El sistema integra microservicios Spring Boot, configuración centralizada, descubrimiento con Eureka, Gateway, Keycloak, Kafka, PostgreSQL y observabilidad con Prometheus, Loki y Grafana.
 
-Esta documentación sigue un formato híbrido:
-
-- **ECOM**: estructura pedagógica por sesiones: Introducción, Explica, Aplica, Crea y Cierre Evaluativo.
-- **NovaMarket**: documentación técnica con diagramas Mermaid, rutas reales, comandos ejecutables, YAML y evidencias por archivo.
+Esta documentación combina una guía académica por sesiones con evidencia técnica del sistema real: diagramas Mermaid, rutas verificables, comandos ejecutables, configuración YAML y tablas de archivos trabajados.
 
 ---
 
@@ -50,7 +47,7 @@ Sistema distribuido de microservicios end-to-end, configurable, escalable, segur
 | `search-ms` | Búsqueda del marketplace |
 
 !!! note "Nota sobre frontend"
-    El prompt del proyecto menciona Angular 21 y rama `frontend_Smart`. En esta copia local se encuentra la rama `main` y no aparece una carpeta `frontend/`. La sesión S11 queda preparada para integrar esa parte cuando el código esté disponible en la rama correspondiente.
+    La rama publicada actualmente es `main` y en este checkout no aparece una carpeta `frontend/`. La sesión S11 documenta la integración esperada para la rama `frontend_Smart` cuando el cliente Angular esté disponible en el repositorio local.
 
 ---
 

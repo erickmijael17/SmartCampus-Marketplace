@@ -59,7 +59,7 @@ flowchart TB
 
 ```mermaid
 flowchart TB
-    subgraph Net["ecom-prod-net"]
+    subgraph Net["Red Docker compartida"]
         CFG["config"]
         EU["eureka"]
         GW["gateway"]

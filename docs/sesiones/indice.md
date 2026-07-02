@@ -1,6 +1,6 @@
 # Índice de sesiones
 
-La documentación de sesiones sigue la estructura reconocible de ECOM y agrega el nivel técnico de NovaMarket.
+La documentación de sesiones sigue una estructura académica y técnica: cada sesión explica el propósito, muestra arquitectura, guía una práctica, propone una actividad autónoma y cierra con checklist de evaluación.
 
 | Sesión | Unidad | Tema | Evidencia principal |
 |---|---|---|---|

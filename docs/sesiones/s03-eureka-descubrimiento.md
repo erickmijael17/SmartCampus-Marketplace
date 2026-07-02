@@ -45,7 +45,7 @@ Si en campaña universitaria muchos estudiantes consultan productos a la vez, el
 
 ```mermaid
 flowchart TB
-    EU["Eureka :28761"]
+    EU["Eureka :18761"]
     GW["Gateway"]
     P1["producto-ms instancia 1"]
     P2["producto-ms instancia 2"]
@@ -58,7 +58,7 @@ flowchart TB
 
 ```mermaid
 flowchart TB
-    subgraph Net["Docker ecom-prod-net"]
+    subgraph Net["Red Docker compartida"]
         EU["eureka:8761"]
         GW["gateway:8080"]
         PROD["producto-ms:8080"]
@@ -68,7 +68,7 @@ flowchart TB
 ```
 
 ### 2.3 Observabilidad y diagnóstico
-Abrir `http://localhost:28761` y verificar que los servicios aparezcan con estado `UP`.
+Abrir `http://localhost:18761` si Eureka corre con Maven local, o `http://localhost:28761` si corre por Docker Compose, y verificar que los servicios aparezcan con estado `UP`.
 
 ---
 

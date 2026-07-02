@@ -42,7 +42,7 @@ make compose-ms MS=pago-ms
 
 | Red | Uso |
 |---|---|
-| `ecom-prod-net` | Comunicación entre infraestructura, Keycloak, Kafka, observabilidad y servicios |
+| Red Docker compartida | Comunicación entre infraestructura, Keycloak, Kafka, observabilidad y servicios |
 | Redes internas por servicio | Aíslan PostgreSQL y microservicio |
 
 Los microservicios no publican sus puertos HTTP al host. Se consumen por Gateway.

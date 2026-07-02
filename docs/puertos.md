@@ -2,6 +2,8 @@
 
 ## Puertos principales
 
+Estos puertos corresponden al despliegue con Docker Compose, que es el flujo recomendado para validar el sistema completo.
+
 | Componente | Puerto host | URL |
 |---|---:|---|
 | Gateway | 28082 | `http://localhost:28082` |
@@ -13,6 +15,18 @@
 
 !!! note
     El README local usa `28888` para Config Server. Si tienes apuntes con `2888`, usa el valor real de `infra/compose.yml`.
+
+---
+
+## Puertos Maven local
+
+Cuando se ejecutan los módulos de infraestructura directamente con Maven, se usan los puertos definidos en sus `application.yml`.
+
+| Componente | Puerto local | Archivo |
+|---|---:|---|
+| Gateway | 18080 | `infra/gateway/src/main/resources/application.yml` |
+| Config Server | 18888 | `infra/config/src/main/resources/application.yml` |
+| Eureka | 18761 | `infra/eureka/src/main/resources/application.yml` |
 
 ---
 
