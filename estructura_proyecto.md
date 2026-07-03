@@ -1,4 +1,4 @@
-﻿# SmartCampus Marketplace — Estructura y Arquitectura Actual
+# SmartCampus Marketplace — Estructura y Arquitectura Actual
 
 Fecha del análisis: 2026-06-29  
 Propósito: Documentar la estructura real del repositorio, la arquitectura, el flujo frontend-backend, el alcance MVP de microservicios y los vacíos detectados.
@@ -268,11 +268,14 @@ Angular → GET /api/v1/categorias → Gateway → lb://CATEGORIA-MS → categor
 Angular → POST /api/v1/productos → Gateway → lb://PRODUCTO-MS → producto-ms → PostgreSQL
 ```
 
-#### Checkout (orden + pago)
+#### Checkout (orden + pago con Mercado Pago)
 
 ```
 Angular → POST /api/v1/ordenes → Gateway → lb://ORDEN-MS → orden-ms → PostgreSQL + Kafka
-       → POST /api/v1/pagos → Gateway → lb://PAGO-MS → pago-ms → PostgreSQL + Kafka
+       → POST /api/v1/pagos/mercadopago/preference → Gateway → lb://PAGO-MS → pago-ms → MP API (Init Point)
+       → (Redirección a Mercado Pago y retorno a /payment-result)
+       → GET /api/v1/pagos/{id}/validar-transaccion → Gateway → lb://PAGO-MS → pago-ms
+Webhook MP → POST /api/v1/pagos/mercadopago/confirmar → Gateway → lb://PAGO-MS → pago-ms → PostgreSQL + Kafka
 ```
 ---
 
@@ -359,7 +362,7 @@ El frontend tiene **dos formas de organizar paginas** que coexisten:
 | Categorias | `MarketplaceService` | `GET /api/v1/categorias` | `categoria-route` | `CATEGORIA-MS` | Ruta existe en Gateway | -- |
 | Publicar | `MarketplaceService` | `POST /api/v1/productos` | `producto-route` | `PRODUCTO-MS` | Ruta existe en Gateway | -- |
 | Checkout (orden) | `MarketplaceService` | `POST /api/v1/ordenes` | `orden-route` | `ORDEN-MS` | Ruta existe en Gateway | -- |
-| Checkout (pago) | `MarketplaceService` | `POST /api/v1/pagos` | `pago-route` | `PAGO-MS` | Ruta existe en Gateway | -- |
+| Checkout (pago MP) | `PagoApiService` | `POST /api/v1/pagos/mercadopago/preference` | `pago-route` | `PAGO-MS` | Integrado con Mercado Pago | -- |
 | Chat | `ChatService` | `GET/POST /api/v1/chats/**` | `chat-route` | `CHAT-MS` | Integrado en frontend / pendiente validar end-to-end | Usa Gateway y `API_CONFIG` |
 ---
 

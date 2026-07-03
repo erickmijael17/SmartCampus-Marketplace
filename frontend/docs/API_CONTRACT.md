@@ -192,7 +192,10 @@ Tras login/register el frontend enriquece la sesión:
 | Método | Ruta | MS | Uso |
 |--------|------|-----|-----|
 | POST | `/api/v1/ordenes` | orden-ms | Checkout |
-| POST | `/api/v1/pagos` | pago-ms | Pago tras orden |
+| POST | `/api/v1/pagos` | pago-ms | Pago tras orden (Legacy) |
+| POST | `/api/v1/pagos/mercadopago/preference` | pago-ms | Crear preferencia Mercado Pago |
+| GET  | `/api/v1/pagos/{pagoId}/validar-transaccion` | pago-ms | Validar estado pago Mercado Pago |
+| POST | `/api/v1/pagos/mercadopago/confirmar` | pago-ms | Confirmación pago vía webhook |
 
 ### CheckoutRequest
 
@@ -205,6 +208,16 @@ Tras login/register el frontend enriquece la sesión:
   "metodoPago": "TARJETA",
   "referenciaTransaccion": "string?"
 }
+```
+
+### Flujo de Pago Mercado Pago (Nuevo Checkout)
+
+```text
+1. POST /api/v1/ordenes -> Crea orden en estado PENDIENTE
+2. POST /api/v1/pagos/mercadopago/preference -> Crea Pago en DB y Preferencia en MP
+3. Redirect a MP Init Point -> El usuario paga en Mercado Pago
+4. GET /api/v1/pagos/{pagoId}/validar-transaccion -> Frontend verifica tras redirección (success/failure/pending)
+5. POST /api/v1/pagos/mercadopago/confirmar -> Webhook de MP confirma pago asíncronamente
 ```
 
 ---

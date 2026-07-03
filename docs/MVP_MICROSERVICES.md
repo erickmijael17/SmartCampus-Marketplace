@@ -21,7 +21,7 @@ Contrato API frontend: [`frontend/docs/API_CONTRACT.md`](../frontend/docs/API_CO
 | producto-ms | NECESARIO_ACTUALMENTE | Home, detalle, publicar, perfil | `/api/v1/productos/**` |
 | categoria-ms | NECESARIO_ACTUALMENTE | Home, publicar, detalle enriquecido desde producto-ms | `/api/v1/categorias/**` |
 | orden-ms | NECESARIO_ACTUALMENTE | Checkout | `/api/v1/ordenes/**` |
-| pago-ms | NECESARIO_ACTUALMENTE | Checkout | `/api/v1/pagos/**` |
+| pago-ms | NECESARIO_ACTUALMENTE | Checkout, Integración con Mercado Pago | `/api/v1/pagos/**` |
 | publicacion-ms | NECESARIO_ACTUALMENTE | Publicar, favoritos, media | `/api/v1/publicaciones/**` |
 | media-ms | NECESARIO_ACTUALMENTE | Imagenes metadata | `/api/v1/media/**` |
 | favoritos-ms | NECESARIO_ACTUALMENTE | Detalle, perfil | `/api/v1/favoritos/**` |

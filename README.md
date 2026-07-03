@@ -20,7 +20,10 @@ El despliegue documentado del proyecto se realiza con Docker Compose. El API Gat
 3. **Microservicios MVP**
    - `auth-ms`, `producto-ms`, `categoria-ms`, `orden-ms`, `pago-ms`, `favoritos-ms`, `chat-ms`, `media-ms`, `calificacion-ms` y `publicacion-ms`.
 
-4. **Eventos y observabilidad**
+4. **Integraciones externas**
+   - Mercado Pago para procesamiento de pagos y checkout.
+
+5. **Eventos y observabilidad**
    - Kafka para mensajeria asincrona.
    - Prometheus, Loki, Promtail y Grafana para metricas y logs.
 
