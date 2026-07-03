@@ -36,7 +36,4 @@ public class EventoPago {
     private String origen;
     private Long timestamp;
 
-    public String getEventType() {
-        return tipoEvento;
-    }
 }

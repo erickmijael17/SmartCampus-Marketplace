@@ -8,7 +8,7 @@ const HEALTH_TIMEOUT_MS = 3_000;
 
 @Injectable({ providedIn: 'root' })
 export class GatewayService {
-  private readonly baseUrlSignal = signal<string>(environment.gatewayUrl || API_CONFIG.gatewayUrl);
+  private readonly baseUrlSignal = signal<string>(environment.gatewayUrl ?? API_CONFIG.gatewayUrl);
   private readonly labelSignal = signal<GatewayLabel>('NONE');
   private readonly availableSignal = signal<boolean>(false);
 

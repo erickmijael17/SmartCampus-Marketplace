@@ -47,6 +47,34 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
+    public List<ConversacionResponse> findByUsuario(Long usuarioId) {
+        return conversacionRepository.findByUsuario(usuarioId).stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ConversacionResponse> getMyChats(String token) {
+        Long usuarioId = getLocalUserId(token);
+        return findByUsuario(usuarioId);
+    }
+
+    @SuppressWarnings("unchecked")
+    private Long getLocalUserId(String token) {
+        try {
+            java.util.Map<String, Object> userInfo = authClient.getUserInfo("Bearer " + token);
+            Object localIdObj = userInfo.get("localId");
+            if (localIdObj instanceof Number) {
+                return ((Number) localIdObj).longValue();
+            }
+            throw new RuntimeException("No se pudo obtener el localId del usuario");
+        } catch (Exception e) {
+            log.error("Error al obtener informacion del usuario desde auth-ms", e);
+            throw new RuntimeException("Error de autenticacion: no se puede verificar el usuario", e);
+        }
+    }
+
+    @Override
     public ConversacionResponse findById(Long id) {
         Conversacion entity = conversacionRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Chat no encontrado con ID: " + id));
@@ -379,30 +407,8 @@ public class ChatServiceImpl implements ChatService {
         response.setCreadoEn(entity.getCreadoEn());
         response.setActualizadoEn(entity.getActualizadoEn());
 
-        // Get current user id from security context
-        Long currentUserId = null;
-        try {
-            String name = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication().getName();
-            currentUserId = Long.parseLong(name);
-        } catch (Exception e) {
-            // Ignored
-        }
-
-        Long otroUsuarioId = null;
-        if (currentUserId != null) {
-            if (currentUserId.equals(entity.getIdUsuario1())) {
-                otroUsuarioId = entity.getIdUsuario2();
-            } else if (currentUserId.equals(entity.getIdUsuario2())) {
-                otroUsuarioId = entity.getIdUsuario1();
-            }
-        } else {
-            otroUsuarioId = entity.getIdUsuario2(); // Default fallback
-        }
-        
-        response.setOtroUsuarioId(otroUsuarioId);
-        if (otroUsuarioId != null) {
-            response.setNombreOtroUsuario(resolveName(otroUsuarioId));
-        }
+        response.setNombreUsuario1(resolveName(entity.getIdUsuario1()));
+        response.setNombreUsuario2(resolveName(entity.getIdUsuario2()));
         
         // Find last message
         mensajeRepository.findByIdConversacionOrderByCreadoEnAsc(entity.getId()).stream()

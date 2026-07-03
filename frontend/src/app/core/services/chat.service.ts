@@ -24,6 +24,7 @@ export class ChatService {
       return of([]);
     }
 
+    const userId = this.sessionService.personaId();
     return this.http.get<ConversacionResponse[]>(this.url(API_CONFIG.endpoints.chats.base)).pipe(
       switchMap((conversations) => {
         if (conversations.length === 0) {
@@ -98,11 +99,17 @@ export class ChatService {
 
   private toThreadSummary(conversation: ConversacionResponse): ChatThread {
     const currentUserId = this.sessionService.personaId();
-    const otherUserId = conversation.otroUsuarioId || (
-      currentUserId !== null && conversation.idUsuario1 === currentUserId ? conversation.idUsuario2 : conversation.idUsuario1
-    );
+    const otherUserId =
+      currentUserId !== null && conversation.idUsuario1 === currentUserId ? conversation.idUsuario2 : conversation.idUsuario1;
     
-    const otherUserName = conversation.nombreOtroUsuario || (otherUserId ? `Usuario #${otherUserId}` : 'Sistema');
+    let otherUserName = 'Sistema';
+    if (otherUserId) {
+      if (currentUserId !== null && conversation.idUsuario1 === currentUserId) {
+        otherUserName = conversation.nombreUsuario2 || `Usuario #${otherUserId}`;
+      } else {
+        otherUserName = conversation.nombreUsuario1 || `Usuario #${otherUserId}`;
+      }
+    }
 
     return {
       id: conversation.id,

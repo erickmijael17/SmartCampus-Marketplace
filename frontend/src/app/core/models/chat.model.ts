@@ -39,8 +39,8 @@ export interface ConversacionResponse {
   creadoEn?: string | null;
   actualizadoEn?: string | null;
   
-  otroUsuarioId?: number | null;
-  nombreOtroUsuario?: string | null;
+  nombreUsuario1?: string | null;
+  nombreUsuario2?: string | null;
   ultimoMensaje?: string | null;
   tipoUltimoMensaje?: string | null;
   ultimoMensajeFecha?: string | null;

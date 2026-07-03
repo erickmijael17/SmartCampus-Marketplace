@@ -30,8 +30,17 @@ public class ChatController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ConversacionResponse>> findAll() {
-        return ResponseEntity.ok(chatService.findAll());
+    public ResponseEntity<List<ConversacionResponse>> findAll(jakarta.servlet.http.HttpServletRequest httpRequest) {
+        String token = extractToken(httpRequest);
+        return ResponseEntity.ok(chatService.getMyChats(token));
+    }
+
+    private String extractToken(jakarta.servlet.http.HttpServletRequest request) {
+        String bearerToken = request.getHeader("Authorization");
+        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
+        }
+        throw new RuntimeException("Token no proporcionado");
     }
 
     @GetMapping("/{id}")

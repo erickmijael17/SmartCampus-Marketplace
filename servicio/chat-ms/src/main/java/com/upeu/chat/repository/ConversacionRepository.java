@@ -1,6 +1,7 @@
 package com.upeu.chat.repository;
 
 import com.upeu.chat.entity.Conversacion;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -18,6 +19,12 @@ public interface ConversacionRepository extends JpaRepository<Conversacion, Long
     Optional<Conversacion> findBetweenUsers(@Param("usuario1") Long usuario1, @Param("usuario2") Long usuario2);
 
     Optional<Conversacion> findByIdOrden(Long idOrden);
+
+    @Query("""
+            select c from Conversacion c
+            where c.idUsuario1 = :usuarioId or c.idUsuario2 = :usuarioId
+            """)
+    List<Conversacion> findByUsuario(@Param("usuarioId") Long usuarioId);
 
     @Query("""
             select c from Conversacion c

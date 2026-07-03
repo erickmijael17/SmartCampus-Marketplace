@@ -28,7 +28,8 @@ class ChatServiceImplTest {
     void createsAutomaticReceiptMessageReusingBuyerPublisherConversation() {
         ConversacionRepository conversacionRepository = mock(ConversacionRepository.class);
         MensajeRepository mensajeRepository = mock(MensajeRepository.class);
-        ChatServiceImpl service = new ChatServiceImpl(conversacionRepository, mensajeRepository);
+        com.upeu.chat.client.AuthClient authClient = mock(com.upeu.chat.client.AuthClient.class);
+        ChatServiceImpl service = new ChatServiceImpl(conversacionRepository, mensajeRepository, authClient);
         when(conversacionRepository.findByIdOrden(47L)).thenReturn(Optional.empty());
         when(conversacionRepository.findBetweenUsers(2L, 5L)).thenReturn(Optional.of(
                 Conversacion.builder().id(10L).idUsuario1(2L).idUsuario2(5L).build()
@@ -71,7 +72,8 @@ class ChatServiceImplTest {
     void createsSaleChatAndSystemMessageFromApprovedPaymentEvent() {
         ConversacionRepository conversacionRepository = mock(ConversacionRepository.class);
         MensajeRepository mensajeRepository = mock(MensajeRepository.class);
-        ChatServiceImpl service = new ChatServiceImpl(conversacionRepository, mensajeRepository);
+        com.upeu.chat.client.AuthClient authClient = mock(com.upeu.chat.client.AuthClient.class);
+        ChatServiceImpl service = new ChatServiceImpl(conversacionRepository, mensajeRepository, authClient);
         when(conversacionRepository.findByPublicacionAndUsers(8L, 1L, 2L)).thenReturn(Optional.empty());
         when(conversacionRepository.findBetweenUsers(1L, 2L)).thenReturn(Optional.empty());
         when(conversacionRepository.findByIdOrden(91L)).thenReturn(Optional.empty());
@@ -131,7 +133,8 @@ class ChatServiceImplTest {
     void approvedPaymentEventIsIdempotentForSameOrder() {
         ConversacionRepository conversacionRepository = mock(ConversacionRepository.class);
         MensajeRepository mensajeRepository = mock(MensajeRepository.class);
-        ChatServiceImpl service = new ChatServiceImpl(conversacionRepository, mensajeRepository);
+        com.upeu.chat.client.AuthClient authClient = mock(com.upeu.chat.client.AuthClient.class);
+        ChatServiceImpl service = new ChatServiceImpl(conversacionRepository, mensajeRepository, authClient);
         Conversacion existing = Conversacion.builder()
                 .id(15L)
                 .idUsuario1(1L)
@@ -165,7 +168,8 @@ class ChatServiceImplTest {
     void validatedSaleMessageCreatesChatAndMessageFromBuyer() {
         ConversacionRepository conversacionRepository = mock(ConversacionRepository.class);
         MensajeRepository mensajeRepository = mock(MensajeRepository.class);
-        ChatServiceImpl service = new ChatServiceImpl(conversacionRepository, mensajeRepository);
+        com.upeu.chat.client.AuthClient authClient = mock(com.upeu.chat.client.AuthClient.class);
+        ChatServiceImpl service = new ChatServiceImpl(conversacionRepository, mensajeRepository, authClient);
         when(conversacionRepository.findByPublicacionAndUsers(10L, 1L, 4L)).thenReturn(Optional.empty());
         when(conversacionRepository.findBetweenUsers(1L, 4L)).thenReturn(Optional.empty());
         when(conversacionRepository.save(any(Conversacion.class))).thenAnswer(invocation -> {
@@ -215,7 +219,8 @@ class ChatServiceImplTest {
     void validatedSaleMessageReusesExistingChatAndAvoidsDuplicates() {
         ConversacionRepository conversacionRepository = mock(ConversacionRepository.class);
         MensajeRepository mensajeRepository = mock(MensajeRepository.class);
-        ChatServiceImpl service = new ChatServiceImpl(conversacionRepository, mensajeRepository);
+        com.upeu.chat.client.AuthClient authClient = mock(com.upeu.chat.client.AuthClient.class);
+        ChatServiceImpl service = new ChatServiceImpl(conversacionRepository, mensajeRepository, authClient);
         Conversacion existing = Conversacion.builder()
                 .id(15L)
                 .idUsuario1(1L)
@@ -256,7 +261,8 @@ class ChatServiceImplTest {
     void confirmedSaleEventCreatesSystemMessagesForSellerAndBuyer() {
         ConversacionRepository conversacionRepository = mock(ConversacionRepository.class);
         MensajeRepository mensajeRepository = mock(MensajeRepository.class);
-        ChatServiceImpl service = new ChatServiceImpl(conversacionRepository, mensajeRepository);
+        com.upeu.chat.client.AuthClient authClient = mock(com.upeu.chat.client.AuthClient.class);
+        ChatServiceImpl service = new ChatServiceImpl(conversacionRepository, mensajeRepository, authClient);
         when(conversacionRepository.findByIdOrden(83L)).thenReturn(Optional.empty());
         when(conversacionRepository.findByPublicacionAndUsers(77L, 8L, 2L)).thenReturn(Optional.empty());
         when(conversacionRepository.findBetweenUsers(8L, 2L)).thenReturn(Optional.empty());
@@ -324,7 +330,8 @@ class ChatServiceImplTest {
     void confirmedSaleEventDoesNotDuplicateSystemMessages() {
         ConversacionRepository conversacionRepository = mock(ConversacionRepository.class);
         MensajeRepository mensajeRepository = mock(MensajeRepository.class);
-        ChatServiceImpl service = new ChatServiceImpl(conversacionRepository, mensajeRepository);
+        com.upeu.chat.client.AuthClient authClient = mock(com.upeu.chat.client.AuthClient.class);
+        ChatServiceImpl service = new ChatServiceImpl(conversacionRepository, mensajeRepository, authClient);
         Conversacion existing = Conversacion.builder()
                 .id(15L)
                 .idUsuario1(8L)

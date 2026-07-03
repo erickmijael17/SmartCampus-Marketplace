@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ChatMessage, ChatThread } from '../../core/models/chat.model';
@@ -16,7 +16,7 @@ import { LoadingComponent } from '../../shared/components/loading/loading.compon
   templateUrl: './chat.component.html',
   styleUrl: './chat.component.css'
 })
-export class ChatComponent implements OnInit {
+export class ChatComponent implements OnInit, OnDestroy {
   private readonly chatService = inject(ChatService);
   private readonly sessionService = inject(SessionService);
   private readonly route = inject(ActivatedRoute);
@@ -29,6 +29,7 @@ export class ChatComponent implements OnInit {
   loading = true;
   sending = false;
   errorMessage = '';
+  private pollInterval: any;
 
   ngOnInit(): void {
     if (!this.sessionService.isAuthenticated()) {
@@ -37,17 +38,40 @@ export class ChatComponent implements OnInit {
       return;
     }
 
+    this.loadThreads();
+    this.pollInterval = setInterval(() => {
+      this.loadThreads(true);
+    }, 5000);
+  }
+
+  ngOnDestroy(): void {
+    if (this.pollInterval) {
+      clearInterval(this.pollInterval);
+    }
+  }
+
+  private loadThreads(silent = false): void {
+    if (!silent) this.loading = true;
+    
     this.chatService.getThreads().subscribe({
       next: (threads) => {
         this.threads = threads;
-        if (threads.length > 0) {
+        if (!this.activeThread && threads.length > 0) {
           this.selectThread(this.threadFromQueryParam(threads) ?? threads[0]);
+        } else if (this.activeThread) {
+          const updated = threads.find(t => t.id === this.activeThread!.id);
+          if (updated) {
+            this.activeThread = updated;
+            this.messages = updated.messages;
+          }
         }
-        this.loading = false;
+        if (!silent) this.loading = false;
       },
       error: (error) => {
-        this.loading = false;
-        this.errorMessage = describeHttpError(error, 'la carga de conversaciones');
+        if (!silent) {
+          this.loading = false;
+          this.errorMessage = describeHttpError(error, 'la carga de conversaciones');
+        }
       }
     });
   }

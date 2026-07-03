@@ -14,8 +14,8 @@ public class ConversacionResponse {
     private LocalDateTime creadoEn;
     private LocalDateTime actualizadoEn;
 
-    private Long otroUsuarioId;
-    private String nombreOtroUsuario;
+    private String nombreUsuario1;
+    private String nombreUsuario2;
     private String ultimoMensaje;
     private String tipoUltimoMensaje;
     private LocalDateTime ultimoMensajeFecha;

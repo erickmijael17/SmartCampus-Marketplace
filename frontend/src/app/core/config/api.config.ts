@@ -1,5 +1,5 @@
-const GATEWAY_URL = 'http://localhost:18080';
-const gatewayUrl = (path: string): string => `${GATEWAY_URL}${path}`;
+const GATEWAY_URL = '';
+const gatewayUrl = (path: string): string => `${path}`;
 
 export const API_CONFIG = {
   gatewayUrl: GATEWAY_URL,
@@ -13,6 +13,7 @@ export const API_CONFIG = {
     marketplace: {
       products: gatewayUrl('/api/v1/productos'),
       productDetail: (id: number) => gatewayUrl(`/api/v1/productos/detalle/${id}`),
+      productDelete: (id: number) => gatewayUrl(`/api/v1/productos/${id}`),
       categories: gatewayUrl('/api/v1/categorias'),
       orders: gatewayUrl('/api/v1/ordenes'),
       payments: gatewayUrl('/api/v1/pagos'),

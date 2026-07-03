@@ -65,6 +65,30 @@ export class ListingDetailPageComponent implements OnInit {
     });
   }
 
+  isDeleting = false;
+
+  deleteListing(): void {
+    if (!this.listing || !this.isOwnListing || this.isDeleting) return;
+
+    if (!confirm('¿Estás seguro de que quieres eliminar esta publicación? Esta acción no se puede deshacer.')) {
+      return;
+    }
+
+    this.isDeleting = true;
+    this.statusMessage = 'Eliminando...';
+    
+    this.marketplaceService.deleteListing(this.listing.id).subscribe({
+      next: () => {
+        this.statusMessage = 'Publicación eliminada correctamente.';
+        setTimeout(() => this.router.navigate(['/']), 1500);
+      },
+      error: (err) => {
+        this.isDeleting = false;
+        this.statusMessage = describeHttpError(err, 'eliminar la publicación');
+      }
+    });
+  }
+
   buyNow(): void {
     if (!this.listing) {
       this.statusMessage = 'La publicacion no existe.';

@@ -20,11 +20,12 @@
       }
     </label>
 
-    <label>
-      Contrasena
+    <label class="form-group">
+      Contraseña
       <input
         formControlName="password"
         type="password"
+        placeholder="Tu contraseña segura"
         autocomplete="current-password"
         class="field"
         [class.invalid]="fieldError('password')"

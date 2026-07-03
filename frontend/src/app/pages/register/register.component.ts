@@ -35,7 +35,7 @@ export class RegisterComponent {
     const labels: Record<string, string> = {
       fullName: 'Nombre completo',
       email: 'Correo institucional',
-      password: 'Contrasena',
+      password: 'Contraseña',
       userType: 'Tipo de usuario',
       career: 'Carrera',
       cycle: 'Ciclo'

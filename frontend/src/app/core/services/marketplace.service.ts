@@ -152,6 +152,10 @@ export class MarketplaceService {
 
   }
 
+  deleteListing(id: number): Observable<void> {
+    return this.http.delete<void>(this.url(API_CONFIG.endpoints.marketplace.productDelete(id)));
+  }
+
   getCategories(): Observable<CategoriaDto[]> {
 
     return this.http.get<CategoriaDto[]>(this.url(API_CONFIG.endpoints.marketplace.categories));
@@ -767,7 +771,10 @@ export class MarketplaceService {
 
         publicationByKey.get(this.publicationKey(product.idVendedor, product.titulo, product.idCategoria)) ?? null;
 
-      const mediaUrl = publication ? mediaByPublication.get(publication.id) ?? null : null;
+      let mediaUrl = publication ? mediaByPublication.get(publication.id) ?? null : null;
+      if (mediaUrl && mediaUrl.startsWith('http://localhost:18080')) {
+        mediaUrl = mediaUrl.replace('http://localhost:18080', this.gateway.baseUrl());
+      }
 
       return this.toListing(product, publication?.id ?? null, mediaUrl);
 

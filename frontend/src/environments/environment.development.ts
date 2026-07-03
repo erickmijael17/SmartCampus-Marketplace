@@ -2,10 +2,9 @@ import { AppEnvironment } from './environment.model';
 
 export const environment: AppEnvironment = {
   production: false,
-  gatewayUrl: 'http://localhost:18080',
+  gatewayUrl: '',
   gatewayCandidates: [
-    { label: 'DEV', url: 'http://localhost:18080' },
-    { label: 'PROD', url: 'http://localhost:28082' }
+    { label: 'DEV', url: '' }
   ],
   gatewayProbeEnabled: false,
   authMode: 'gateway-password',

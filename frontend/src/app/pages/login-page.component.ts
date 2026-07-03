@@ -28,7 +28,7 @@ export class LoginPageComponent {
   });
 
   fieldError(controlName: 'username' | 'password'): string | null {
-    return getFieldError(this.form.controls[controlName], controlName === 'username' ? 'Usuario' : 'Contrasena');
+    return getFieldError(this.form.controls[controlName], controlName === 'username' ? 'Usuario' : 'Contraseña');
   }
 
   submit(): void {

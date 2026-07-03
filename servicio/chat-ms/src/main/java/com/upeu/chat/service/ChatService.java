@@ -12,6 +12,8 @@ import java.util.List;
 
 public interface ChatService {
     List<ConversacionResponse> findAll();
+    List<ConversacionResponse> getMyChats(String token);
+    List<ConversacionResponse> findByUsuario(Long usuarioId);
     ConversacionResponse findById(Long id);
     ConversacionResponse save(ConversacionRequest request);
     ConversacionResponse update(Long id, ConversacionRequest request);
