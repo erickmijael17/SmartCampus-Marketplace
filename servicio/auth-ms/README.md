@@ -24,7 +24,7 @@ Ver en Eureka DEV: `http://localhost:18761`
 ## PROD con Docker Compose
 
 ```bash
-make compose-ms MS=auth-ms
+docker compose -f servicio/auth-ms/compose.yml up -d --build
 ```
 
 Links:
@@ -48,6 +48,13 @@ Links:
 ## Endpoints
 
 - `POST /auth/login`
+- `POST /auth/register`
+- `GET /auth/me`
+- `GET /auth/profile`
+- `PUT /auth/profile`
+- `GET /auth/user-info`
+- `GET /auth/users`
+- `DELETE /auth/users/{userId}`
 - `GET /actuator/health`
 
 ## Keycloak

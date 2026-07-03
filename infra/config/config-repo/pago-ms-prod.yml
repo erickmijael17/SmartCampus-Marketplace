@@ -4,6 +4,11 @@ server:
 spring:
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:kafka:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.add.type.headers: false
   datasource:
     url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
     username: ${DB_USER}
@@ -46,12 +51,23 @@ management:
         enabled: true
 
 app:
+  frontend-url: ${FRONTEND_URL}
   kafka:
     topic:
       ordenes: ordenes-topic
       pagos: pagos-topic
     group-id:
       pagos: pagos-group
+
+mercadopago:
+  access-token: ${MP_ACCESS_TOKEN}
+  public-key: ${MP_PUBLIC_KEY:}
+  base-url: https://api.mercadopago.com
+  notification-url: ${MP_NOTIFICATION_URL}
+  success-url: ${MP_SUCCESS_URL:${FRONTEND_URL}/pago/exito}
+  failure-url: ${MP_FAILURE_URL:${FRONTEND_URL}/pago/fallo}
+  pending-url: ${MP_PENDING_URL:${FRONTEND_URL}/pago/pendiente}
+  auto-return-enabled: ${MP_AUTO_RETURN_ENABLED:true}
 
 jwt:
   secret: 1s3alJJATsWK91vf5zrODYlQa+LauM/9udaLZlQhHlpu46g/KzmSS5c3CGy6xF9kzAqBhvjmKBuZO/pSL7tfOg==

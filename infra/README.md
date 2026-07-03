@@ -22,19 +22,13 @@ cd infra/gateway && mvn spring-boot:run
 
 Links:
 
-- Config Server: `http://localhost:18888/catalogo-ms/dev`
+- Config Server: `http://localhost:18888/producto-ms/dev`
 - Eureka Dashboard: `http://localhost:18761`
 - Gateway: `http://localhost:18080`
 
 ## PROD con Docker Compose
 
 Desde la raiz del repositorio:
-
-```bash
-make compose-infra
-```
-
-O directamente:
 
 ```bash
 docker compose -f infra/compose.yml up -d --build

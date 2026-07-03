@@ -3,7 +3,7 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:15446/ecom_media_ms_db
+    url: jdbc:postgresql://localhost:15446/media_ms_db
     username: ecom
     password: ecom
     driver-class-name: org.postgresql.Driver
@@ -16,6 +16,16 @@ spring:
     properties:
       hibernate:
         format_sql: true
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+media:
+  storage:
+    upload-dir: ${MEDIA_UPLOAD_DIR:uploads/media}
+  public-base-url: ${MEDIA_PUBLIC_BASE_URL:http://localhost:18080}
+  public-path: /api/v1/media/files
 
 eureka:
   instance:

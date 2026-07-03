@@ -19,9 +19,9 @@ public class ConsumidorPago {
 
     private static final String TIPO_EVENTO_ORDEN_CREADA = "orden.creada";
     private static final String TIPO_EVENTO_PAGO_APROBADO = "pago.aprobado";
-    private static final String TIPO_EVENTO_PAGO_RECHAZADO = "pago.rechazado";
     private static final String ESTADO_APROBADO = "APROBADO";
-    private static final String ESTADO_RECHAZADO = "RECHAZADO";
+    private static final String ESTADO_PENDIENTE = "PENDIENTE";
+    private static final String METODO_MERCADO_PAGO = "MERCADO_PAGO";
 
     private final PagoRepository pagoRepository;
     private final ProductorPago productorPago;
@@ -45,38 +45,35 @@ public class ConsumidorPago {
 
         long processedAt = Instant.now().toEpochMilli();
         Long latencyMs = eventoOrden.getTimestamp() != null ? processedAt - eventoOrden.getTimestamp() : null;
+        String metodoPago = normalizeMetodoPago(eventoOrden.getMetodoPago());
 
         log.info(
-                "service=pago-ms component=consumer topic={} groupId={} eventType={} ordenId={} timestamp={} processedAt={} latencyMs={} status=consumed",
+                "service=pago-ms component=consumer topic={} groupId={} eventType={} ordenId={} metodoPago={} timestamp={} processedAt={} latencyMs={} status=consumed",
                 topicOrdenes,
                 groupIdPagos,
                 eventoOrden.getTipoEvento(),
                 eventoOrden.getOrdenId(),
+                metodoPago,
                 eventoOrden.getTimestamp(),
                 processedAt,
                 latencyMs
         );
 
-        boolean pagoAprobado = Math.random() > 0.3;
-        String estadoPago = pagoAprobado ? ESTADO_APROBADO : ESTADO_RECHAZADO;
-        String tipoEventoPago = pagoAprobado ? TIPO_EVENTO_PAGO_APROBADO : TIPO_EVENTO_PAGO_RECHAZADO;
-
-        Pago pago = Pago.builder()
-                .idOrden(eventoOrden.getOrdenId())
-                .idComprador(eventoOrden.getIdComprador() != null ? eventoOrden.getIdComprador() : 1L)
-                .monto(BigDecimal.valueOf(eventoOrden.getTotal()))
-                .metodoPago("KAFKA_EVENT")
-                .estado(estadoPago)
-                .referenciaTransaccion("TXN-KAFKA-" + eventoOrden.getOrdenId())
-                .build();
-
-        pagoRepository.save(pago);
+        if (METODO_MERCADO_PAGO.equals(metodoPago) || hasPendingMercadoPago(eventoOrden.getOrdenId())) {
+            createPendingMercadoPagoIfMissing(eventoOrden, METODO_MERCADO_PAGO);
+            log.info(
+                    "service=pago-ms component=processor ordenId={} metodoPago={} accion=skip_auto_approval status=pending_waiting_external_confirmation",
+                    eventoOrden.getOrdenId(),
+                    metodoPago
+            );
+            return;
+        }
 
         EventoPago eventoPago = EventoPago.builder()
-                .tipoEvento(tipoEventoPago)
+                .tipoEvento(TIPO_EVENTO_PAGO_APROBADO)
                 .ordenId(eventoOrden.getOrdenId())
                 .monto(eventoOrden.getTotal())
-                .estado(estadoPago)
+                .estado(ESTADO_APROBADO)
                 .origen(applicationName)
                 .timestamp(Instant.now().toEpochMilli())
                 .build();
@@ -84,9 +81,44 @@ public class ConsumidorPago {
         productorPago.enviarEventoPago(eventoPago);
 
         log.info(
-                "service=pago-ms component=processor ordenId={} estadoPago={} status=processed",
+                "service=pago-ms component=processor ordenId={} metodoPago={} accion=publish_auto_approval estadoPago={} status=processed",
                 eventoOrden.getOrdenId(),
-                estadoPago
+                metodoPago,
+                ESTADO_APROBADO
         );
+    }
+
+    private boolean hasPendingMercadoPago(Long ordenId) {
+        if (ordenId == null) {
+            return false;
+        }
+        return pagoRepository.findByIdOrden(ordenId)
+                .filter(pago -> METODO_MERCADO_PAGO.equals(normalizeMetodoPago(pago.getMetodoPago())))
+                .filter(pago -> ESTADO_PENDIENTE.equalsIgnoreCase(pago.getEstado()))
+                .isPresent();
+    }
+
+    private void createPendingMercadoPagoIfMissing(EventoOrden eventoOrden, String metodoPago) {
+        if (eventoOrden.getOrdenId() == null || pagoRepository.findByIdOrden(eventoOrden.getOrdenId()).isPresent()) {
+            return;
+        }
+        Pago pago = Pago.builder()
+                .idOrden(eventoOrden.getOrdenId())
+                .idComprador(eventoOrden.getIdComprador() == null ? 0L : eventoOrden.getIdComprador())
+                .monto(eventoOrden.getTotal() == null ? BigDecimal.ZERO : BigDecimal.valueOf(eventoOrden.getTotal()))
+                .moneda("PEN")
+                .metodoPago(metodoPago)
+                .estado(ESTADO_PENDIENTE)
+                .referenciaTransaccion("ORDEN-" + eventoOrden.getOrdenId())
+                .externalReference("ORDEN-" + eventoOrden.getOrdenId())
+                .build();
+        pagoRepository.save(pago);
+    }
+
+    private String normalizeMetodoPago(String metodoPago) {
+        if (metodoPago == null || metodoPago.isBlank()) {
+            return "NO_INFORMADO";
+        }
+        return metodoPago.trim().toUpperCase();
     }
 }

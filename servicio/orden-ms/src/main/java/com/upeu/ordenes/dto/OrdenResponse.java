@@ -18,9 +18,14 @@ public class OrdenResponse {
     private Long id;
     private Long idComprador;
     private Long idProducto;
+    private Long idVendedor;
     private Integer cantidad;
     private BigDecimal precioUnitario;
     private String estado;
+    private String metodoPago;
+    private Long pagoId;
+    private LocalDateTime fechaVenta;
+    private boolean ventaConfirmadaPublicada;
     private LocalDateTime createdAt;
 }
 

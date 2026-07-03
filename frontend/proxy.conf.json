@@ -1,0 +1,22 @@
+{
+  "/api": {
+    "target": "http://localhost:18080",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/auth": {
+    "target": "http://localhost:18080",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/categoria-ms": {
+    "target": "http://localhost:18080",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/producto-ms": {
+    "target": "http://localhost:18080",
+    "secure": false,
+    "changeOrigin": true
+  }
+}

@@ -1,4 +1,4 @@
-﻿package com.upeu.publicacion;
+package com.upeu.publicacion;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

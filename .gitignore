@@ -14,6 +14,8 @@ logs/
 **/logs/
 *.log
 *.log.gz
+uploads/
+**/uploads/
 
 # IDE / editor local files
 .idea/
@@ -27,11 +29,13 @@ logs/
 Thumbs.db
 
 # Frontend generated dependencies and build cache
-frontend/
 node_modules/
 dist/
 build/
 .angular/cache/
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/cache/
 
 # MkDocs generated site
 site/
@@ -41,3 +45,6 @@ site/
 .env
 .env.*
 !.env.example
+*.env
+application-secret.yml
+application-local.yml

@@ -27,15 +27,6 @@ scrape_configs:
           service: producto-ms
           __path__: /var/log/ms/producto-ms/*.log
 
-  - job_name: catalogo-logs
-    static_configs:
-      - targets:
-          - localhost
-        labels:
-          job: catalogo-ms
-          service: catalogo-ms
-          __path__: /var/log/ms/catalogo-ms/*.log
-
   - job_name: orden-ms-logs
     static_configs:
       - targets:

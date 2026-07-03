@@ -13,4 +13,6 @@ Microservicio para registrar ordenes de compra en CampusMarket.
 - GET /api/v1/ordenes/{id}
 - GET /api/v1/ordenes/usuario/{idComprador}
 - PUT /api/v1/ordenes/{id}
+- PATCH /api/v1/ordenes/{id}/estado
 - DELETE /api/v1/ordenes/{id}
+- GET /api/v1/ordenes/instancia

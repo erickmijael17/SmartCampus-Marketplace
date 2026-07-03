@@ -5,6 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -33,6 +34,9 @@ public class Orden {
     @Column(name = "id_producto", nullable = false)
     private Long idProducto;
 
+    @Column(name = "id_vendedor")
+    private Long idVendedor;
+
     @Column(name = "cantidad", nullable = false)
     private Integer cantidad;
 
@@ -42,7 +46,26 @@ public class Orden {
     @Column(name = "estado", nullable = false, length = 20)
     private String estado;
 
-    @Column(name = "created_at", nullable = false, insertable = false, updatable = false)
+    @Column(name = "metodo_pago", length = 30)
+    private String metodoPago;
+
+    @Column(name = "pago_id")
+    private Long pagoId;
+
+    @Column(name = "fecha_venta")
+    private LocalDateTime fechaVenta;
+
+    @Column(name = "venta_confirmada_publicada", nullable = false)
+    private boolean ventaConfirmadaPublicada;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    @PrePersist
+    public void prePersist() {
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
+    }
 }
 

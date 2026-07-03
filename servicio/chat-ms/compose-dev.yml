@@ -1,0 +1,18 @@
+name: chat-ms-dev
+
+services:
+  postgres-chat-ms-dev:
+    image: postgres:16-alpine
+    container_name: postgres-chat-ms-dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: chat_ms_db
+      POSTGRES_USER: ecom
+      POSTGRES_PASSWORD: ecom
+    ports:
+      - "15444:5432"
+    volumes:
+      - chat_ms_dev_data:/var/lib/postgresql/data
+
+volumes:
+  chat_ms_dev_data:

@@ -1,94 +1,190 @@
-# Guia del Estudiante: SmartCampus Marketplace con Docker Compose
+# Guia del estudiante - SmartCampus Marketplace MVP
 
-Esta guia resume como levantar y probar el backend de SmartCampus Marketplace usando Docker Compose.
+Esta guia describe el entorno actual despues de la refactorizacion a **11 microservicios activos**. El frontend Angular siempre consume el backend por medio del Gateway.
 
-## 1. Requisitos
+## Microservicios activos
 
-- Java JDK 17
-- Maven
-- Docker Desktop o Docker Engine
-- Make opcional
+| Servicio | Ruta Gateway |
+|----------|--------------|
+| auth-ms | `/auth/**` |
+| persona-ms | `/api/v1/personas/**` |
+| producto-ms | `/api/v1/productos/**` |
+| categoria-ms | `/api/v1/categorias/**` |
+| publicacion-ms | `/api/v1/publicaciones/**` |
+| media-ms | `/api/v1/media/**` |
+| favoritos-ms | `/api/v1/favoritos/**` |
+| calificacion-ms | `/api/v1/calificaciones/**` |
+| chat-ms | `/api/v1/chats/**` |
+| orden-ms | `/api/v1/ordenes/**` |
+| pago-ms | `/api/v1/pagos/**` |
 
-## 2. Levantar servicios base
+Servicios eliminados del MVP: `carrito-ms`, `inventario-ms`, `notification-ms`, `search-ms` y `catalogo-ms`.
 
-Desde la raiz del repositorio:
+## Modo DEV
 
-```bash
-make compose-infra
-make compose-keycloak
-make compose-kafka
-make compose-obs
-```
+Usa este modo para desarrollar localmente. La infraestructura base corre con Maven en puertos DEV y las bases de datos de microservicios se levantan con `compose-dev.yml`.
 
-O en un solo paso:
+### 1. Crear redes Docker
 
-```bash
-make compose-all
-```
-
-Servicios esperados:
-
-- Gateway: `http://localhost:28082`
-- Eureka: `http://localhost:28761`
-- Config Server: `http://localhost:28888`
-- Keycloak: `http://localhost:8080`
-- Kafka UI: `http://localhost:28085`
-- Grafana: `http://localhost:23000`
-
-## 3. Levantar microservicios
-
-Cada microservicio se levanta con su compose propio:
+Keycloak usa `ecom-prod-net` aunque se use en desarrollo. Kafka DEV y observabilidad DEV usan `ecom-dev-net`.
 
 ```bash
-make compose-ms MS=auth-ms
-make compose-ms MS=producto-ms
-make compose-ms MS=catalogo-ms
+docker network create ecom-prod-net
+docker network create ecom-dev-net
 ```
 
-Los microservicios no exponen su puerto HTTP al host. Deben consumirse a traves del Gateway.
+Si Docker indica que la red ya existe, puedes continuar.
 
-## 4. Probar Keycloak
+### 2. Levantar Keycloak
+
+Luego levantalo con el nombre nuevo (`keycloak`):
 
 ```bash
-curl http://127.0.0.1:8080/realms/smartcampus/.well-known/openid-configuration
-curl http://127.0.0.1:8080/realms/smartcampus/protocol/openid-connect/certs
+docker compose -f keycloak/compose.yml up -d
 ```
 
-El realm `smartcampus` y el cliente `marketplace-client` se importan desde `keycloak/realm-smartcampus.json`.
+### 3. Levantar Kafka DEV
 
-## 5. Probar autenticacion
-
-`auth-ms` funciona como proxy de login hacia Keycloak. La peticion externa debe ir por Gateway:
-
-```http
-POST http://localhost:28082/auth/login
-Content-Type: application/json
-
-{
-  "username": "usuario_prueba",
-  "password": "clave_usuario"
-}
-```
-
-La respuesta incluye el JWT emitido por Keycloak, el tipo de token, expiracion, username y roles.
-
-## 6. Probar autorizacion
-
-Los microservicios validan la firma del JWT con JWKS y leen roles desde `realm_access.roles`.
-
-- Con rol `ADMIN`, probar una operacion protegida como `POST /api/v1/productos`.
-- Con un usuario sin el rol requerido, la respuesta esperada es `403 Forbidden`.
-
-Siempre llamar a los endpoints por Gateway:
-
-```text
-http://localhost:28082/api/v1/productos
-http://localhost:28082/api/v1/carritos
-http://localhost:28082/api/v1/inventarios
-```
-
-## 7. Apagar el entorno
+Luego levantalo con el nombre nuevo (`kafka-dev`):
 
 ```bash
-make compose-down
+docker compose -f kafka/compose-dev.yml up -d
+```
+
+### 4. Levantar bases de datos DEV
+
+Luego levantarlas:
+
+```bash
+docker compose -f servicio/auth-ms/compose-dev.yml up -d
+docker compose -f servicio/categoria-ms/compose-dev.yml up -d
+docker compose -f servicio/producto-ms/compose-dev.yml up -d
+docker compose -f servicio/publicacion-ms/compose-dev.yml up -d
+docker compose -f servicio/media-ms/compose-dev.yml up -d
+docker compose -f servicio/favoritos-ms/compose-dev.yml up -d
+docker compose -f servicio/calificacion-ms/compose-dev.yml up -d
+docker compose -f servicio/chat-ms/compose-dev.yml up -d
+docker compose -f servicio/orden-ms/compose-dev.yml up -d
+docker compose -f servicio/pago-ms/compose-dev.yml up -d
+```
+
+### 5. Levantar infraestructura DEV con Maven
+
+Ejecutar cada comando en una terminal distinta:
+
+```bash
+mvn -f infra/config/pom.xml spring-boot:run
+mvn -f infra/eureka/pom.xml spring-boot:run
+mvn -f infra/gateway/pom.xml spring-boot:run
+```
+
+Puertos DEV:
+
+| Componente | URL |
+|------------|-----|
+| Config Server | `http://localhost:18888` |
+| Eureka | `http://localhost:18761` |
+| Gateway | `http://localhost:18080` |
+
+### 6. Levantar microservicios DEV con Maven
+
+Ejecutar cada microservicio necesario en una terminal distinta:
+
+```bash
+mvn -f servicio/auth-ms/pom.xml spring-boot:run
+mvn -f servicio/categoria-ms/pom.xml spring-boot:run
+mvn -f servicio/producto-ms/pom.xml spring-boot:run
+mvn -f servicio/publicacion-ms/pom.xml spring-boot:run
+mvn -f servicio/media-ms/pom.xml spring-boot:run
+mvn -f servicio/favoritos-ms/pom.xml spring-boot:run
+mvn -f servicio/calificacion-ms/pom.xml spring-boot:run
+mvn -f servicio/chat-ms/pom.xml spring-boot:run
+mvn -f servicio/orden-ms/pom.xml spring-boot:run
+mvn -f servicio/pago-ms/pom.xml spring-boot:run
+```
+
+Para probar solo login y catalogo publico, normalmente basta con:
+
+```bash
+mvn -f servicio/auth-ms/pom.xml spring-boot:run
+mvn -f servicio/categoria-ms/pom.xml spring-boot:run
+mvn -f servicio/producto-ms/pom.xml spring-boot:run
+```
+
+### 7. Levantar frontend DEV
+
+```bash
+cd frontend
+npm install
+npm start
+```
+
+## Modo PROD / Docker
+
+Usa este modo para levantar contenedores completos en la red `ecom-prod-net`.
+
+### Levantar infraestructura PROD
+
+```bash
+docker network create ecom-prod-net
+docker compose -f keycloak/compose.yml up -d
+docker compose -f infra/compose.yml up -d --build
+docker compose -f kafka/compose.yml up -d
+docker compose -f obs/compose.yml up -d
+```
+
+### Levantar microservicios MVP en PROD
+
+```bash
+docker compose -f servicio/auth-ms/compose.yml up -d --build
+docker compose -f servicio/persona-ms/compose.yml up -d --build
+docker compose -f servicio/categoria-ms/compose.yml up -d --build
+docker compose -f servicio/producto-ms/compose.yml up -d --build
+docker compose -f servicio/publicacion-ms/compose.yml up -d --build
+docker compose -f servicio/media-ms/compose.yml up -d --build
+docker compose -f servicio/favoritos-ms/compose.yml up -d --build
+docker compose -f servicio/calificacion-ms/compose.yml up -d --build
+docker compose -f servicio/chat-ms/compose.yml up -d --build
+docker compose -f servicio/orden-ms/compose.yml up -d --build
+docker compose -f servicio/pago-ms/compose.yml up -d --build
+```
+
+## Health checks
+
+DEV:
+
+```bash
+curl http://localhost:18888/actuator/health
+curl http://localhost:18761/eureka/apps
+curl http://localhost:18080/actuator/health
+```
+
+PROD:
+
+```bash
+curl http://localhost:28082/actuator/health
+```
+
+## Probar por Gateway
+
+DEV:
+
+```bash
+curl http://localhost:18080/api/v1/categorias
+curl http://localhost:18080/api/v1/productos
+curl http://localhost:18080/api/v1/productos/detalle/1
+```
+
+PROD:
+
+```bash
+curl http://localhost:28082/api/v1/categorias
+curl http://localhost:28082/api/v1/productos
+curl http://localhost:28082/api/v1/productos/detalle/1
+```
+
+No consumir microservicios directamente desde Angular ni desde pruebas de frontend. La ruta correcta siempre es:
+
+```txt
+Angular -> Gateway -> lb://SERVICIO -> microservicio
 ```

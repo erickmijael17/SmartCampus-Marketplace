@@ -1,0 +1,26 @@
+<header class="nav">
+  <div class="nav-inner">
+    <a routerLink="/" class="brand" aria-label="SmartCampus Marketplace" (click)="closeMenu()">
+      <span class="brand-mark">SC</span>
+      <span class="brand-text">Smart<span>Campus</span></span>
+    </a>
+
+    <nav class="links" [class.open]="menuOpen" aria-label="Navegacion principal">
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="closeMenu()">Inicio</a>
+      <a routerLink="/publish" routerLinkActive="active" (click)="closeMenu()">Publicar</a>
+      <a routerLink="/chat" routerLinkActive="active" (click)="closeMenu()">Chat</a>
+      <a routerLink="/profile" routerLinkActive="active" (click)="closeMenu()">Perfil</a>
+      @if (session.isAuthenticated()) {
+        <span class="user-chip">{{ session.username() }}</span>
+        <button type="button" class="logout" (click)="logout()">Salir</button>
+      } @else {
+        <a routerLink="/login" routerLinkActive="active" (click)="closeMenu()">Ingresar</a>
+        <a routerLink="/register" routerLinkActive="active" (click)="closeMenu()">Registro</a>
+      }
+    </nav>
+
+    <button type="button" class="menu" (click)="menuOpen = !menuOpen" [attr.aria-expanded]="menuOpen" aria-label="Abrir navegacion">
+      {{ menuOpen ? '×' : '☰' }}
+    </button>
+  </div>
+</header>

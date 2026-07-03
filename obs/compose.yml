@@ -34,7 +34,6 @@ services:
     volumes:
       - ./promtail/config.yml:/etc/promtail/config.yml:ro
       - ../infra/gateway/logs:/var/log/ms/gateway:ro
-      - ../services/catalogo-ms/logs:/var/log/ms/catalogo-ms:ro
       - ../services/producto-ms/logs:/var/log/ms/producto-ms:ro
       - ../services/orden-ms/logs:/var/log/ms/orden-ms:ro
       - ../services/pago-ms/logs:/var/log/ms/pago-ms:ro

@@ -1,58 +1,58 @@
 spring:
   cloud:
     gateway:
-      default-filters:
-        - TokenRelay
+      forwarded:
+        enabled: false
       routes:
+        # --- MVP ACTIVO ---
         - id: auth-route
-          uri: lb://auth-ms
+          uri: lb://AUTH-MS
           predicates:
             - Path=/auth/**
-        - id: catalogo-route
-          uri: lb://catalogo-ms
+        - id: persona-route
+          uri: lb://AUTH-MS
+          predicates:
+            - Path=/api/v1/personas/**
+        - id: categoria-route
+          uri: lb://CATEGORIA-MS
           predicates:
             - Path=/api/v1/categorias/**
-        - id: catalogo-instancia
-          uri: lb://catalogo-ms
-          predicates:
-            - Path=/api/v1/catalogo/instancia
         - id: producto-route
-          uri: lb://producto-ms
+          uri: lb://PRODUCTO-MS
           predicates:
             - Path=/api/v1/productos/**
         - id: producto-instancia
-          uri: lb://producto-ms
+          uri: lb://PRODUCTO-MS
           predicates:
             - Path=/api/v1/producto/instancia
+        - id: publicacion-route
+          uri: lb://PUBLICACION-MS
+          predicates:
+            - Path=/api/v1/publicaciones/**
+        - id: media-route
+          uri: lb://MEDIA-MS
+          predicates:
+            - Path=/api/v1/media/**
+        - id: favoritos-route
+          uri: lb://FAVORITOS-MS
+          predicates:
+            - Path=/api/v1/favoritos/**
+        - id: calificacion-route
+          uri: lb://CALIFICACION-MS
+          predicates:
+            - Path=/api/v1/calificaciones/**
+        - id: chat-route
+          uri: lb://CHAT-MS
+          predicates:
+            - Path=/api/v1/chats/**
         - id: orden-route
-          uri: lb://orden-ms
+          uri: lb://ORDEN-MS
           predicates:
             - Path=/api/v1/ordenes/**
         - id: pago-route
-          uri: lb://pago-ms
+          uri: lb://PAGO-MS
           predicates:
             - Path=/api/v1/pagos/**
-        - id: carrito-route
-          uri: lb://carrito-ms
-          predicates:
-            - Path=/api/v1/carritos/**
-        - id: inventario-route
-          uri: lb://inventario-ms
-          predicates:
-            - Path=/api/v1/inventarios/**
-  security:
-    oauth2:
-      client:
-        registration:
-          keycloak:
-            client-id: marketplace-client
-            authorization-grant-type: authorization_code
-            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
-            scope: openid,profile,email
-        provider:
-          keycloak:
-            issuer-uri: ${KEYCLOAK_URL:http://keycloak:8080}/realms/smartcampus
-
 eureka:
   client:
     service-url:

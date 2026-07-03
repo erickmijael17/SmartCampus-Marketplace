@@ -18,7 +18,7 @@ Actualmente incluye:
 - Integración operativa con Registry Server (Eureka)
 - Integración operativa con API Gateway
 - Enrutamiento dinámico con `lb://producto`
-- Comunicación con `catalogo` mediante OpenFeign
+- Comunicación con `categoria-ms` mediante OpenFeign
 
 ---
 
@@ -32,7 +32,7 @@ Este repositorio implementa únicamente el microservicio **Producto**.
 
 Ubicación recomendada para clases/equipos:
 
-- Cada microservicio (`catalogo`, `producto`, `[otro-ms]`) vive en su propio repositorio Git.
+- Cada microservicio (`categoria-ms`, `producto-ms`, `[otro-ms]`) vive en su propio repositorio Git.
 - Clonar cada repositorio de microservicio dentro de la carpeta `services` para trabajo integrado local.
 - Mantener la infraestructura en un único repositorio `infra` (Config Server, Registry, Gateway, etc.).
 - Estructura sugerida:
@@ -44,8 +44,8 @@ ProyectosMS2026/
     registry-server/
     gateway/
   services/
-    catalogo/
-    producto/
+    categoria-ms/
+    producto-ms/
     [otro-ms]/
 ```
 
@@ -438,12 +438,12 @@ http://localhost:18080/api/v1/producto/instancia
 
 ## Feign
 
-La comunicación entre microservicios ya está operativa desde `producto` hacia `catalogo`:
+La comunicación entre microservicios ya está operativa desde `producto-ms` hacia `categoria-ms`:
 
 - `producto` habilita clientes Feign con `@EnableFeignClients`
-- `CatalogoClient` consume `GET /api/v1/categorias/{id}`
+- `CategoriaClient` consume `GET /api/v1/categorias/{id}`
 - `findDetalleById` arma una respuesta enriquecida con los datos de categoría
-- el cliente Feign resuelve el servicio por nombre usando Eureka: `@FeignClient(name = "catalogo-ms")`
+- el cliente Feign resuelve el servicio por nombre usando Eureka: `@FeignClient(name = "categoria-ms")`
 
 Rutas funcionales para probar la integración (vía Gateway):
 
@@ -557,7 +557,7 @@ git push origin --delete tarea/avance
 ## 🔹 5. Crear tag (versión estable)
 
 ```bash
-git tag -a vs05-feign-r1 -m "Producto integrado con Feign para consultar categorias desde catalogo y documentacion actualizada"
+git tag -a vs05-feign-r1 -m "Producto integrado con Feign para consultar categorias desde categoria-ms y documentacion actualizada"
 git push origin vs05-feign-r1
 ```
 

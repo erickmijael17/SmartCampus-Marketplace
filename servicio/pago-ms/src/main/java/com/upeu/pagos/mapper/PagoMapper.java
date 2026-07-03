@@ -16,6 +16,7 @@ public class PagoMapper {
                 .metodoPago(request.getMetodoPago())
                 .estado(request.getEstado())
                 .referenciaTransaccion(request.getReferenciaTransaccion())
+                .moneda(request.getMoneda())
                 .build();
     }
 
@@ -39,6 +40,7 @@ public class PagoMapper {
         entity.setMetodoPago(request.getMetodoPago());
         entity.setEstado(request.getEstado());
         entity.setReferenciaTransaccion(request.getReferenciaTransaccion());
+        entity.setMoneda(request.getMoneda());
     }
 }
 

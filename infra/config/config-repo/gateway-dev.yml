@@ -1,82 +1,100 @@
 spring:
   cloud:
     gateway:
-      default-filters:
-        - TokenRelay
+      forwarded:
+        enabled: false
       routes:
+        # --- MVP ACTIVO: identidad y perfil ---
         - id: auth-route
-          uri: lb://auth-ms
+          uri: lb://AUTH-MS
           predicates:
             - Path=/auth/**
-        - id: catalogo-route
-          uri: lb://catalogo-ms
+        - id: persona-route
+          uri: lb://AUTH-MS
+          predicates:
+            - Path=/api/v1/personas/**
+
+        # --- MVP ACTIVO: productos y categorias ---
+        - id: categoria-route
+          uri: lb://CATEGORIA-MS
           predicates:
             - Path=/api/v1/categorias/**
-        - id: catalogo-instancia
-          uri: lb://catalogo-ms
+        - id: categoria-swagger
+          uri: lb://CATEGORIA-MS
           predicates:
-            - Path=/api/v1/catalogo/instancia
-        - id: catalogo-swagger
-          uri: lb://catalogo-ms
-          predicates:
-            - Path=/catalogo-ms/swagger-ui/**,/catalogo-ms/v3/api-docs/**
+            - Path=/categoria-ms/swagger-ui/**,/categoria-ms/v3/api-docs/**
         - id: producto-route
-          uri: lb://producto-ms
+          uri: lb://PRODUCTO-MS
           predicates:
             - Path=/api/v1/productos/**
         - id: producto-instancia
-          uri: lb://producto-ms
+          uri: lb://PRODUCTO-MS
           predicates:
             - Path=/api/v1/producto/instancia
         - id: producto-swagger
-          uri: lb://producto-ms
+          uri: lb://PRODUCTO-MS
           predicates:
             - Path=/producto-ms/swagger-ui/**,/producto-ms/v3/api-docs/**
+
+        # --- MVP ACTIVO: capa social ---
+        - id: publicacion-route
+          uri: lb://PUBLICACION-MS
+          predicates:
+            - Path=/api/v1/publicaciones/**
+        - id: publicacion-swagger
+          uri: lb://PUBLICACION-MS
+          predicates:
+            - Path=/publicacion-ms/swagger-ui/**,/publicacion-ms/v3/api-docs/**
+        - id: media-route
+          uri: lb://MEDIA-MS
+          predicates:
+            - Path=/api/v1/media/**
+        - id: media-swagger
+          uri: lb://MEDIA-MS
+          predicates:
+            - Path=/media-ms/swagger-ui/**,/media-ms/v3/api-docs/**
+        - id: favoritos-route
+          uri: lb://FAVORITOS-MS
+          predicates:
+            - Path=/api/v1/favoritos/**
+        - id: favoritos-swagger
+          uri: lb://FAVORITOS-MS
+          predicates:
+            - Path=/favoritos-ms/swagger-ui/**,/favoritos-ms/v3/api-docs/**
+        - id: calificacion-route
+          uri: lb://CALIFICACION-MS
+          predicates:
+            - Path=/api/v1/calificaciones/**
+        - id: calificacion-swagger
+          uri: lb://CALIFICACION-MS
+          predicates:
+            - Path=/calificacion-ms/swagger-ui/**,/calificacion-ms/v3/api-docs/**
+        - id: chat-route
+          uri: lb://CHAT-MS
+          predicates:
+            - Path=/api/v1/chats/**
+        - id: chat-swagger
+          uri: lb://CHAT-MS
+          predicates:
+            - Path=/chat-ms/swagger-ui/**,/chat-ms/v3/api-docs/**
+
+        # --- MVP ACTIVO: checkout ---
         - id: orden-route
-          uri: lb://orden-ms
+          uri: lb://ORDEN-MS
           predicates:
             - Path=/api/v1/ordenes/**
         - id: orden-swagger
-          uri: lb://orden-ms
+          uri: lb://ORDEN-MS
           predicates:
             - Path=/orden-ms/swagger-ui/**,/orden-ms/v3/api-docs/**
         - id: pago-route
-          uri: lb://pago-ms
+          uri: lb://PAGO-MS
           predicates:
             - Path=/api/v1/pagos/**
         - id: pago-swagger
-          uri: lb://pago-ms
+          uri: lb://PAGO-MS
           predicates:
             - Path=/pago-ms/swagger-ui/**,/pago-ms/v3/api-docs/**
-        - id: carrito-route
-          uri: lb://carrito-ms
-          predicates:
-            - Path=/api/v1/carritos/**
-        - id: carrito-swagger
-          uri: lb://carrito-ms
-          predicates:
-            - Path=/carrito-ms/swagger-ui/**,/carrito-ms/v3/api-docs/**
-        - id: inventario-route
-          uri: lb://inventario-ms
-          predicates:
-            - Path=/api/v1/inventarios/**
-        - id: inventario-swagger
-          uri: lb://inventario-ms
-          predicates:
-            - Path=/inventario-ms/swagger-ui/**,/inventario-ms/v3/api-docs/**
-  security:
-    oauth2:
-      client:
-        registration:
-          keycloak:
-            client-id: marketplace-client
-            authorization-grant-type: authorization_code
-            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
-            scope: openid,profile,email
-        provider:
-          keycloak:
-            issuer-uri: ${KEYCLOAK_URL:http://localhost:8080}/realms/smartcampus
-
 eureka:
   instance:
     hostname: localhost

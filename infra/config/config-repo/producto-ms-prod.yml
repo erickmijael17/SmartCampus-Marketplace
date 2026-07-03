@@ -51,7 +51,7 @@ management:
 resilience4j:
   circuitbreaker:
     instances:
-      catalogo:
+      categoria:
         slidingWindowSize: 5
         minimumNumberOfCalls: 3
         failureRateThreshold: 50

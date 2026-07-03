@@ -1,0 +1,18 @@
+name: categoria-ms-dev
+
+services:
+  postgres-categoria-ms-dev:
+    image: postgres:16-alpine
+    container_name: postgres-categoria-ms-dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: categoria_ms_db
+      POSTGRES_USER: ecom
+      POSTGRES_PASSWORD: ecom
+    ports:
+      - "15442:5432"
+    volumes:
+      - categoria_ms_dev_data:/var/lib/postgresql/data
+
+volumes:
+  categoria_ms_dev_data:

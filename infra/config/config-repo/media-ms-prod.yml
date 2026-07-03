@@ -19,6 +19,12 @@ spring:
       max-file-size: 50MB
       max-request-size: 50MB
 
+media:
+  storage:
+    upload-dir: ${MEDIA_UPLOAD_DIR:/data/media}
+  public-base-url: ${MEDIA_PUBLIC_BASE_URL:http://localhost:28082}
+  public-path: /api/v1/media/files
+
 eureka:
   client:
     service-url:

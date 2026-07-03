@@ -1,4 +1,4 @@
-name: ecom-keycloak
+name: keycloak
 
 services:
   keycloak:

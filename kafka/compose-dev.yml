@@ -1,10 +1,10 @@
-name: ecom-kafka-dev
+name: kafka-dev
 
 services:
 
   kafka:
     image: apache/kafka:4.2.0
-    container_name: ecom-kafka-dev
+    container_name: kafka-dev
     restart: unless-stopped
     ports:
       - "41092:41092"
@@ -27,7 +27,7 @@ services:
 
   kafka-exporter:
     image: danielqsj/kafka-exporter:v1.9.0
-    container_name: ecom-kafka-exporter-dev
+    container_name: kafka-exporter-dev
     restart: unless-stopped
     command:
       - --kafka.server=kafka:9092
@@ -42,7 +42,7 @@ services:
 
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
-    container_name: ecom-kafka-ui-dev
+    container_name: kafka-ui-dev
     restart: unless-stopped
     ports:
       - "41085:8080"

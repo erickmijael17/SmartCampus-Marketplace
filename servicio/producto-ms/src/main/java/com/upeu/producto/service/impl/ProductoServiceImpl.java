@@ -1,5 +1,6 @@
 package com.upeu.producto.service.impl;
 
+import com.upeu.producto.client.AuthClient;
 import com.upeu.producto.dto.ProductoRequest;
 import com.upeu.producto.dto.ProductoResponse;
 import com.upeu.producto.entity.Producto;
@@ -11,10 +12,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.upeu.producto.client.CatalogoClient;
+import com.upeu.producto.client.CategoriaClient;
 import com.upeu.producto.dto.CategoriaDto;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -23,16 +25,19 @@ public class ProductoServiceImpl implements ProductoService {
 
     private final ProductoRepository productoRepository;
     private final ProductoMapper productoMapper;
-    private final CatalogoClient catalogoClient;
+    private final CategoriaClient categoriaClient;
+    private final AuthClient authClient;
 
     @Override
     @Transactional
-    public ProductoResponse create(ProductoRequest request) {
+    public ProductoResponse create(ProductoRequest request, String token) {
         log.info("Iniciando creacion de producto con titulo: {} y idCategoria: {}", request.getTitulo(),
                 request.getIdCategoria());
+        Long localId = getLocalUserId(token);
         Producto producto = productoMapper.toEntity(request);
+        producto.setIdVendedor(localId);
         Producto savedProducto = productoRepository.save(producto);
-        log.info("Producto creado exitosamente con ID: {}", savedProducto.getId());
+        log.info("Producto creado exitosamente con ID: {} por vendedor: {}", savedProducto.getId(), localId);
         return productoMapper.toResponse(savedProducto);
     }
 
@@ -59,9 +64,10 @@ public class ProductoServiceImpl implements ProductoService {
 
     @Override
     @Transactional
-    public ProductoResponse update(Long id, ProductoRequest request) {
+    public ProductoResponse update(Long id, ProductoRequest request, String token) {
         log.info("Iniciando actualizacion de producto ID: {}", id);
         Producto producto = getProductoById(id);
+        checkOwnershipOrAdmin(producto, token);
         productoMapper.updateEntityFromRequest(producto, request);
         Producto updatedProducto = productoRepository.save(producto);
         log.info("Producto ID: {} actualizado exitosamente", id);
@@ -70,9 +76,10 @@ public class ProductoServiceImpl implements ProductoService {
 
     @Override
     @Transactional
-    public void delete(Long id) {
+    public void delete(Long id, String token) {
         log.info("Iniciando eliminacion de producto ID: {}", id);
-        getProductoById(id);
+        Producto producto = getProductoById(id);
+        checkOwnershipOrAdmin(producto, token);
         productoRepository.deleteById(id);
         log.info("Producto ID: {} eliminado exitosamente", id);
     }
@@ -95,9 +102,9 @@ public class ProductoServiceImpl implements ProductoService {
         CategoriaDto categoria = null;
 
         try {
-            categoria = catalogoClient.findCategoriaById(producto.getIdCategoria());
+            categoria = categoriaClient.findCategoriaById(producto.getIdCategoria());
         } catch (Exception e) {
-            log.warn("No se pudo obtener la categoría desde catalogo. idCategoria={}", producto.getIdCategoria(), e);
+            log.warn("No se pudo obtener la categoria desde categoria-ms. idCategoria={}", producto.getIdCategoria(), e);
         }
 
         return ProductoResponse.builder()
@@ -114,26 +121,48 @@ public class ProductoServiceImpl implements ProductoService {
                 .categoria(categoria)
                 .build();
     }
-    /*
-     * @Override
-     * 
-     * @Transactional(readOnly = true)
-     * public ProductoResponse findDetalleById(Integer id) {
-     * log.info("Buscando detalle de producto con ID: {}", id);
-     * 
-     * Producto producto = getProductoById(id);
-     * 
-     * CategoriaDto categoria = catalogoClient.findCategoriaById(
-     * producto.getIdCategoria().longValue());
-     * 
-     * return ProductoResponse.builder()
-     * .id(producto.getId())
-     * .nombre(producto.getNombre())
-     * .descripcion(producto.getDescripcion())
-     * .idCategoria(producto.getIdCategoria())
-     * .categoria(categoria)
-     * .build();
-     * 
-     * }
-     */
+
+    @SuppressWarnings("unchecked")
+    private Long getLocalUserId(String token) {
+        try {
+            Map<String, Object> userInfo = authClient.getUserInfo("Bearer " + token);
+            Object localIdObj = userInfo.get("localId");
+            if (localIdObj instanceof Number) {
+                return ((Number) localIdObj).longValue();
+            }
+            throw new RuntimeException("No se pudo obtener el localId del usuario");
+        } catch (Exception e) {
+            log.error("Error al obtener informacion del usuario desde auth-ms", e);
+            throw new RuntimeException("Error de autenticacion: no se puede verificar el usuario", e);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void checkOwnershipOrAdmin(Producto producto, String token) {
+        try {
+            Map<String, Object> userInfo = authClient.getUserInfo("Bearer " + token);
+            Object localIdObj = userInfo.get("localId");
+            List<String> roles = (List<String>) userInfo.get("roles");
+
+            Long currentLocalId = localIdObj instanceof Number ? ((Number) localIdObj).longValue() : null;
+
+            boolean isAdmin = roles != null && roles.contains("ADMIN");
+            boolean isOwner = currentLocalId != null && currentLocalId.equals(producto.getIdVendedor());
+
+            if (isAdmin) {
+                return;
+            }
+
+            if (isOwner) {
+                return;
+            }
+
+            throw new SecurityException("No tienes permiso para modificar este producto");
+        } catch (SecurityException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Error al verificar permisos", e);
+            throw new RuntimeException("Error de autorizacion", e);
+        }
+    }
 }

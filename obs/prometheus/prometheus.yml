@@ -20,12 +20,6 @@ scrape_configs:
       - targets:
           - producto-ms:8080
 
-  - job_name: catalogo-ms
-    metrics_path: /actuator/prometheus
-    static_configs:
-      - targets:
-          - catalogo-ms:8080
-
   - job_name: kafka-exporter
     metrics_path: /metrics
     static_configs:

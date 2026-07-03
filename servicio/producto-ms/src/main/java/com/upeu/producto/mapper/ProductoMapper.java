@@ -20,7 +20,6 @@ public class ProductoMapper {
             .moneda(request.getMoneda())
             .estado(request.getEstado())
                 .idCategoria(request.getIdCategoria())
-            .idVendedor(request.getIdVendedor())
                 .build();
     }
 
@@ -50,6 +49,5 @@ public class ProductoMapper {
         entity.setMoneda(request.getMoneda());
         entity.setEstado(request.getEstado());
         entity.setIdCategoria(request.getIdCategoria());
-        entity.setIdVendedor(request.getIdVendedor());
     }
 }

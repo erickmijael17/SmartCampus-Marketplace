@@ -1,0 +1,72 @@
+<main class="auth-register">
+  <section class="panel register-card">
+    <a routerLink="/" class="brand"><span>SC</span> SmartCampus</a>
+    <h1>Crea tu cuenta</h1>
+    <p class="muted">Unete al marketplace de tu universidad.</p>
+
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <label>
+        Nombre completo
+        <input class="field" formControlName="fullName" [class.invalid]="fieldError('fullName')" />
+        @if (fieldError('fullName'); as message) {
+          <p class="field-error">{{ message }}</p>
+        }
+      </label>
+
+      <label>
+        Correo institucional
+        <input class="field" type="email" formControlName="email" [class.invalid]="fieldError('email')" />
+        @if (fieldError('email'); as message) {
+          <p class="field-error">{{ message }}</p>
+        }
+      </label>
+
+      <label>
+        Contraseña
+        <input class="field" type="password" formControlName="password" [class.invalid]="fieldError('password')" />
+        @if (fieldError('password'); as message) {
+          <p class="field-error">{{ message }}</p>
+        }
+      </label>
+
+      <div class="row">
+        <label>
+          Tipo de usuario
+          <select class="field" formControlName="userType">
+            <option>Estudiante</option>
+            <option>Docente</option>
+            <option>Administrativo</option>
+          </select>
+        </label>
+        <label>
+          Ciclo
+          <select class="field" formControlName="cycle">
+            <option>1er ciclo</option>
+            <option>2do ciclo</option>
+            <option>3er ciclo</option>
+            <option>4to ciclo</option>
+            <option>5to ciclo</option>
+          </select>
+        </label>
+      </div>
+
+      <label>
+        Carrera
+        <input class="field" formControlName="career" [class.invalid]="fieldError('career')" />
+        @if (fieldError('career'); as message) {
+          <p class="field-error">{{ message }}</p>
+        }
+      </label>
+
+      @if (errorMessage) {
+        <p class="form-error">{{ errorMessage }}</p>
+      }
+
+      <button class="btn btn-primary" type="submit" [disabled]="loading">
+        {{ loading ? 'Creando cuenta...' : 'Crear cuenta' }}
+      </button>
+    </form>
+
+    <p class="login">¿Ya tienes cuenta? <a routerLink="/login">Iniciar sesion</a></p>
+  </section>
+</main>

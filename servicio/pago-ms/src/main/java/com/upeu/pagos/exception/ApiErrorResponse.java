@@ -12,6 +12,7 @@ public record ApiErrorResponse(
         int status,
         String error,
         String message,
+        String detail,
         String path,
         Map<String, String> validationErrors
 ) {

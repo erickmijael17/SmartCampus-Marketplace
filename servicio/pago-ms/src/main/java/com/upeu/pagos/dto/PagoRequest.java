@@ -34,5 +34,8 @@ public class PagoRequest {
     private String estado;
 
     private String referenciaTransaccion;
+
+    @NotBlank(message = "moneda es obligatorio")
+    private String moneda;
 }
 

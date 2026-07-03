@@ -1,0 +1,3 @@
+ALTER TABLE ordenes
+    ADD COLUMN IF NOT EXISTS metodo_pago VARCHAR(30),
+    ADD COLUMN IF NOT EXISTS id_vendedor BIGINT;

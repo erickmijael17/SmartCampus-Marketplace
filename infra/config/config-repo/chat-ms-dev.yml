@@ -3,7 +3,7 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:15444/ecom_chat_ms_db
+    url: jdbc:postgresql://localhost:15444/chat_ms_db
     username: ecom
     password: ecom
     driver-class-name: org.postgresql.Driver
@@ -16,6 +16,15 @@ spring:
     properties:
       hibernate:
         format_sql: true
+  kafka:
+    bootstrap-servers: localhost:41092
+
+app:
+  kafka:
+    topic:
+      pagos: pagos-topic
+    group-id:
+      chat: chat-group
 
 eureka:
   instance:

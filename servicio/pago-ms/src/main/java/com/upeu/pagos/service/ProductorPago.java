@@ -17,6 +17,16 @@ public class ProductorPago {
     private String topicPagos;
 
     public void enviarEventoPago(EventoPago eventoPago) {
+        log.info(
+                "pago-ms publishing {} ordenId={}, compradorId={}, vendedorId={}, publicacionId={}, tituloProducto={}, monto={}",
+                eventoPago.getTipoEvento(),
+                eventoPago.getOrdenId(),
+                eventoPago.getIdComprador(),
+                eventoPago.getIdVendedor(),
+                eventoPago.getPublicacionId(),
+                eventoPago.getTituloProducto(),
+                eventoPago.getMonto()
+        );
         kafkaTemplate.send(topicPagos, String.valueOf(eventoPago.getOrdenId()), eventoPago)
                 .whenComplete((resultado, ex) -> {
                     if (ex != null) {
@@ -39,6 +49,16 @@ public class ProductorPago {
                             eventoPago.getTipoEvento(),
                             eventoPago.getOrdenId(),
                             eventoPago.getTimestamp()
+                    );
+                    log.info(
+                            "pago-ms published {} ordenId={}, compradorId={}, vendedorId={}, publicacionId={}, tituloProducto={}, monto={}",
+                            eventoPago.getTipoEvento(),
+                            eventoPago.getOrdenId(),
+                            eventoPago.getIdComprador(),
+                            eventoPago.getIdVendedor(),
+                            eventoPago.getPublicacionId(),
+                            eventoPago.getTituloProducto(),
+                            eventoPago.getMonto()
                     );
                 });
     }
