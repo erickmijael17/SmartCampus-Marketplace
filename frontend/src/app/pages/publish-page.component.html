@@ -1,5 +1,5 @@
 <section class="publish-wrapper container">
-  <p class="eyebrow">Publicación protegida</p>
+  <p class="eyebrow">Publicacion protegida</p>
   <h1>Publicar producto o servicio</h1>
   <p class="muted">Completa este formulario para crear una venta real contra el backend.</p>
 
@@ -8,12 +8,12 @@
   }
 
   @if (loadingCategories) {
-    <app-loading label="Cargando categorías..." />
+    <app-loading label="Cargando categorias..." />
   } @else {
     <form [formGroup]="form" (ngSubmit)="submit()" class="publish-form">
       <label>
-        Título
-        <input formControlName="titulo" type="text" class="field" placeholder="Ej. Tutorías de Matemáticas" [class.invalid]="fieldError('titulo')" />
+        Titulo
+        <input formControlName="titulo" type="text" class="field" placeholder="Ej. Tutorias de Matematicas" [class.invalid]="fieldError('titulo')" />
         @if (fieldError('titulo'); as message) {
           <p class="field-error">{{ message }}</p>
         }
@@ -28,12 +28,12 @@
       </label>
 
       <label>
-        Descripción
+        Descripcion
         <textarea
           formControlName="descripcion"
           rows="4"
           class="field"
-          placeholder="Describe qué ofreces, estado, horarios o condiciones"
+          placeholder="Describe que ofreces, estado, horarios o condiciones"
           [class.invalid]="fieldError('descripcion')"
         ></textarea>
         @if (fieldError('descripcion'); as message) {
@@ -42,7 +42,7 @@
       </label>
 
       <label>
-        Categoría
+        Categoria
         <select formControlName="categoriaId" class="field">
           <option *ngFor="let category of categories" [ngValue]="category.id">{{ category.nombre }}</option>
         </select>
@@ -59,6 +59,7 @@
           (input)="onImageUrlInput()"
         />
         <small class="muted">Las URL web se guardan en media-ms y vuelven a mostrarse al iniciar la app.</small>
+        <small class="muted">Tip: usa una URL directa de imagen (JPG/PNG/WEBP) para evitar bloqueos de vista previa.</small>
         @if (fieldError('imageUrl'); as message) {
           <p class="field-error">{{ message }}</p>
         }

@@ -14,20 +14,22 @@
 }
 
 .info {
-  background: #ffffff;
-  border-radius: 14px;
-  border: 1px solid #e2e8f0;
+  background: var(--surface-strong);
+  border-radius: 16px;
+  border: 1px solid var(--border);
   padding: 1.2rem;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(14px);
 }
 
 .back {
   text-decoration: none;
-  color: #1d4ed8;
+  color: var(--primary);
   font-weight: 600;
 }
 
 .meta {
-  color: #64748b;
+  color: var(--text-muted);
   margin-bottom: 0.3rem;
 }
 
@@ -48,9 +50,9 @@ h1 {
   gap: 1rem;
   margin: 1rem 0;
   padding: 1rem;
-  border: 1px solid #dbeafe;
+  border: 1px solid rgba(53, 212, 255, 0.32);
   border-radius: 12px;
-  background: #f8fbff;
+  background: rgba(53, 212, 255, 0.1);
 }
 
 .purchase-card h2 {
@@ -60,7 +62,7 @@ h1 {
 
 .purchase-card p {
   margin: 0;
-  color: #475569;
+  color: var(--text-muted);
 }
 
 label {
@@ -70,35 +72,39 @@ label {
 }
 
 input {
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  padding: 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.7rem;
+  background: rgba(12, 31, 54, 0.86);
+  color: var(--text-main);
 }
 
 select,
 textarea {
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  padding: 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.7rem;
   font: inherit;
+  background: rgba(12, 31, 54, 0.86);
+  color: var(--text-main);
 }
 
 button {
   width: 100%;
-  border: none;
-  border-radius: 10px;
-  background: #16a34a;
-  color: #ffffff;
-  font-weight: 700;
-  padding: 0.8rem;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--primary), #5ae7ff);
+  color: #02263a;
+  font-weight: 800;
+  padding: 0.85rem;
   cursor: pointer;
 }
 
 .secondary-action {
   margin-top: 0.6rem;
-  background: #eff6ff;
-  color: #1d4ed8;
-  border: 1px solid #bfdbfe;
+  background: rgba(53, 212, 255, 0.14);
+  color: #c9f4ff;
+  border: 1px solid rgba(53, 212, 255, 0.34);
 }
 
 button:disabled {
@@ -108,11 +114,12 @@ button:disabled {
 
 .status {
   margin-top: 0.8rem;
-  background: #eff6ff;
-  color: #1e3a8a;
+  background: rgba(53, 212, 255, 0.12);
+  color: #c8f3ff;
   border-radius: 10px;
   padding: 0.7rem;
   font-weight: 600;
+  border: 1px solid rgba(53, 212, 255, 0.3);
 }
 
 .manual-payment-card {
@@ -120,7 +127,7 @@ button:disabled {
   gap: 0.75rem;
   margin-top: 0.9rem;
   padding-top: 1rem;
-  border-top: 1px solid #e2e8f0;
+  border-top: 1px solid var(--border);
 }
 
 .payment-success-card {
@@ -128,10 +135,10 @@ button:disabled {
   gap: 0.75rem;
   margin-top: 1rem;
   padding: 1rem;
-  border: 1px solid #bbf7d0;
+  border: 1px solid rgba(34, 197, 94, 0.34);
   border-radius: 12px;
-  background: #f0fdf4;
-  color: #14532d;
+  background: rgba(34, 197, 94, 0.16);
+  color: #b6f8cf;
 }
 
 .payment-success-card h3 {
@@ -154,7 +161,7 @@ button:disabled {
   display: flex;
   justify-content: space-between;
   gap: 0.75rem;
-  border-top: 1px solid #bbf7d0;
+  border-top: 1px solid rgba(34, 197, 94, 0.3);
   padding-top: 0.45rem;
 }
 
@@ -169,10 +176,12 @@ button:disabled {
 
 .chat-card {
   margin-top: 1.2rem;
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 14px;
+  background: var(--surface-strong);
+  border: 1px solid var(--border);
+  border-radius: 16px;
   padding: 1.1rem;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(14px);
 }
 
 .chat-header {
@@ -184,7 +193,7 @@ button:disabled {
 }
 
 .chat-state {
-  color: #475569;
+  color: var(--text-muted);
   font-weight: 600;
 }
 
@@ -196,20 +205,20 @@ button:disabled {
 }
 
 .chat-message {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: rgba(11, 29, 48, 0.74);
+  border: 1px solid var(--border);
   border-radius: 12px;
   padding: 0.75rem;
 }
 
 .chat-message.system {
-  background: #f0fdf4;
-  border-color: #bbf7d0;
-  color: #14532d;
+  background: rgba(34, 197, 94, 0.16);
+  border-color: rgba(34, 197, 94, 0.34);
+  color: #b6f8cf;
 }
 
 .chat-message.system strong {
-  color: #166534;
+  color: #a2f4c1;
 }
 
 .chat-message p {
@@ -217,7 +226,7 @@ button:disabled {
 }
 
 .chat-message small {
-  color: #64748b;
+  color: var(--text-muted);
 }
 
 .chat-composer {
@@ -226,17 +235,21 @@ button:disabled {
 }
 
 .chat-composer textarea {
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--border);
   border-radius: 10px;
   padding: 0.75rem;
   font: inherit;
+  background: rgba(12, 31, 54, 0.86);
+  color: var(--text-main);
 }
 
 .not-found {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 14px;
+  background: var(--surface-strong);
+  border: 1px solid var(--border);
+  border-radius: 16px;
   padding: 1.2rem;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(14px);
 }
 
 @media (max-width: 900px) {
@@ -250,7 +263,7 @@ button:disabled {
   gap: 0.75rem;
   margin-top: 1.25rem;
   padding-top: 1rem;
-  border-top: 1px solid #e2e8f0;
+  border-top: 1px solid var(--border);
 }
 
 .review-box h3 {

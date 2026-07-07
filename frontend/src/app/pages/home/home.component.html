@@ -7,11 +7,26 @@
         <p>Compra, vende, publica servicios y contacta estudiantes dentro de tu campus con una experiencia moderna y segura.</p>
         <div class="hero-actions">
           <button type="button" class="btn btn-primary" (click)="goToPublish()">Publicar ahora</button>
+          <a class="btn btn-ghost" href="#about">Acerca de nosotros</a>
           @if (isAuthenticated()) {
             <a class="btn btn-ghost" routerLink="/chat">Ver mensajes</a>
           } @else {
             <a class="btn btn-ghost" routerLink="/login">Ingresar</a>
           }
+        </div>
+        <div class="hero-stats" aria-label="Resumen de actividad">
+          <article class="stat-card panel">
+            <span>Categorias</span>
+            <strong>{{ categories.length }}</strong>
+          </article>
+          <article class="stat-card panel">
+            <span>Publicaciones</span>
+            <strong>{{ products.length }}</strong>
+          </article>
+          <article class="stat-card panel">
+            <span>Circuito</span>
+            <strong>Tiempo real</strong>
+          </article>
         </div>
       </div>
       <div class="hero-media" aria-hidden="true">
@@ -59,5 +74,85 @@
         description="Cambia la busqueda o selecciona otra categoria."
       />
     }
+  </section>
+
+  <section id="about" class="container about panel">
+    <header class="about-head">
+      <span class="badge">Acerca de nosotros</span>
+      <h2>Smart Campus Marketplace</h2>
+      <p>
+        Somos una plataforma digital de tecnologia educativa y comercio electronico universitario que conecta estudiantes,
+        docentes y comunidad academica para comprar, vender e intercambiar en un entorno seguro y ordenado.
+      </p>
+    </header>
+
+    <div class="about-grid">
+      <article class="about-card">
+        <h3>Quienes somos</h3>
+        <p>Construimos un marketplace para la vida universitaria, pensado para facilitar el comercio interno del campus.</p>
+      </article>
+
+      <article class="about-card">
+        <h3>Que hacemos</h3>
+        <p>Permitimos publicar productos, ofrecer servicios, buscar articulos, chatear, gestionar compras y conectar con confianza.</p>
+      </article>
+
+      <article class="about-card">
+        <h3>Nuestro proposito</h3>
+        <p>Transformar la experiencia de compra y venta en la universidad con un espacio digital confiable, accesible y moderno.</p>
+      </article>
+
+      <article class="about-card">
+        <h3>Problema que solucionamos</h3>
+        <p>Las ventas dispersas en WhatsApp, Facebook y grupos informales generan desorden, baja visibilidad y poca trazabilidad.</p>
+      </article>
+
+      <article class="about-card">
+        <h3>Nuestra solucion</h3>
+        <p>Centralizamos productos y servicios universitarios en una sola plataforma para encontrar, comparar y negociar rapido.</p>
+      </article>
+
+      <article class="about-card">
+        <h3>Beneficios principales</h3>
+        <p>Seguridad, rapidez, organizacion, chat directo, facilidad de uso, mayor visibilidad para vendedores y comodidad para compradores.</p>
+      </article>
+
+      <article class="about-card">
+        <h3>Publico objetivo</h3>
+        <p>Estudiantes, docentes, emprendedores universitarios y miembros de la comunidad academica.</p>
+      </article>
+
+      <article class="about-card">
+        <h3>Diferencial</h3>
+        <p>No somos solo una tienda: integramos marketplace, chat, publicaciones, pagos, historial, favoritos y calificaciones.</p>
+      </article>
+    </div>
+
+    <div class="about-bottom">
+      <article class="about-card mission">
+        <h3>Mision</h3>
+        <p>
+          Conectar a la comunidad universitaria mediante una plataforma digital segura, eficiente y facil de usar para comprar,
+          vender e intercambiar productos y servicios.
+        </p>
+      </article>
+
+      <article class="about-card vision">
+        <h3>Vision</h3>
+        <p>
+          Ser el marketplace universitario de referencia, impulsando el comercio digital dentro de los campus y fortaleciendo la
+          economia estudiantil.
+        </p>
+      </article>
+
+      <article class="about-card values">
+        <h3>Valores</h3>
+        <p>Confianza, innovacion, seguridad, colaboracion, accesibilidad, responsabilidad y comunidad.</p>
+      </article>
+    </div>
+
+    <p class="about-closing">
+      Conectamos estudiantes, impulsamos oportunidades y transformamos la forma de comprar y vender dentro del campus.
+    </p>
   </section>
 </main>

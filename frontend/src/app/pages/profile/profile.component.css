@@ -4,7 +4,9 @@
 
 .cover {
   height: 190px;
-  background: linear-gradient(120deg, var(--primary), #38bdf8);
+  background:
+    radial-gradient(circle at 22% 35%, rgba(53, 212, 255, 0.24), transparent 40%),
+    linear-gradient(115deg, #0b2747, #103c72 52%, #0b2340);
 }
 
 .profile {
@@ -21,12 +23,12 @@
 .avatar {
   width: 108px;
   height: 108px;
-  border: 6px solid #fff;
+  border: 6px solid rgba(6, 20, 37, 0.9);
   border-radius: 26px;
   display: grid;
   place-items: center;
-  background: var(--primary);
-  color: #fff;
+  background: linear-gradient(135deg, #39ddff 0%, #1f79ff 100%);
+  color: #02263a;
   font-size: 1.55rem;
   font-weight: 900;
   box-shadow: var(--shadow);
@@ -63,7 +65,7 @@ h1 {
   padding: 0.35rem;
   border: 1px solid var(--border);
   border-radius: 14px;
-  background: #fff;
+  background: rgba(10, 27, 46, 0.76);
   margin-bottom: 1rem;
   overflow-x: auto;
   scrollbar-width: thin;
@@ -82,8 +84,8 @@ h1 {
 }
 
 .tabs button.active {
-  background: var(--primary);
-  color: #fff;
+  background: rgba(53, 212, 255, 0.2);
+  color: #d7f6ff;
 }
 
 .grid {

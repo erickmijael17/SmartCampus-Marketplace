@@ -30,10 +30,6 @@
           </button>
         </section>
         <p class="status" *ngIf="isOwnListing">No puedes comprar tu propio producto.</p>
-        
-        <button type="button" class="danger-action" *ngIf="isOwnListing" (click)="deleteListing()" [disabled]="isDeleting" style="margin-top: 10px; background-color: #ef4444; color: white; width: 100%; border: none; border-radius: 8px; padding: 12px; font-weight: 500; cursor: pointer;">
-          {{ isDeleting ? 'Eliminando...' : 'Eliminar publicación' }}
-        </button>
 
         <button type="button" class="secondary-action" (click)="toggleFavorite()" [disabled]="favoriteBusy">
           {{ favoriteLabel }}
